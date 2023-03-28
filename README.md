@@ -5,7 +5,7 @@
 1. Clone repo locally.
 
 ```
-git clone https://github.com/stevensblueprint/sit_blueprint_website.git
+git clone https://github.com/ngkatie/friendify
 ```
 
 2. Install all dependencies.
