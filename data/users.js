@@ -1,5 +1,6 @@
 import { users } from "../config/mongoCollections.js";
 import { ObjectId } from "mongodb";
+import { hashPassword } from "../config/password.js";
 
 const create = async (
     username,
@@ -7,6 +8,8 @@ const create = async (
     spotify_access_token,
     hashed_password
 ) => {
+    //function that hashes the password
+    hashed_password = hashPassword(hashed_password);
 let newUser = {
     username: username,
     email: email,
