@@ -13,9 +13,5 @@ const getCollectionFn = (collection) => {
   };
 };
 
-export default {
-  users: getCollectionFn('users'),
-  songs: getCollectionFn('songs'),
-  artists: getCollectionFn('artists'),
-  comments: getCollectionFn('comments')
-};
+//Call for users collection
+export const users = getCollectionFn('users');
