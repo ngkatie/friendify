@@ -5,8 +5,8 @@ var querystring = require('querystring');
 var cookieParser = require('cookie-parser');
 var configRoutes = require('./routes/index.js');
 
-var client_id = '4d4b1abc9b684dd58186ced30e4a5cb4'; // Your client id
-var client_secret = 'd5f837bfc40d418990a8d6568dd23b60'; // Your secret
+var client_id = 'client_id'; // Your client id
+var client_secret = 'client_secret'; // Your secret
 var redirect_uri = 'http://localhost:3000/callback'; // Your redirect uri
 
 /**
