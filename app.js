@@ -5,9 +5,11 @@ var querystring = require('querystring');
 var cookieParser = require('cookie-parser');
 var configRoutes = require('./routes/index.js');
 
+
+
 var client_id = 'client_id'; // Your client id
 var client_secret = 'client_secret'; // Your secret
-var redirect_uri = 'http://localhost:3000/callback'; // Your redirect uri
+var redirect_uri = 'redirect_uri'; // Your redirect uri
 
 /**
  * Generates a random string containing numbers and letters
@@ -15,6 +17,20 @@ var redirect_uri = 'http://localhost:3000/callback'; // Your redirect uri
  * @return {string} The generated string
  */
 
+var app = express();
+//configRoutes(app);
+app.get('/', (req, res) => {
+  // Landing page
+  res.send("Hello User");
+  // res.sendFile(path.resolve("index.html"));
+
+});
+
+
+app.use(express.static(__dirname + '/public'))
+   .use(cors())
+   .use(cookieParser());
+   
 var generateRandomString = function(length) {
   var text = '';
   var possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
@@ -26,19 +42,6 @@ var generateRandomString = function(length) {
 };
 
 var stateKey = 'spotify_auth_state';
-
-var app = express();
-//configRoutes(app);
-app.get('/', (req, res) => {
-  // Landing page
-  res.send("Hello User");
-
-});
-
-
-app.use(express.static(__dirname + '/public'))
-   .use(cors())
-   .use(cookieParser());
 
 app.get('/login', function(req, res) {
 
