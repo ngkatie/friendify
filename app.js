@@ -1,15 +1,20 @@
-var express = require('express'); // Express web server framework
-var request = require('request'); // "Request" library
-var cors = require('cors');
-var querystring = require('querystring');
-var cookieParser = require('cookie-parser');
-var configRoutes = require('./routes/index.js');
+import express from 'express'; // Express web server framework
+import request from 'request'; // "Request" library
+import cors from 'cors';
+import querystring from 'querystring';
+import cookieParser from 'cookie-parser';
+//import configRoutes from './routes/index.js';
 
+import { fileURLToPath } from 'url';
+import path from 'path';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 
 var client_id = 'client_id'; // Your client id
 var client_secret = 'client_secret'; // Your secret
-var redirect_uri = 'redirect_uri'; // Your redirect uri
+var redirect_uri = 'http://localhost:3000/callback'; // Your redirect uri
 
 /**
  * Generates a random string containing numbers and letters
@@ -98,6 +103,7 @@ app.get('/callback', function(req, res) {
 
         var options = {
           url: 'https://api.spotify.com/v1/me',
+         // url : 'https://api.spotify.com/v1/tracks/11dFghVXANMlKmJXsNCbNl',
           headers: { 'Authorization': 'Bearer ' + access_token },
           json: true
         };
