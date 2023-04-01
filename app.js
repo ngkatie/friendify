@@ -12,12 +12,6 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 
-
-
-// var client_id = 'client_id'; // Your client id
-// var client_secret = 'client_secret'; // Your secret
-// var redirect_uri = 'http://localhost:3000/callback'; // Your redirect uri
-
 /**
  * Generates a random string containing numbers and letters
  * @param  {number} length The length of the string

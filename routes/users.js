@@ -8,6 +8,12 @@ import request from 'request'; // "Request" library
 const router = Router();
 
 
+
+//  var client_id = 'client_id'; // Your client id
+//  var client_secret = 'client_secret'; // Your secret
+//  var redirect_uri = 'http://localhost:3000/callback'; // Your redirect uri
+
+
 var generateRandomString = function(length) {
     var text = '';
     var possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
