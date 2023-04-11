@@ -1,4 +1,5 @@
 import crypto from 'crypto';
+import axios from 'axios'; // "Request" library
 //This file contains any functions that are too long or can be used in multiple places
 
 //function to hash a password
@@ -8,6 +9,8 @@ function hashPassword(password) {
   const hashedPassword = sha256.digest('hex');
   return hashedPassword;
 }
+
+
 
 
 export { hashPassword };

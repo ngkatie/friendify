@@ -1,6 +1,6 @@
 import { users } from "../config/mongoCollections.js";
 import { ObjectId } from "mongodb";
-import { hashPassword } from "../config/password.js";
+//import { hashPassword } from "../config/password.js";
 
 const create = async (
     username,
