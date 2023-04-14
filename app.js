@@ -18,7 +18,7 @@ const __dirname = path.dirname(__filename);
  * @return {string} The generated string
  */
 
-var app = express();
+const app = express();
 configRoutes(app);
 
 
@@ -28,5 +28,7 @@ app.use(express.static(__dirname + '/public'))
    
 
 
-console.log('Listening on 3000');
-app.listen(3000);
+app.listen(3000, () => {
+      console.log("We've now got a server!");
+      console.log('Your routes will be running on http://localhost:3000');
+})
