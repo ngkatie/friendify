@@ -2,18 +2,15 @@
 <html>
     <head>
         <title>{{title}}</title>
-        <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
-        <style type="text/css">
-        #login, #loggedin {
-            display: none;
-        }
-        .text-overflow {
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-            width: 500px;
-        }
-        </style>
+        <nav class="navbar navbar-default">
+            <div class="navbar-header">
+            <a class="navbar-brand" href="#">Friendify</a>
+        </div>
+        <ul class="nav navbar-nav">
+            <li class="active"><a href="#">Your Profile</a></li>
+            <li><a href="#">Friends</a></li>
+        </ul>
+    </nav>
     </head>
     <body>
         {{{body}}}

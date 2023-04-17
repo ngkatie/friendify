@@ -15,4 +15,15 @@
         <button type="button" href="./top-artists.handlebars">Top 50 Artists</button>
         <button type="button" href="./daily-playlist.handlebars">Daily Playlist</button>
     </div>
+    <div class="results">
+        <h2>Top 50 Songs</h2>
+        <div class="results-container">
+            {{#each topSongs}}
+                <div class="result">
+                    <img src="{{image}}" alt="Song Image" class="img-thumbnail" width="200" height="200">
+                    <h3>{{name}}</h3>
+                    <p>Artist: {{artist}}</p>
+                </div>
+            {{/each}}
+    </div>
 </div>
