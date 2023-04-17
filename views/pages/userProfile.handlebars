@@ -1,0 +1,24 @@
+<div class="container">
+    <nav class="navbar navbar-default">
+        <div class="navbar-header">
+            <a class="navbar-brand" href="#">Friendify</a>
+        </div>
+        <ul class="nav navbar-nav">
+            <li class="active"><a href="#">Your Profile</a></li>
+            <li><a href="#">Friends</a></li>
+        </ul>
+    </nav>
+    
+    <div class="user-info">
+        <img src="{{profilePicture}}" alt="Profile Picture" class="img-thumbnail" width="200" height="200">
+        <h2>{{username}}</h2>
+        <p>Likes: {{likeCount}}</p>
+    </div>
+    <div class="spotify-data">
+        <button type="button" class="btn btn-primary">Top 50 Songs</button>
+        <button type="button" class="btn btn-secondary">Top 50 Artists</button>
+        <button type="button" class="btn btn-success">Daily Playlist</button>
+    </div>
+    <div class="results">
+    </div>
+</div>
