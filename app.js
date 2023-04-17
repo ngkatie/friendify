@@ -11,7 +11,6 @@ import path from 'path';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-
 /**
  * Generates a random string containing numbers and letters
  * @param  {number} length The length of the string
