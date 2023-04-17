@@ -1,4 +1,5 @@
 import crypto from 'crypto';
+import {ObjectId} from 'mongodb';
 import axios from 'axios'; // "Request" library
 //This file contains any functions that are too long or can be used in multiple places
 
@@ -16,6 +17,7 @@ export function checkString(str) {
   }
   return str.trim();
 };
+
 
 export function idToString(mongoDocument) {
   mongoDocument._id = mongoDocument._id.toString();
