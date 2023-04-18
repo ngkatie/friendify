@@ -7,10 +7,10 @@ import configRoutes from './routes/index.js';
 
 import { fileURLToPath } from 'url';
 import path from 'path';
+import exphbs from 'express-handlebars';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-
 
 /**
  * Generates a random string containing numbers and letters
@@ -18,15 +18,28 @@ const __dirname = path.dirname(__filename);
  * @return {string} The generated string
  */
 
-var app = express();
+const app = express();
 configRoutes(app);
 
+const rewriteUnsupportedBrowserMethods = (req, res, next) => {
+   if (req.body && req.body._method) {
+      req.method = req.body._method
+      delete req.body._method
+   }
+}
 
 app.use(express.static(__dirname + '/public'))
    .use(cors())
-   .use(cookieParser());
+   .use(cookieParser())
+   .use(express.json())
+   .use(express.urlencoded({ extended: true }));
+
+app.engine('handlebars', exphbs({ defaultLayout: 'main' }));
+app.set('view engine', 'handlebars');
    
 
 
-console.log('Listening on 3000');
-app.listen(3000);
+app.listen(3000, () => {
+      console.log("We've now got a server!");
+      console.log('Your routes will be running on http://localhost:3000');
+})
