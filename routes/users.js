@@ -127,7 +127,7 @@ router.get('/refresh_token', async (req, res) => {
 });
 
 router.get('/friends', async (req, res) => {
-  // const { id } = req.session.user.id;
+   const { id } = req.session.user.id;
   try {
     const user = await userData.get(id);
     const friends = user.friends;
@@ -139,12 +139,9 @@ router.get('/friends', async (req, res) => {
 });
 
 router.get('/friends/:id', async (req, res) => {
-  // const { id } = req.session.user.id;
+  const id = req.params.id;
   try {
-    const user = await userData.get(id);
-    const friends = user.friends;
-    //find the friend with the id
-    // const friend = friends.find(friend => friend._id === req.params.id);
+    const friend = await userData.get(id);
     return res.status(200).render('friendProfile', { title: "Friend", friend: friend });
 
   } catch (e) {
