@@ -1,8 +1,10 @@
 import { users } from "../config/mongoCollections.js";
 import { config } from "dotenv";
 import { ObjectId } from "mongodb";
+import * as spotifyAPI from './api.js';
 import SpotifyWebApi from "spotify-web-api-node";
-import * as helpers from "../helpers.js"
+import * as songs from "./songs.js";
+import * as helpers from "../helpers.js";
 
 config();
 const CLIENT_ID = process.env.client_id;
@@ -233,6 +235,55 @@ const rejectFriendRequest = async(id,idFriend)=>{
 //   );
 // }
 
+async function getTopTracks(user_id) {
+  try {
+    const tracksEndpoint = spotifyAPI.getEndpointByType('me/top/tracks');
+    const token = spotifyAPI.getAccessToken();
+
+    let data = await axios.get(tracksEndpoint, {
+      headers: { 'Authorization': `Bearer ${token}`}
+    });
+  } catch (e) { console.error(e) }
+
+  if (data) { 
+    const userCollection = await users();
+    const user = await get(user_id);
+
+    // Clear outdated topSongs
+    user.topSongs = [];
+
+    let tracks = data.items;
+    let topTracks = [];
+    for (let i = 0; i < tracks.length; i++) {
+      const newTrack = {
+        _id: new ObjectId(),
+        trackName: tracks[i].name,
+        trackURL: tracks[i].external_urls.spotify,
+        spotifyId: tracks[i].id,
+        artistName: songs.getArtists(tracks[i]),
+        albumName: tracks[i].album.name,
+        image: tracks[i].album.images[0].url
+      }
+      user.topSongs.push(newTrack);
+    }
+
+    const updatedUser = await userCollection.findOneAndUpdate(
+      { _id: user._id },
+      { $set: user },
+      { returnDocument: 'after' }
+    )
+
+    if (updatedUser.lastErrorObject.n === 0) {
+      throw `Error: Could not store top tracks successfully`;
+    }
+  } 
+  else {
+    throw 'Error: Could not fetch top tracks from Spotify API';
+  }
+
+  return;
+}
+
 export {
   create, 
   getAll, 
@@ -240,6 +291,6 @@ export {
   acceptFriend, 
   sendFriendRequest, 
   rejectFriendRequest,
-//   getTopTracks,
-//   getTopArtists
+  getTopTracks,
+  getTopArtists
 }

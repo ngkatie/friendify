@@ -9,8 +9,8 @@ dotenv.config();
 
 
 
-const client_id = process.env.client_id; // Your client id
-const client_secret = process.env.client_secret; // Your secret
+const CLIENT_ID = process.env.CLIENT_ID // Your client id
+const CLIENT_SECRET = process.env.CLIENT_SECRET; // Your secret
 const redirect_uri = 'http://localhost:3000/users/callback'; // Your redirect uri
 
 const generateRandomString = (length) => {
@@ -66,7 +66,7 @@ router.get('/callback', async (req, res) => {
         grant_type: 'authorization_code',
       },
       headers: {
-        Authorization: 'Basic ' + Buffer.from(client_id + ':' + client_secret).toString('base64'),
+        Authorization: 'Basic ' + Buffer.from(CLIENT_ID + ':' + CLIENT_SECRET).toString('base64'),
       },
     };
 
@@ -83,7 +83,7 @@ router.get('/callback', async (req, res) => {
           headers: { Authorization: 'Bearer ' + access_token },
         };
 
-        // use the access token to access the Spotify Web API in this case accessing about me api, which return dataabout the user
+        // use the access token to access the Spotify Web API in this case accessing about me api, which return data about the user
         const { data } = await axios.get(options.url, { headers: options.headers });
 
         console.log(data);
@@ -125,5 +125,6 @@ router.get('/refresh_token', async (req, res) => {
     res.sendStatus(500);
   }
 });
+
 
 export default router

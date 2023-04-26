@@ -5,7 +5,7 @@ config();
 
 const CLIENT_ID = process.env.client_id;
 const CLIENT_SECRET = process.env.client_secret;
-const BASE_ENDPOINT = `https://api.spotify.com/v1/me/top/`;
+const BASE_ENDPOINT = `https://api.spotify.com/v1/`;
 const AUTHORIZE_ENDPOINT = "https://accounts.spotify.com/api/token";
 
 function getEndpointByType(type) {
@@ -47,14 +47,8 @@ async function callEndpoint(endpoint) {
     }
 }
 
-// callEndpoint(getEndpointByType("artists"));
-console.log(CLIENT_ID);
-console.log(CLIENT_SECRET);
-getAccessToken();
-
-const object = {
-    "name": "hello",
-    "age": "1"
-};
-
-
+export {
+    getEndpointByType,
+    getAccessToken,
+    callEndpoint
+}
