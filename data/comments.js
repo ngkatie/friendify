@@ -69,6 +69,9 @@ const removeComment= async(userId, commentId) => {
     let newCommenArray = []
 
     const comment = user.comments
+
+    if(comment.length === 0)
+    return "Error: There are no comments to Remove"
     let i=0;
 
     comment.forEach(element => {

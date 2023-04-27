@@ -132,7 +132,14 @@ router.post("/acceptFriend/:id",async(req,res)=>{
  try {
     
   let id = req.params.id
-  let idFriend = req.body.idFriend
+  let userInfo = req.body
+
+  if (!userInfo || Object.keys(userInfo).length === 0) {
+   return res
+     .status(400)
+     .json({error: 'There are no fields in the request body'});
+ }
+  let idFriend = userInfo.idFriend
   try {
     checkValidId(id)
     checkValidId(idFriend)  
@@ -156,7 +163,14 @@ router.post("/sendFriendRequest/:id",async(req,res)=>{
   try {
      
    let id = req.params.id
-   let idFriend = req.body.idFriend
+   let userInfo = req.body
+
+   if (!userInfo || Object.keys(userInfo).length === 0) {
+    return res
+      .status(400)
+      .json({error: 'There are no fields in the request body'});
+  }
+   let idFriend = userInfo.idFriend
    try {
     checkValidId(id)
     checkValidId(idFriend)  
@@ -181,7 +195,14 @@ router.post("/sendFriendRequest/:id",async(req,res)=>{
   try {
      
    let id = req.params.id
-   let idFriend = req.body.idFriend
+   let userInfo = req.body
+
+   if (!userInfo || Object.keys(userInfo).length === 0) {
+    return res
+      .status(400)
+      .json({error: 'There are no fields in the request body'});
+  }
+   let idFriend = userInfo.idFriend
    try {
     checkValidId(id)
     checkValidId(idFriend)  
