@@ -33,5 +33,6 @@ function getArtists(trackObj) {
 }
 
 export {
-    getArtists
+    getArtists,
+    getTrackInformation
 }
