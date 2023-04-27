@@ -235,6 +235,7 @@ const rejectFriendRequest = async(id,idFriend)=>{
 //   );
 // }
 
+// Note to self: Need to add time_range
 async function getTopTracks(user_id) {
   try {
     const tracksEndpoint = spotifyAPI.getEndpointByType('me/top/tracks');
@@ -281,7 +282,7 @@ async function getTopTracks(user_id) {
     throw 'Error: Could not fetch top tracks from Spotify API';
   }
 
-  return;
+  return user.topSongs;
 }
 
 export {
