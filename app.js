@@ -18,7 +18,7 @@ const __dirname = path.dirname(__filename);
  */
 
 const app = express();
-configRoutes(app);
+
 
 const rewriteUnsupportedBrowserMethods = (req, res, next) => {
    if (req.body && req.body._method) {
@@ -42,6 +42,17 @@ app.use(express.static(__dirname + '/public'))
 
 app.engine('handlebars', exphbs.engine({ defaultLayout: 'main' }));
 app.set('view engine', 'handlebars');
+
+configRoutes(app);
+
+app.use(session({
+   name: 'AuthCookie',
+   secret: 'Secret!',
+   resave: false,
+   saveUninitialized: false,
+   cookie: {maxAge: 6000}
+}));
+
 
 app.listen(3000, () => {
       console.log("We've now got a server!");
