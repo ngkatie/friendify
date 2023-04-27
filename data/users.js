@@ -1,12 +1,14 @@
 import { users } from "../config/mongoCollections.js";
 import { config } from "dotenv";
 import { ObjectId } from "mongodb";
+import bcrypt, { compare } from 'bcryptjs';
 import * as spotifyAPI from './api.js';
 import SpotifyWebApi from "spotify-web-api-node";
 import * as songs from "./songs.js";
 import * as helpers from "../helpers.js";
 
 config();
+const saltRounds = await bcrypt.genSalt(20);
 const CLIENT_ID = process.env.client_id;
 const CLIENT_SECRET = process.env.client_secret;
 
@@ -14,33 +16,59 @@ const create = async (
     username,
     email,
     spotify_access_token,
-    hashed_password
+    password
 ) => {
 
-    hashed_password = helpers.hashPassword(hashed_password);
-    let newUser = {
-        username: username,
-        email: email,
-        spotify_access_token: spotify_access_token,
-        hashed_password: hashed_password,
-        top_songs: [],
-        top_artists: [],
-        dailyPlaylist: [],
-        likeCount: 0,
-        comments: [],
-        likedProfiles: [],
-        pendingRequests: [],
-        friends: [],
-    }
-    const userCollection = await users();
-    const insertInfo = await userCollection.insertOne(newUser);
-    if (!insertInfo.acknowledged || !insertInfo.insertedId) {
-        throw `Could not add user successfully`;
-      }
+  const hashed_password = await bcrypt.hash(password, saltRounds);
+  // hashed_password = helpers.hashPassword(hashed_password);
+  let newUser = {
+    username: username,
+    email: email,
+    spotify_access_token: spotify_access_token,
+    hashed_password: hashed_password,
+    top_songs: [],
+    top_artists: [],
+    dailyPlaylist: [],
+    likeCount: 0,
+    comments: [],
+    likedProfiles: [],
+    pendingRequests: [],
+    friends: [],
+  }
+  const userCollection = await users();
+  const insertInfo = await userCollection.insertOne(newUser);
+  if (!insertInfo.acknowledged || !insertInfo.insertedId) {
+    throw `Could not add user successfully`;
+  }
 
-    // const newId = insertInfo.insertedId.toString();
-    const user = await get(insertInfo.insertedId.toString());
-    return helpers.idToString(user);
+  // const newId = insertInfo.insertedId.toString();
+  const user = await get(insertInfo.insertedId.toString());
+  return helpers.idToString(user);
+}
+
+const checkUser = async (username, password) => {
+  const userCollection = await users();
+  const user = await userCollection.findOne( { username: username });
+
+  if (!user) {
+    throw  `Either the email address or password is invalid`;
+  }
+
+  let compareToMatch = await bcrypt.compare(password, user.password);
+  if (!compareToMatch) {
+    throw `Error: Either the email address or password is invalid`;
+  }
+
+  let userFound = {
+    username: user.username,
+    email: user.email,
+    spotify_access_token: user.spotify_access_token,
+    likeCount: user.likeCount,
+    comments: user.comments,
+    friends: user.friends
+  }
+
+  return userFound;
 }
 
 const getAll = async () => {
@@ -103,8 +131,6 @@ const sendFriendRequest= async(id,idFriend) =>{
   
   if(user1Friends.includes(idFriend))
   throw `${idFriend} is already a friend`
-
-  
 
   // const user1Friends = user.friends;
   const user2PendingRequest = user2.pendingRequests
@@ -287,11 +313,12 @@ async function getTopTracks(user_id) {
 
 export {
   create, 
+  checkUser,
   getAll, 
   get, 
   acceptFriend, 
   sendFriendRequest, 
   rejectFriendRequest,
   getTopTracks,
-  getTopArtists
+  // getTopArtists
 }
