@@ -2,8 +2,6 @@ import express from 'express'; // Express web server framework
 import session from 'express-session';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
-
-import cookieParser from 'cookie-parser';
 import configRoutes from './routes/index.js';
 
 import { fileURLToPath } from 'url';

@@ -12,6 +12,7 @@ import axios from 'axios'; // "Request" library
 //   return hashedPassword;
 // }
 
+
 function includesUpper(str) {
   if (/[A-Z]+/g.test(str)) {
       return true;
