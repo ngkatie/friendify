@@ -19,14 +19,17 @@ const __dirname = path.dirname(__filename);
  */
 
 var app = express();
-configRoutes(app);
 
 
+app.use(express.json());
 app.use(express.static(__dirname + '/public'))
    .use(cors())
    .use(cookieParser());
    
+configRoutes(app);
 
 
-console.log('Listening on 3000');
-app.listen(3000);
+app.listen(3000, () => {
+      console.log("We've now got a server!");
+      console.log('Your routes will be running on http://localhost:3000');
+    });

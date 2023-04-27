@@ -3,6 +3,8 @@ export const router = Router();
 import { ObjectId } from 'mongodb';
 import { userData } from '../data/index.js';
 import querystring from 'querystring';
+import { checkValidId } from '../helpers.js';
+import { acceptFriend, sendFriendRequest,rejectFriendRequest } from '../data/users.js';
 import axios from 'axios'; // Axios library
 import dotenv from 'dotenv';
 dotenv.config();
@@ -125,5 +127,79 @@ router.get('/refresh_token', async (req, res) => {
     res.sendStatus(500);
   }
 });
+
+router.post("/acceptFriend/:id",async(req,res)=>{
+ try {
+    
+  let id = req.params.id
+  let idFriend = req.body.idFriend
+  try {
+    checkValidId(id)
+    checkValidId(idFriend)  
+  } catch (error) {
+    return res.status(404).json({ error: error });
+  }
+  id = id.trim();
+  idFriend = idFriend.trim();
+
+  const result = await acceptFriend(id,idFriend)
+
+  return res.json(result)
+  } catch (e) {
+    let status = e[0] ? e[0] : 500;
+    let message = e[1] ? e[1] : 'Internal Server Error';
+    res.status(status).send({error: message});
+  }
+})
+
+router.post("/sendFriendRequest/:id",async(req,res)=>{
+  try {
+     
+   let id = req.params.id
+   let idFriend = req.body.idFriend
+   try {
+    checkValidId(id)
+    checkValidId(idFriend)  
+  } catch (error) {
+    return res.status(404).json({ error: error });
+  }
+ 
+   id = id.trim();
+   idFriend = idFriend.trim();
+ 
+   const result = await sendFriendRequest(id,idFriend)
+ 
+   return res.json(result)
+   } catch (e) {
+     let status = e[0] ? e[0] : 500;
+     let message = e[1] ? e[1] : 'Internal Server Error';
+     res.status(status).send({error: message});
+   }
+ })
+
+ router.post("/rejectFriendRequest/:id",async(req,res)=>{
+  try {
+     
+   let id = req.params.id
+   let idFriend = req.body.idFriend
+   try {
+    checkValidId(id)
+    checkValidId(idFriend)  
+  } catch (error) {
+    return res.status(404).json({ error: error });
+  }
+ 
+   id = id.trim();
+   idFriend = idFriend.trim();
+ 
+   const result = await rejectFriendRequest(id,idFriend)
+ 
+   return res.json(result)
+   } catch (e) {
+     let status = e[0] ? e[0] : 500;
+     let message = e[1] ? e[1] : 'Internal Server Error';
+     res.status(status).send({error: message});
+   }
+ })
 
 export default router

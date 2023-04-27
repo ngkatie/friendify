@@ -12,7 +12,7 @@ function hashPassword(password) {
 }
 
 function checkValidId(id){
-  if (!id) throw `You must provide an id ${id} to search for`;
+  if (!id) throw `You must provide an id to search for`;
   if (typeof id !== 'string') throw `Id ${id} must be a string`;
   if (id.trim().length === 0)
     throw `id ${id} cannot be an empty string or just spaces`;
@@ -20,7 +20,11 @@ function checkValidId(id){
   if (!ObjectId.isValid(id)) throw `invalid object ID ${id}`;
 }
 
+function validString(str){
+  if (!str || typeof str !== "string" || !str.trim()) throw "not a valid string";
+  return str;
+};
 
 
 
-export { hashPassword , checkValidId};
+export { hashPassword , checkValidId, validString};
