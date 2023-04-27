@@ -1,0 +1,13 @@
+<div id="friends-list">
+    <h2>Friends List</h2>
+    <div class="friends-container">
+        {{#each friends}}
+        <div class="friend">
+            <img src="{{image}}" alt="Friend Image" class="img-thumbnail" width="200" height="200">
+            <h3>{{name}}</h3>
+            <a href="/friendProfile/{{id}}">View Profile</a>
+        </div>
+        {{/each}}
+    </div>
+    <a href="./userProfile.handlebars">Back to Profile</a>
+</div>

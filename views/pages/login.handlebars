@@ -1,23 +1,40 @@
 <h1>FRIENDIFY</h1>
+
+{{!-- {{#if err}}
+<div id="error">
+    <p>{{error}}</p>
+</div>
+{{/if}} --}}
+
 <div class="login-form">
   <h2>LOGIN</h2>
   <form>
     <label for="username">Username:</label>
     <input type="text" id="username" name="username">
+
     <label for="password">Password:</label>
     <input type="password" id="password" name="password">
+
     <input type="submit" value="Login">
   </form>
 </div>
+
 <div class="signup-form">
   <h2>No account? Sign up!</h2>
   <form>
     <label for="username">Username:</label>
     <input type="text" id="username" name="username">
+
     <label for="password">Password:</label>
     <input type="password" id="password" name="password">
+
+    <label for="confirmPassword">Confirm Password:</label>
+    <input type="password" id="confirmPassword" name="confirmPassword">
+
     <label for="email">Email:</label>
     <input type="email" id="email" name="email">
+
     <input type="submit" value="Sign Up">
+
     <button class="spotify-login" href="/users/login">Sign in with Spotify</button>
   </form>

@@ -5,31 +5,34 @@ import SpotifyWebApi from "spotify-web-api-node";
 
 config();
 
-const clientId = process.env.clientId;
-const clientSecret = process.env.clientSecret; 
+const getTrackInformation = async (trackId) => {
+    let track = {};
+    try {
+        const tracksEndpoint = spotifyAPI.getEndpointByType(`tracks/${trackId}`);
+        track = await axios.get(tracksEndpoint, {
+        headers: { 'Authorization': `Bearer ${token}`}
+        });
+    } catch (e) { console.error(e) }
+    
+    let thisTrack = {
+        trackName: track.name,
+        trackURL: tracks[i].external_urls.spotify,
+        artistName: getArtists(track),
+        albumName: track.album.name,
+        image: track.album.images[0].url
+    }
 
-let spotifyApi = new SpotifyWebApi({
-  clientId: clientId,
-  clientSecret: clientSecret,
-  redirectUri: 'localhost:3000/'
-});
-
-async function getTopTracks(time_range) {
-    spotifyApi.getMyTopTracks(time_range, 50).then(
-        function(data) {
-            let topArtists = data.body.items;
-            console.log(topArtists);
-        }, 
-        function(e) { console.log(e) }
-    );
+    return thisTrack;
 }
 
-async function getTopArtists() {
-    spotifyApi.getMyTopArtists(time_range, 50).then(
-        function(data) {
-            let topArtists = data.body.items;
-            console.log(topArtists);
-        }, 
-        function(e) { console.log(e) }
-    );
+function getArtists(trackObj) {
+    // Returns array of artists for a given track
+    let artists = [];
+    trackObj.artists.map(x => artists.push(x));
+    return artists;
+}
+
+export {
+    getArtists,
+    getTrackInformation
 }

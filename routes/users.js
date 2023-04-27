@@ -11,8 +11,8 @@ dotenv.config();
 
 
 
-const client_id = process.env.client_id; // Your client id
-const client_secret = process.env.client_secret; // Your secret
+const CLIENT_ID = process.env.CLIENT_ID // Your client id
+const CLIENT_SECRET = process.env.CLIENT_SECRET; // Your secret
 const redirect_uri = 'http://localhost:3000/users/callback'; // Your redirect uri
 
 const generateRandomString = (length) => {
@@ -39,7 +39,7 @@ router
       'https://accounts.spotify.com/authorize?' +
         querystring.stringify({
           response_type: 'code',
-          client_id,
+          CLIENT_ID,
           scope,
           redirect_uri,
           state,
@@ -68,7 +68,7 @@ router.get('/callback', async (req, res) => {
         grant_type: 'authorization_code',
       },
       headers: {
-        Authorization: 'Basic ' + Buffer.from(client_id + ':' + client_secret).toString('base64'),
+        Authorization: 'Basic ' + Buffer.from(CLIENT_ID + ':' + CLIENT_SECRET).toString('base64'),
       },
     };
 
@@ -85,7 +85,7 @@ router.get('/callback', async (req, res) => {
           headers: { Authorization: 'Bearer ' + access_token },
         };
 
-        // use the access token to access the Spotify Web API in this case accessing about me api, which return dataabout the user
+        // use the access token to access the Spotify Web API in this case accessing about me api, which return data about the user
         const { data } = await axios.get(options.url, { headers: options.headers });
 
         console.log(data);
@@ -127,6 +127,7 @@ router.get('/refresh_token', async (req, res) => {
     res.sendStatus(500);
   }
 });
+
 
 router.post("/acceptFriend/:id",async(req,res)=>{
  try {
@@ -222,5 +223,73 @@ router.post("/sendFriendRequest/:id",async(req,res)=>{
      res.status(status).send({error: message});
    }
  })
+
+router.get('/dashboard', async (req, res) => {
+  const {id} = req.session.user.id;
+  try {
+    const user = await userData.get(id);
+    return res.status(200).render('dashboard', {
+      title: 'Dashboard',
+      username: user.username,
+      likeCount: user.likeCount,
+      comments: user.comments
+    })
+  } catch (e) {
+    return res.status(400).log(e);
+  }
+})
+
+router.get('/toptracks', async (req, res) => {
+  const {id} = req.session.user.id;
+  try {
+    const user = await userData.get(id);
+    // IDEA: Change all 'songs' to 'tracks' for consistency
+    user.topSongs = await userData.getTopTracks(id);
+    return res.status(200).render('dashboard', {
+      title: 'Dashboard',
+      topSongs: user.topSongs
+    })
+  } catch (e) {
+    return res.status(400).log(e);
+  }
+})
+
+// router.get('/topartists', async (req, res) => {
+//   const {id} = req.session.user.id;
+//   try {
+//     const user = await userData.get(id);
+
+//     return res.status(200).render('dashboard', {
+//       title: 'Dashboard',
+//       topSongs: user.topArtists
+//     })
+//   } catch (e) {
+//     return res.status(400).log(e);
+//   }
+// })
+
+router.get('/friends', async (req, res) => {
+   const { id } = req.session.user.id;
+  try {
+    const user = await userData.get(id);
+    const friends = user.friends;
+    return res.status(200).render('friendsDashboard', { title: "Friends", friends: friends });
+
+  } catch (e) {
+    return res.status(400).log(e);
+  }
+});
+
+router.get('/friends/:id', async (req, res) => {
+  const id = req.params.id;
+  try {
+    const friend = await userData.get(id);
+    return res.status(200).render('friendProfile', { title: "Friend", friend: friend });
+
+  } catch (e) {
+    return res.status(400).log(e);
+  }
+})
+
 
 export default router
