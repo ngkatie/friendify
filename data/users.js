@@ -1,6 +1,14 @@
 import { users } from "../config/mongoCollections.js";
+import { config } from "dotenv";
 import { ObjectId } from "mongodb";
-import * as helpers from "../helpers.js"
+import * as spotifyAPI from './api.js';
+import SpotifyWebApi from "spotify-web-api-node";
+import * as songs from "./songs.js";
+import * as helpers from "../helpers.js";
+
+config();
+const CLIENT_ID = process.env.client_id;
+const CLIENT_SECRET = process.env.client_secret;
 
 const create = async (
     username,
@@ -8,7 +16,7 @@ const create = async (
     spotify_access_token,
     hashed_password
 ) => {
-    //function that hashes the password
+
     hashed_password = helpers.hashPassword(hashed_password);
     let newUser = {
         username: username,
@@ -52,93 +60,30 @@ const get = async (id) => {
 
 //Friend2 accepts request of friend1, request would be removed from pending requests of friend2
 const acceptFriend = async(id,idFriend) =>{
-
-    checkValidId(id)
-    checkValidId(idFriend)
-
-    id = id.trim();
-    idFriend = idFriend.trim();
-
+    hashed_password = helpers.hashPassword(hashed_password);
+    let newUser = {
+        username: username,
+        email: email,
+        spotify_access_token: spotify_access_token,
+        hashed_password: hashed_password,
+        top_songs: [],
+        top_artists: [],
+        dailyPlaylist: [],
+        likeCount: 0,
+        comments: [],
+        likedProfiles: [],
+        pendingRequests: [],
+        friends: [],
+    }
     const userCollection = await users();
-    const user = await get(id)
-    const user2 = await get(idFriend)
+    const insertInfo = await userCollection.insertOne(newUser);
+    if (!insertInfo.acknowledged || !insertInfo.insertedId) {
+        throw `Could not add user successfully`;
+      }
 
-    const user1Friends = user.friends;
-    //const user2Friends = user2.friends;
-
-    // if(user1Friends.includes(idFriend))
-    // throw `${idFriend} is already a friend`
-    
-    user.friends.push(idFriend)
-    user2.friends.push(id)
-
-    let temp=[]
-    let i=0;
-    if(user2.pendingRequests.includes(id)){
-      user2.pendingRequests.forEach(element => {
-        if(element !== id)
-        temp[i++] = element
-      });
-    }
-    else{
-      throw `Pending request does not exist for the given id`
-    }
-
-    let userInfo  = {
-        username: user.username,
-        email: user.email,
-        spotify_access_token: user.spotify_access_token,
-        hashed_password: user.hashed_password,
-        top_songs: user.top_songs,
-        top_artists: user.top_artists,
-        dailyPlaylist: user.dailyPlaylist,
-        likeCount: user.likeCount,
-        comments: user.comments,
-        likedProfiles: user.likedProfiles,
-        pendingRequests: user.pendingRequests,
-        friends: user.friends,
-    }
-
-    let userInfoFriend  = {
-        username: user2.username,
-        email: user2.email,
-        spotify_access_token: user2.spotify_access_token,
-        hashed_password: user2.hashed_password,
-        top_songs: user2.top_songs,
-        top_artists: user2.top_artists,
-        dailyPlaylist: user2.dailyPlaylist,
-        likeCount: user2.likeCount,
-        comments: user2.comments,
-        likedProfiles: user2.likedProfiles,
-        pendingRequests: temp,
-        friends: user2.friends,
-    }
-    const updateInfo = await userCollection.findOneAndReplace(
-        {_id: new ObjectId(id)},
-        userInfo,
-        {returnDocument: 'after'}
-      );
-
-    const updateInfoFriend = await userCollection.findOneAndReplace(
-        {_id: new ObjectId(idFriend)},
-        userInfoFriend,
-        {returnDocument: 'after'}
-      );
-
-    if (updateInfo.lastErrorObject.n === 0)
-      throw [
-        404,
-        `Error: Update failed, could not update a band with id of ${id}`
-      ];
-
-    if (updateInfoFriend.lastErrorObject.n === 0)
-      throw [
-        404,
-        `Error: Update failed, could not update a band with id of ${idFriend}`
-      ];
-
-    return  updateInfo.value;
-
+    // const newId = insertInfo.insertedId.toString();
+    const user = await get(insertInfo.insertedId.toString());
+    return helpers.idToString(user);
 }
 
 // Friend 1(id) sends request to Friend2(idFriend), id would be added to pendingRequests of idFriend
@@ -205,7 +150,7 @@ const sendFriendRequest= async(id,idFriend) =>{
 }
 
 //removes the given id from pendingRequests of user
-const rejectFriendRequest= async(id,idFriend)=>{
+const rejectFriendRequest = async(id,idFriend)=>{
 
   checkValidId(id)
   checkValidId(idFriend)
@@ -215,15 +160,16 @@ const rejectFriendRequest= async(id,idFriend)=>{
   idFriend = idFriend.trim();
 
   const userCollection = await users();
-  const user = await get(id)
-  const user2 = await get(idFriend)
+  const user = await get(id);
+  const user2 = await get(idFriend);
 
-  let temp=[]
+  let temp=[];
   let i=0;
   if(user2.pendingRequests.includes(id)){
     user2.pendingRequests.forEach(element => {
-      if(element !== id)
-      temp[i++] = element
+      if(element !== id) {
+        temp[i++] = element;
+      }
     });
   }
   else{
@@ -263,4 +209,88 @@ const rejectFriendRequest= async(id,idFriend)=>{
 
 }
 
-export {create, getAll, get, acceptFriend, sendFriendRequest, rejectFriendRequest}
+// let spotifyApi = new SpotifyWebApi({
+//   clientId: clientId,
+//   clientSecret: clientSecret,
+//   redirectUri: 'localhost:3000/'
+// });
+
+// async function getTopTracks(time_range) {
+//     spotifyApi.getMyTopTracks(time_range, 50).then(
+//         function(data) {
+//             let topArtists = data.body.items;
+//             console.log(topArtists);
+//         }, 
+//         function(e) { console.log(e) }
+//     );
+// }
+
+// async function getTopArtists(time_range) {
+//   spotifyApi.getMyTopArtists(time_range, 50).then(
+//       function(data) {
+//           let topArtists = data.body.items;
+//           console.log(topArtists);
+//       }, 
+//       function(e) { console.log(e) }
+//   );
+// }
+
+async function getTopTracks(user_id) {
+  try {
+    const tracksEndpoint = spotifyAPI.getEndpointByType('me/top/tracks');
+    const token = spotifyAPI.getAccessToken();
+
+    let data = await axios.get(tracksEndpoint, {
+      headers: { 'Authorization': `Bearer ${token}`}
+    });
+  } catch (e) { console.error(e) }
+
+  if (data) { 
+    const userCollection = await users();
+    const user = await get(user_id);
+
+    // Clear outdated topSongs
+    user.topSongs = [];
+
+    let tracks = data.items;
+    let topTracks = [];
+    for (let i = 0; i < tracks.length; i++) {
+      const newTrack = {
+        _id: new ObjectId(),
+        trackName: tracks[i].name,
+        trackURL: tracks[i].external_urls.spotify,
+        spotifyId: tracks[i].id,
+        artistName: songs.getArtists(tracks[i]),
+        albumName: tracks[i].album.name,
+        image: tracks[i].album.images[0].url
+      }
+      user.topSongs.push(newTrack);
+    }
+
+    const updatedUser = await userCollection.findOneAndUpdate(
+      { _id: user._id },
+      { $set: user },
+      { returnDocument: 'after' }
+    )
+
+    if (updatedUser.lastErrorObject.n === 0) {
+      throw `Error: Could not store top tracks successfully`;
+    }
+  } 
+  else {
+    throw 'Error: Could not fetch top tracks from Spotify API';
+  }
+
+  return;
+}
+
+export {
+  create, 
+  getAll, 
+  get, 
+  acceptFriend, 
+  sendFriendRequest, 
+  rejectFriendRequest,
+  getTopTracks,
+  getTopArtists
+}
