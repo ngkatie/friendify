@@ -30,14 +30,15 @@ async function getAccessToken() {
         console.log(e);
     }
 }
+console.log(getAccessToken());
 
-async function callEndpoint(endpoint) {
-    const accessToken = getAccessToken();
+async function callEndpoint(endpoint, access_token) {
+    // const accessToken = getAccessToken();
     try {
         const data = await axios.get({
             url: endpoint,
             headers: {
-                "Authorization": `Bearer ${accessToken}`
+                "Authorization": `Bearer ${access_token}`
             }
         });
         console.log(data);

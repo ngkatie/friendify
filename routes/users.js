@@ -80,7 +80,7 @@ router.get('/callback', async (req, res) => {
 
         const options = {
           url: 'https://api.spotify.com/v1/me',
-          headers: { Authorization: 'Bearer ' + access_token },
+          headers: { Authorization: `Bearer ${access_token}` },
         };
 
         // use the access token to access the Spotify Web API in this case accessing about me api, which return data about the user
@@ -145,8 +145,9 @@ router.get('/toptracks', async (req, res) => {
   const {id} = req.session.user.id;
   try {
     const user = await userData.get(id);
+    const access_token = body.access_token;
     // IDEA: Change all 'songs' to 'tracks' for consistency
-    user.topSongs = await userData.getTopTracks(id);
+    user.topSongs = await userData.getTopTracks(access_token);
     return res.status(200).render('dashboard', {
       title: 'Dashboard',
       topSongs: user.topSongs
