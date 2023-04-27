@@ -1,6 +1,6 @@
 import { ObjectId } from "mongodb";
 import { users } from "../config/mongoCollections.js";
-import { hashPassword,checkValidId,validString } from "../helpers.js";
+import { checkValidId,validString } from "../helpers.js";
 import { get } from "./users.js";
 
 

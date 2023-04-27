@@ -39,7 +39,7 @@ router
       'https://accounts.spotify.com/authorize?' +
         querystring.stringify({
           response_type: 'code',
-          CLIENT_ID,
+          client_id: CLIENT_ID,
           scope,
           redirect_uri,
           state,
