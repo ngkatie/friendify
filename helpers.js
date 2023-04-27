@@ -1,6 +1,7 @@
 import crypto from 'crypto';
 import {ObjectId} from 'mongodb';
 import axios from 'axios'; // "Request" library
+// import EmailValidator from 'email-validator';
 //This file contains any functions that are too long or can be used in multiple places
 
 //function to hash a password
@@ -10,8 +11,6 @@ import axios from 'axios'; // "Request" library
 //   const hashedPassword = sha256.digest('hex');
 //   return hashedPassword;
 // }
-
-import EmailValidator from 'email-validator';
 
 function includesUpper(str) {
   if (/[A-Z]+/g.test(str)) {
@@ -56,9 +55,9 @@ export function checkName(str) {
 
 export function checkEmail(str) {
   const email = checkString(str).toLowerCase();
-  if (!EmailValidator.validate(email)) {
-      throw `Error: ${email} is an invalid email`;
-  }
+  // if (!EmailValidator.validate(email)) {
+  //     throw `Error: ${email} is an invalid email`;
+  // }
   return email;
 }
 

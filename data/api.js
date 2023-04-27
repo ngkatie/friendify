@@ -8,8 +8,8 @@ const CLIENT_SECRET = process.env.client_secret;
 const BASE_ENDPOINT = `https://api.spotify.com/v1/`;
 const AUTHORIZE_ENDPOINT = "https://accounts.spotify.com/api/token";
 
-function getEndpointByType(type) {
-    return `${BASE_ENDPOINT}${type}`;
+function getEndpoint(ext) {
+    return `${BASE_ENDPOINT}${ext}`;
 }
 
 async function getAccessToken() {
@@ -32,7 +32,7 @@ async function getAccessToken() {
 }
 
 async function callEndpoint(endpoint) {
-    const accessToken = "";
+    const accessToken = getAccessToken();
     try {
         const data = await axios.get({
             url: endpoint,
@@ -48,7 +48,7 @@ async function callEndpoint(endpoint) {
 }
 
 export {
-    getEndpointByType,
+    getEndpoint,
     getAccessToken,
     callEndpoint
 }
