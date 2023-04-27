@@ -126,6 +126,50 @@ router.get('/refresh_token', async (req, res) => {
   }
 });
 
+router.get('/dashboard', async (req, res) => {
+  const {id} = req.session.user.id;
+  try {
+    const user = await userData.get(id);
+    return res.status(200).render('dashboard', {
+      title: 'Dashboard',
+      username: user.username,
+      likeCount: user.likeCount,
+      comments: user.comments
+    })
+  } catch (e) {
+    return res.status(400).log(e);
+  }
+})
+
+router.get('/toptracks', async (req, res) => {
+  const {id} = req.session.user.id;
+  try {
+    const user = await userData.get(id);
+    // IDEA: Change all 'songs' to 'tracks' for consistency
+    user.topSongs = await userData.getTopTracks(id);
+    return res.status(200).render('dashboard', {
+      title: 'Dashboard',
+      topSongs: user.topSongs
+    })
+  } catch (e) {
+    return res.status(400).log(e);
+  }
+})
+
+// router.get('/topartists', async (req, res) => {
+//   const {id} = req.session.user.id;
+//   try {
+//     const user = await userData.get(id);
+
+//     return res.status(200).render('dashboard', {
+//       title: 'Dashboard',
+//       topSongs: user.topArtists
+//     })
+//   } catch (e) {
+//     return res.status(400).log(e);
+//   }
+// })
+
 router.get('/friends', async (req, res) => {
    const { id } = req.session.user.id;
   try {
