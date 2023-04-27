@@ -3,6 +3,8 @@ export const router = Router();
 import { ObjectId } from 'mongodb';
 import { userData } from '../data/index.js';
 import querystring from 'querystring';
+import { checkValidId } from '../helpers.js';
+import { acceptFriend, sendFriendRequest,rejectFriendRequest } from '../data/users.js';
 import axios from 'axios'; // Axios library
 import dotenv from 'dotenv';
 dotenv.config();
@@ -126,6 +128,102 @@ router.get('/refresh_token', async (req, res) => {
   }
 });
 
+
+router.post("/acceptFriend/:id",async(req,res)=>{
+ try {
+    
+  let id = req.params.id
+  let userInfo = req.body
+
+  if (!userInfo || Object.keys(userInfo).length === 0) {
+   return res
+     .status(400)
+     .json({error: 'There are no fields in the request body'});
+ }
+  let idFriend = userInfo.idFriend
+  try {
+    checkValidId(id)
+    checkValidId(idFriend)  
+  } catch (error) {
+    return res.status(404).json({ error: error });
+  }
+  id = id.trim();
+  idFriend = idFriend.trim();
+
+  const result = await acceptFriend(id,idFriend)
+
+  return res.json(result)
+  } catch (e) {
+    let status = e[0] ? e[0] : 500;
+    let message = e[1] ? e[1] : 'Internal Server Error';
+    res.status(status).send({error: message});
+  }
+})
+
+router.post("/sendFriendRequest/:id",async(req,res)=>{
+  try {
+     
+   let id = req.params.id
+   let userInfo = req.body
+
+   if (!userInfo || Object.keys(userInfo).length === 0) {
+    return res
+      .status(400)
+      .json({error: 'There are no fields in the request body'});
+  }
+   let idFriend = userInfo.idFriend
+   try {
+    checkValidId(id)
+    checkValidId(idFriend)  
+  } catch (error) {
+    return res.status(404).json({ error: error });
+  }
+ 
+   id = id.trim();
+   idFriend = idFriend.trim();
+ 
+   const result = await sendFriendRequest(id,idFriend)
+ 
+   return res.json(result)
+   } catch (e) {
+     let status = e[0] ? e[0] : 500;
+     let message = e[1] ? e[1] : 'Internal Server Error';
+     res.status(status).send({error: message});
+   }
+ })
+
+ router.post("/rejectFriendRequest/:id",async(req,res)=>{
+  try {
+     
+   let id = req.params.id
+   let userInfo = req.body
+
+   if (!userInfo || Object.keys(userInfo).length === 0) {
+    return res
+      .status(400)
+      .json({error: 'There are no fields in the request body'});
+  }
+   let idFriend = userInfo.idFriend
+   try {
+    checkValidId(id)
+    checkValidId(idFriend)  
+  } catch (error) {
+    return res.status(404).json({ error: error });
+  }
+ 
+   id = id.trim();
+   idFriend = idFriend.trim();
+ 
+   const result = await rejectFriendRequest(id,idFriend)
+ 
+   return res.json(result)
+   } catch (e) {
+     let status = e[0] ? e[0] : 500;
+     let message = e[1] ? e[1] : 'Internal Server Error';
+     res.status(status).send({error: message});
+   }
+ })
+
 router.get('/dashboard', async (req, res) => {
   const {id} = req.session.user.id;
   try {
@@ -192,5 +290,6 @@ router.get('/friends/:id', async (req, res) => {
     return res.status(400).log(e);
   }
 })
+
 
 export default router
