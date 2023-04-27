@@ -1,0 +1,23 @@
+<div class="container">    
+    <div class="user-info">
+        <img src="{{profilePicture}}" alt="Profile Picture" class="img-thumbnail" width="200" height="200">
+        <h2>{{username}}</h2>
+        <p>Likes: {{likeCount}}</p>
+    </div>
+<div class="compatibility-score">
+    <p>Compatibility Score:</p>
+    <span class="score">{{score}}</span>
+</div>
+<form action="/comment" method='POST'>
+    <label for="comment">Comment:</label>
+    <button type="'button" id="add-comment">Comment</button>
+</form>
+
+<div>
+    {{#each comments}}
+        <div>
+            <p>{{this.user}}</p>
+            <p>{{this.comment}}</p>
+        </div>
+    {{/each}}
+</div>

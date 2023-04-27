@@ -1,9 +1,4 @@
 <div class="container">    
-    <div class="user-info">
-        <img src="{{profilePicture}}" alt="Profile Picture" class="img-thumbnail" width="200" height="200">
-        <h2>{{username}}</h2>
-        <p>Likes: {{likeCount}}</p>
-    </div>
     <label for="timeframe">Select Timeframe:</label>
     <select id="timeframe" name="timeframe">
         <option value="4weeks">4 Weeks</option>
@@ -11,8 +6,8 @@
         <option value="alltime">All-Time</option>
     </select>
     <div class="spotify-data">
+        <button type="button" href="./userProfile.handlebars">Back to Profile</button>
         <button type="button" href="./top-songs.handlebars">Top 50 Songs</button>
-        <button type="button" href="./top-artists.handlebars">Top 50 Artists</button>
         <button type="button" href="./daily-playlist.handlebars">Daily Playlist</button>
     </div>
     <div class="results">
