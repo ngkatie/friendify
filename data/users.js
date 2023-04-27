@@ -6,6 +6,7 @@ import * as spotifyAPI from './api.js';
 import SpotifyWebApi from "spotify-web-api-node";
 import * as songs from "./songs.js";
 import * as helpers from "../helpers.js";
+import axios from "axios";
 
 config();
 const saltRounds = await bcryptjs.genSalt(20);

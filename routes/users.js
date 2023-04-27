@@ -14,6 +14,7 @@ dotenv.config();
 const CLIENT_ID = process.env.CLIENT_ID // Your client id
 const CLIENT_SECRET = process.env.CLIENT_SECRET; // Your secret
 const redirect_uri = 'http://localhost:3000/users/callback'; // Your redirect uri
+let Data;
 
 const generateRandomString = (length) => {
   let text = '';
@@ -29,7 +30,7 @@ const stateKey = 'spotify_auth_state';
 
 router
   .route('/login')
-  .get(async (req, res) => {
+  .post(async (req, res) => {
     const state = generateRandomString(16);
     res.cookie(stateKey, state);
 
@@ -87,11 +88,11 @@ router.get('/callback', async (req, res) => {
 
         // use the access token to access the Spotify Web API in this case accessing about me api, which return data about the user
         const { data } = await axios.get(options.url, { headers: options.headers });
-
-        console.log(data);
+        Data = data
+        console.log(Data);
 
         // we can also pass the token to the browser to make requests from there
-        res.redirect('/#' + querystring.stringify({ access_token, refresh_token }));
+        res.redirect('/users/dashboard');
       } else {
         res.redirect('/#' + querystring.stringify({ error: 'invalid_token' }));
       }
@@ -225,14 +226,16 @@ router.post("/sendFriendRequest/:id",async(req,res)=>{
  })
 
 router.get('/dashboard', async (req, res) => {
-  const {id} = req.session.user.id;
+  //const {id} = req.session.user.id;
+  console.log(Data)
+  console.log("yurt")
   try {
-    const user = await userData.get(id);
-    return res.status(200).render('dashboard', {
+    //const user = await userData.get(id);
+    return res.status(200).render('pages/userProfile', {
       title: 'Dashboard',
-      username: user.username,
-      likeCount: user.likeCount,
-      comments: user.comments
+      user: Data,
+      // likeCount: user.likeCount,
+      // comments: user.comments
     })
   } catch (e) {
     return res.status(400).log(e);
@@ -240,13 +243,15 @@ router.get('/dashboard', async (req, res) => {
 })
 
 router.get('/toptracks', async (req, res) => {
-  const {id} = req.session.user.id;
+  //const {id} = req.session.user.id;
+  const id = '6445bf8f4a4c6219a9fcc324';
   try {
     const user = await userData.get(id);
     // IDEA: Change all 'songs' to 'tracks' for consistency
     user.topSongs = await userData.getTopTracks(id);
-    return res.status(200).render('dashboard', {
-      title: 'Dashboard',
+    console.log(user.topSongs)
+    return res.status(200).render('top-songs', {
+      title: 'top-songs',
       topSongs: user.topSongs
     })
   } catch (e) {
