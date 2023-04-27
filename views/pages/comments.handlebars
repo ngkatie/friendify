@@ -1,0 +1,9 @@
+<div class="container">
+    <h1>Comments</h1>
+    {{#each comments}}
+        <div class="comment-box">
+            <div class="comment-user">{{this.username}}</div>
+            <div class="comment-message">{{this.message}}</div>
+        </div>
+    {{/each}}
+</div>

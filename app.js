@@ -7,10 +7,10 @@ import configRoutes from './routes/index.js';
 
 import { fileURLToPath } from 'url';
 import path from 'path';
+import exphbs from 'express-handlebars';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-
 
 /**
  * Generates a random string containing numbers and letters
@@ -20,11 +20,22 @@ const __dirname = path.dirname(__filename);
 
 var app = express();
 
+const rewriteUnsupportedBrowserMethods = (req, res, next) => {
+   if (req.body && req.body._method) {
+      req.method = req.body._method
+      delete req.body._method
+   }
+}
 
 app.use(express.json());
 app.use(express.static(__dirname + '/public'))
    .use(cors())
-   .use(cookieParser());
+   .use(cookieParser())
+   .use(express.json())
+   .use(express.urlencoded({ extended: true }));
+
+app.engine('handlebars', exphbs({ defaultLayout: 'main' }));
+app.set('view engine', 'handlebars');
    
 configRoutes(app);
 
