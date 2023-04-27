@@ -1,7 +1,7 @@
 import  { Router } from 'express';
 import { ObjectId } from 'mongodb';
 import { getAllComments, createComment, removeComment } from '../data/comments.js';
-import { hashPassword,checkValidId,validString } from "../helpers.js";
+import { checkValidId,validString } from "../helpers.js";
 
 import { get } from '../data/users.js';
 import { userData } from '../data/index.js';
