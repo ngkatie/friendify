@@ -126,5 +126,27 @@ router.get('/refresh_token', async (req, res) => {
   }
 });
 
+router.get('/friends', async (req, res) => {
+   const { id } = req.session.user.id;
+  try {
+    const user = await userData.get(id);
+    const friends = user.friends;
+    return res.status(200).render('friendsDashboard', { title: "Friends", friends: friends });
+
+  } catch (e) {
+    return res.status(400).log(e);
+  }
+});
+
+router.get('/friends/:id', async (req, res) => {
+  const id = req.params.id;
+  try {
+    const friend = await userData.get(id);
+    return res.status(200).render('friendProfile', { title: "Friend", friend: friend });
+
+  } catch (e) {
+    return res.status(400).log(e);
+  }
+})
 
 export default router
