@@ -1,14 +1,14 @@
 import { users } from "../config/mongoCollections.js";
 import { config } from "dotenv";
 import { ObjectId } from "mongodb";
-import bcrypt, { compare } from 'bcryptjs';
+import bcryptjs from 'bcryptjs';
 import * as spotifyAPI from './api.js';
 import SpotifyWebApi from "spotify-web-api-node";
 import * as songs from "./songs.js";
 import * as helpers from "../helpers.js";
 
 config();
-const saltRounds = await bcrypt.genSalt(20);
+const saltRounds = await bcryptjs.genSalt(20);
 const CLIENT_ID = process.env.client_id;
 const CLIENT_SECRET = process.env.client_secret;
 
@@ -19,7 +19,7 @@ const create = async (
     password
 ) => {
 
-  const hashed_password = await bcrypt.hash(password, saltRounds);
+  const hashed_password = await bcryptjs.hash(password, saltRounds);
   // hashed_password = helpers.hashPassword(hashed_password);
   let newUser = {
     username: username,
@@ -54,7 +54,7 @@ const checkUser = async (username, password) => {
     throw  `Either the email address or password is invalid`;
   }
 
-  let compareToMatch = await bcrypt.compare(password, user.password);
+  let compareToMatch = await bcryptjs.compare(password, user.password);
   if (!compareToMatch) {
     throw `Error: Either the email address or password is invalid`;
   }

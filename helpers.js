@@ -11,7 +11,6 @@ import axios from 'axios'; // "Request" library
 //   return hashedPassword;
 // }
 
-import EmailValidator from 'email-validator';
 
 function includesUpper(str) {
   if (/[A-Z]+/g.test(str)) {
