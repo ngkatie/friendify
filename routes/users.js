@@ -263,29 +263,19 @@ router.get('/dashboard', async (req, res) => {
 
     try {
       const { data : body } = await axios.get(authOptions.url, { headers: authOptions.headers });
-     // res.render('profile', { user: body });
-     console.log({body})
+      return res.status(200).render('pages/userProfile', {
+        title: 'Dashboard',
+        // username: user.username,
+        // likeCount: user.likeCount,
+        // comments: user.comments
+        user : body
+      })
     } catch (error) {
       // Handle error
       console.log(error);
       res.redirect('/');
     }
-    
-  }
-  try {
-    const user = await userData.get(id);
-    return res.status(200).render('pages/userProfile', {
-      title: 'Dashboard',
-      // username: user.username,
-      // likeCount: user.likeCount,
-      // comments: user.comments
-      user :body
-
-    })
-  } catch (e) {
-    return res.status(400).log(e);
-  }
-})
+  }})
 
 router.get('/toptracks', async (req, res) => {
   //const {id} = req.session.user.id;
