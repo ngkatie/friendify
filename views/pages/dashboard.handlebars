@@ -1,9 +1,9 @@
-<div class="Profile">    
+<div class="Dashboard">    
     <div class="user-info">
         <img src="{{user.images.[0].url}}" alt="Profile Picture" class="img-thumbnail" width="200" height="200">
         <h2>{{user.display_name}}</h2>
         <p>Likes: {{likeCount}}</p>
-        <a href="./friendsDashboard.handlebars">Friends</a>
+        <a href="pages/friendsDashboard">Friends</a>
     </div>
     <form action="/friend" method="POST">
         <label for="email">Enter your friend's email:</label>

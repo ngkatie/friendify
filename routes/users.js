@@ -227,11 +227,9 @@ router.post("/sendFriendRequest/:id",async(req,res)=>{
 
 router.get('/dashboard', async (req, res) => {
   //const {id} = req.session.user.id;
-  console.log(Data)
-  console.log("yurt")
   try {
     //const user = await userData.get(id);
-    return res.status(200).render('pages/userProfile', {
+    return res.status(200).render('pages/dashboard', {
       title: 'Dashboard',
       user: Data,
       // likeCount: user.likeCount,
