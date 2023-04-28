@@ -14,6 +14,7 @@ dotenv.config();
 const CLIENT_ID = process.env.CLIENT_ID // Your client id
 const CLIENT_SECRET = process.env.CLIENT_SECRET; // Your secret
 const redirect_uri = 'http://localhost:3000/users/callback'; // Your redirect uri
+let Data;
 
 const generateRandomString = (length) => {
   let text = '';
@@ -29,7 +30,7 @@ const stateKey = 'spotify_auth_state';
 
 router
   .route('/login')
-  .get(async (req, res) => {
+  .post(async (req, res) => {
     const state = generateRandomString(16);
     res.cookie(stateKey, state);
 
@@ -83,6 +84,7 @@ router.get('/callback', async (req, res) => {
         //storing accesstoken and refresh token in session
         req.session.user = {access_token : access_token,
                             refresh_token : refresh_token}
+
 
         res.redirect('/users/dashboard');
       } else {
@@ -248,6 +250,7 @@ router.post("/sendFriendRequest/:id",async(req,res)=>{
  })
 
 router.get('/dashboard', async (req, res) => {
+
   // const {id} = req.session.user.id;
   if (req.session.user && req.session.user.access_token) {
     // Use access token to make API requests
@@ -277,6 +280,7 @@ router.get('/dashboard', async (req, res) => {
       // likeCount: user.likeCount,
       // comments: user.comments
       user :body
+
     })
   } catch (e) {
     return res.status(400).log(e);
@@ -284,13 +288,15 @@ router.get('/dashboard', async (req, res) => {
 })
 
 router.get('/toptracks', async (req, res) => {
-  const {id} = req.session.user.id;
+  //const {id} = req.session.user.id;
+  const id = '6445bf8f4a4c6219a9fcc324';
   try {
     const user = await userData.get(id);
     // IDEA: Change all 'songs' to 'tracks' for consistency
     user.topSongs = await userData.getTopTracks(id);
-    return res.status(200).render('dashboard', {
-      title: 'Dashboard',
+    console.log(user.topSongs)
+    return res.status(200).render('top-songs', {
+      title: 'top-songs',
       topSongs: user.topSongs
     })
   } catch (e) {
