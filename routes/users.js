@@ -81,17 +81,11 @@ router.get('/callback', async (req, res) => {
       if (body && body.access_token) {
         const { access_token, refresh_token } = body;
 
-        const options = {
-          url: 'https://api.spotify.com/v1/me',
-          headers: { Authorization: 'Bearer ' + access_token },
-        };
+        //storing accesstoken and refresh token in session
+        req.session.user = {access_token : access_token,
+                            refresh_token : refresh_token}
 
-        // use the access token to access the Spotify Web API in this case accessing about me api, which return data about the user
-        const { data } = await axios.get(options.url, { headers: options.headers });
-        Data = data
-        console.log(Data);
 
-        // we can also pass the token to the browser to make requests from there
         res.redirect('/users/dashboard');
       } else {
         res.redirect('/#' + querystring.stringify({ error: 'invalid_token' }));
@@ -128,6 +122,36 @@ router.get('/refresh_token', async (req, res) => {
     res.sendStatus(500);
   }
 });
+
+
+// This function will be used to get data about the user from spotify
+router.get('/userprofile', async(req, res) => {
+  // Check if user is authenticated
+  if (req.session.user && req.session.user.access_token) {
+    // Use access token to make API requests
+    const authOptions = {
+      url: 'https://api.spotify.com/v1/me',
+      headers: {
+        Authorization: `Bearer ${req.session.user.access_token}`,
+      },
+    };
+
+    try {
+      const { data : body } = await axios.get(authOptions.url, { headers: authOptions.headers });
+     // res.render('profile', { user: body });
+     console.log({body})
+    } catch (error) {
+      // Handle error
+      console.log(error);
+      res.redirect('/');
+    }
+    
+  } else {
+    // Redirect user to login page
+    res.redirect('/login');
+  }
+});
+
 
 
 router.post("/acceptFriend/:id",async(req,res)=>{
@@ -226,14 +250,37 @@ router.post("/sendFriendRequest/:id",async(req,res)=>{
  })
 
 router.get('/dashboard', async (req, res) => {
-  //const {id} = req.session.user.id;
+
+  // const {id} = req.session.user.id;
+  if (req.session.user && req.session.user.access_token) {
+    // Use access token to make API requests
+    const authOptions = {
+      url: 'https://api.spotify.com/v1/me',
+      headers: {
+        Authorization: `Bearer ${req.session.user.access_token}`,
+      },
+    };
+
+    try {
+      const { data : body } = await axios.get(authOptions.url, { headers: authOptions.headers });
+     // res.render('profile', { user: body });
+     console.log({body})
+    } catch (error) {
+      // Handle error
+      console.log(error);
+      res.redirect('/');
+    }
+    
+  }
   try {
-    //const user = await userData.get(id);
-    return res.status(200).render('pages/dashboard', {
+    const user = await userData.get(id);
+    return res.status(200).render('pages/userProfile', {
       title: 'Dashboard',
-      user: Data,
+      // username: user.username,
       // likeCount: user.likeCount,
       // comments: user.comments
+      user :body
+
     })
   } catch (e) {
     return res.status(400).log(e);
