@@ -43,16 +43,6 @@ app.use(express.static(__dirname + '/public'))
 app.engine('handlebars', exphbs.engine({ defaultLayout: 'main' }));
 app.set('view engine', 'handlebars');
 
-
-
-app.use(session({
-   name: 'AuthCookie',
-   secret: 'Secret!',
-   resave: false,
-   saveUninitialized: false,
-   cookie: {maxAge: 6000}
-}));
-
 configRoutes(app);
 app.listen(3000, () => {
       console.log("We've now got a server!");

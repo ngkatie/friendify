@@ -40,11 +40,10 @@ const create = async (
     throw `Could not add user successfully`;
   }
 
-  // const newId = insertInfo.insertedId.toString();
   const user = await get(insertInfo.insertedId.toString());
   return helpers.idToString(user);
 }
-create("test", "test", "test");
+// create("test", "test", "test");
 
 const checkUser = async (username, password) => {
   const userCollection = await users();
@@ -251,9 +250,8 @@ const rejectFriendRequest = async(id,idFriend)=>{
 async function getTopTracks(access_token) {
 
   const tracksEndpoint = spotifyAPI.getEndpoint('me/top/tracks');
-  // const token = spotifyAPI.getAccessToken();
 
-  let data = spotifyAPI.callEndpoint(tracksEndpoint);
+  let data = await spotifyAPI.callEndpoint(tracksEndpoint, access_token);
   return data;
 
   // if (data) { 
@@ -293,8 +291,6 @@ async function getTopTracks(access_token) {
   //   throw 'Error: Could not fetch top tracks from Spotify API';
   // }
 }
-
-console.log(getTopTracks());
 
 async function getTopArtists(user_id) {
 

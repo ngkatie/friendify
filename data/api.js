@@ -30,10 +30,8 @@ async function getAccessToken() {
         console.log(e);
     }
 }
-console.log(getAccessToken());
 
 async function callEndpoint(endpoint, access_token) {
-    // const accessToken = getAccessToken();
     try {
         const data = await axios.get({
             url: endpoint,
