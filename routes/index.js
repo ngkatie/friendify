@@ -6,7 +6,7 @@
 const constructorMethod = (app) => {
     app.get('/', (req, res) => {
         // Landing page
-        res.send("Hello User");
+        res.status(200).render('pages/login', {title: 'Landing Page'});
     });
     app.use('/users', userRoutes);
     // app.use('/songs', songRoutes);

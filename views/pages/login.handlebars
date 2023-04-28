@@ -1,14 +1,8 @@
 <h1>FRIENDIFY</h1>
 
-{{!-- {{#if err}}
-<div id="error">
-    <p>{{error}}</p>
-</div>
-{{/if}} --}}
-
-<div class="login-form">
+  <div class="login-form">
   <h2>LOGIN</h2>
-  <form>
+  <form action="/users/login" method="POST">
     <label for="username">Username:</label>
     <input type="text" id="username" name="username">
 
@@ -18,6 +12,8 @@
     <input type="submit" value="Login">
   </form>
 </div>
+
+
 
 <div class="signup-form">
   <h2>No account? Sign up!</h2>
@@ -34,7 +30,6 @@
     <label for="email">Email:</label>
     <input type="email" id="email" name="email">
 
-    <button type="submit">Sign Up</button>
-
-    <button class="spotify-login" href="/users/login">Sign in with Spotify</button>
+    <input type="submit" value="Sign Up">
   </form>
+</div>

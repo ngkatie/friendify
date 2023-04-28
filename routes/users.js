@@ -14,6 +14,7 @@ dotenv.config();
 const CLIENT_ID = process.env.CLIENT_ID // Your client id
 const CLIENT_SECRET = process.env.CLIENT_SECRET; // Your secret
 const redirect_uri = 'http://localhost:3000/users/callback'; // Your redirect uri
+let Data;
 
 const generateRandomString = (length) => {
   let text = '';
@@ -29,7 +30,7 @@ const stateKey = 'spotify_auth_state';
 
 router
   .route('/login')
-  .get(async (req, res) => {
+  .post(async (req, res) => {
     const state = generateRandomString(16);
     res.cookie(stateKey, state);
 
@@ -80,18 +81,12 @@ router.get('/callback', async (req, res) => {
       if (body && body.access_token) {
         const { access_token, refresh_token } = body;
 
-        const options = {
-          url: 'https://api.spotify.com/v1/me',
-          headers: { Authorization: `Bearer ${access_token}` },
-        };
+        //storing accesstoken and refresh token in session
+        req.session.user = {access_token : access_token,
+                            refresh_token : refresh_token}
 
-        // use the access token to access the Spotify Web API in this case accessing about me api, which return data about the user
-        const { data } = await axios.get(options.url, { headers: options.headers });
 
-        console.log(data);
-
-        // we can also pass the token to the browser to make requests from there
-        res.redirect('/#' + querystring.stringify({ access_token, refresh_token }));
+        res.redirect('/users/dashboard');
       } else {
         res.redirect('/#' + querystring.stringify({ error: 'invalid_token' }));
       }
@@ -127,6 +122,36 @@ router.get('/refresh_token', async (req, res) => {
     res.sendStatus(500);
   }
 });
+
+
+// This function will be used to get data about the user from spotify
+router.get('/userprofile', async(req, res) => {
+  // Check if user is authenticated
+  if (req.session.user && req.session.user.access_token) {
+    // Use access token to make API requests
+    const authOptions = {
+      url: 'https://api.spotify.com/v1/me',
+      headers: {
+        Authorization: `Bearer ${req.session.user.access_token}`,
+      },
+    };
+
+    try {
+      const { data : body } = await axios.get(authOptions.url, { headers: authOptions.headers });
+     // res.render('profile', { user: body });
+     console.log({body})
+    } catch (error) {
+      // Handle error
+      console.log(error);
+      res.redirect('/');
+    }
+    
+  } else {
+    // Redirect user to login page
+    res.redirect('/login');
+  }
+});
+
 
 
 router.post("/acceptFriend/:id",async(req,res)=>{
@@ -225,29 +250,44 @@ router.post("/sendFriendRequest/:id",async(req,res)=>{
  })
 
 router.get('/dashboard', async (req, res) => {
-  const {id} = req.session.user.id;
-  try {
-    const user = await userData.get(id);
-    return res.status(200).render('dashboard', {
-      title: 'Dashboard',
-      username: user.username,
-      likeCount: user.likeCount,
-      comments: user.comments
-    })
-  } catch (e) {
-    return res.status(400).log(e);
-  }
-})
+
+  // const {id} = req.session.user.id;
+  if (req.session.user && req.session.user.access_token) {
+    // Use access token to make API requests
+    const authOptions = {
+      url: 'https://api.spotify.com/v1/me',
+      headers: {
+        Authorization: `Bearer ${req.session.user.access_token}`,
+      },
+    };
+
+    try {
+      const { data : body } = await axios.get(authOptions.url, { headers: authOptions.headers });
+      return res.status(200).render('pages/userProfile', {
+        title: 'Dashboard',
+        // username: user.username,
+        // likeCount: user.likeCount,
+        // comments: user.comments
+        user : body
+      })
+    } catch (error) {
+      // Handle error
+      console.log(error);
+      res.redirect('/');
+    }
+  }})
 
 router.get('/toptracks', async (req, res) => {
-  const {id} = req.session.user.id;
+  //const {id} = req.session.user.id;
+  const id = '6445bf8f4a4c6219a9fcc324';
   try {
     const user = await userData.get(id);
     const access_token = body.access_token;
     // IDEA: Change all 'songs' to 'tracks' for consistency
-    user.topSongs = await userData.getTopTracks(access_token);
-    return res.status(200).render('dashboard', {
-      title: 'Dashboard',
+    user.topSongs = await userData.getTopTracks(id);
+    console.log(user.topSongs)
+    return res.status(200).render('top-songs', {
+      title: 'top-songs',
       topSongs: user.topSongs
     })
   } catch (e) {

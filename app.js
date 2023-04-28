@@ -43,7 +43,7 @@ app.use(express.static(__dirname + '/public'))
 app.engine('handlebars', exphbs.engine({ defaultLayout: 'main' }));
 app.set('view engine', 'handlebars');
 
-configRoutes(app);
+
 
 app.use(session({
    name: 'AuthCookie',
@@ -53,7 +53,7 @@ app.use(session({
    cookie: {maxAge: 6000}
 }));
 
-
+configRoutes(app);
 app.listen(3000, () => {
       console.log("We've now got a server!");
       console.log('Your routes will be running on http://localhost:3000');
