@@ -9,7 +9,7 @@ import * as helpers from "../helpers.js";
 import axios from "axios";
 
 config();
-const saltRounds = await bcryptjs.genSalt(20);
+const saltRounds = await bcryptjs.genSalt(10);
 const CLIENT_ID = process.env.client_id;
 const CLIENT_SECRET = process.env.client_secret;
 
@@ -18,7 +18,6 @@ const create = async (
     email,
     password
 ) => {
-  
   const hashed_password = await bcryptjs.hash(password, saltRounds);
   // hashed_password = helpers.hashPassword(hashed_password);
   let newUser = {
@@ -36,6 +35,7 @@ const create = async (
   }
   const userCollection = await users();
   const insertInfo = await userCollection.insertOne(newUser);
+
   if (!insertInfo.acknowledged || !insertInfo.insertedId) {
     throw `Could not add user successfully`;
   }
@@ -44,6 +44,7 @@ const create = async (
   const user = await get(insertInfo.insertedId.toString());
   return helpers.idToString(user);
 }
+create("test", "test", "test");
 
 const checkUser = async (username, password) => {
   const userCollection = await users();
