@@ -6,25 +6,23 @@ import * as spotifyAPI from './api.js';
 import SpotifyWebApi from "spotify-web-api-node";
 import * as songs from "./songs.js";
 import * as helpers from "../helpers.js";
+import axios from "axios";
 
 config();
-const saltRounds = await bcryptjs.genSalt(20);
+const saltRounds = await bcryptjs.genSalt(10);
 const CLIENT_ID = process.env.client_id;
 const CLIENT_SECRET = process.env.client_secret;
 
 const create = async (
     username,
     email,
-    spotify_access_token,
     password
 ) => {
-
   const hashed_password = await bcryptjs.hash(password, saltRounds);
   // hashed_password = helpers.hashPassword(hashed_password);
   let newUser = {
     username: username,
     email: email,
-    spotify_access_token: spotify_access_token,
     hashed_password: hashed_password,
     top_songs: [],
     top_artists: [],
@@ -37,6 +35,7 @@ const create = async (
   }
   const userCollection = await users();
   const insertInfo = await userCollection.insertOne(newUser);
+
   if (!insertInfo.acknowledged || !insertInfo.insertedId) {
     throw `Could not add user successfully`;
   }
@@ -45,6 +44,7 @@ const create = async (
   const user = await get(insertInfo.insertedId.toString());
   return helpers.idToString(user);
 }
+create("test", "test", "test");
 
 const checkUser = async (username, password) => {
   const userCollection = await users();
@@ -62,7 +62,6 @@ const checkUser = async (username, password) => {
   let userFound = {
     username: user.username,
     email: user.email,
-    spotify_access_token: user.spotify_access_token,
     likeCount: user.likeCount,
     comments: user.comments,
     friends: user.friends
@@ -92,7 +91,6 @@ const acceptFriend = async(id,idFriend) =>{
     let newUser = {
         username: username,
         email: email,
-        spotify_access_token: spotify_access_token,
         hashed_password: hashed_password,
         top_songs: [],
         top_artists: [],
@@ -143,7 +141,6 @@ const sendFriendRequest= async(id,idFriend) =>{
   let userInfo  = {
       username: user2.username,
       email: user2.email,
-      spotify_access_token: user2.spotify_access_token,
       hashed_password: user2.hashed_password,
       top_songs: user2.top_songs,
       top_artists: user2.top_artists,
@@ -205,7 +202,6 @@ const rejectFriendRequest = async(id,idFriend)=>{
   let userInfoFriend  = {
       username: user2.username,
       email: user2.email,
-      spotify_access_token: user2.spotify_access_token,
       hashed_password: user2.hashed_password,
       top_songs: user2.top_songs,
       top_artists: user2.top_artists,
