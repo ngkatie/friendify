@@ -28,23 +28,32 @@ const stateKey = 'spotify_auth_state';
 router
   .route('/login')
   .post(async (req, res) => {
-    let authenticatedUser = await userData.checkUser(req.body.usernameInput, req.body.passwordInput);
-    if (authenticatedUser) {
-      const state = generateRandomString(16);
-      res.cookie(stateKey, state);
+    try{
+      let authenticatedUser = await userData.checkUser(req.body.usernameInput, req.body.passwordInput);
+      if (authenticatedUser) {
+        const state = generateRandomString(16);
+        res.cookie(stateKey, state);
 
-      // your application requests authorization
-      const scope = 'user-read-private user-read-email';
-      res.redirect(
-        'https://accounts.spotify.com/authorize?' +
-          querystring.stringify({
-            response_type: 'code',
-            client_id: CLIENT_ID,
-            scope,
-            redirect_uri,
-            state,
-          })
-      );
+        // your application requests authorization
+        const scope = 'user-read-private user-read-email';
+        res.redirect(
+          'https://accounts.spotify.com/authorize?' +
+            querystring.stringify({
+              response_type: 'code',
+              client_id: CLIENT_ID,
+              scope,
+              redirect_uri,
+              state,
+            })
+        );
+      }
+    } catch (e) {
+      console.log(e);
+      return res.status(400).render('pages/login', {
+        title: 'Login',
+        err: true, 
+        error: e
+      })
     }
   });
 
@@ -76,7 +85,7 @@ router
       }
 
       const newUser = await userData.create(username, email, password);
-      console.log(newUser);
+      // console.log(newUser);
       if (newUser) {
         return res.status(200).redirect('/');
       }
@@ -84,7 +93,7 @@ router
         return res.status(500).json({ error: 'Internal Server Error '});
       }
     } catch (e) {
-      return res.status(400).json({ error: 'no lol' });
+      return res.status(400).json({ error: e });
     }
 
   });
