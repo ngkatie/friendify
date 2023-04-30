@@ -33,15 +33,20 @@ const create = async (
     pendingRequests: [],
     friends: [],
   }
+  console.log('New user created');
   const userCollection = await users();
+  console.log('Got collection')
   const insertInfo = await userCollection.insertOne(newUser);
+  console.log('User inserted')
 
   if (!insertInfo.acknowledged || !insertInfo.insertedId) {
+    console.log(insertInfo.acknowledged);
+    console.log(insertInfo.insertedId);
     throw `Could not add user successfully`;
   }
 
-  const user = await get(insertInfo.insertedId.toString());
-  return helpers.idToString(user);
+  // const user = await get(insertInfo.insertedId.toString());
+  return newUser;
 }
 // create("test", "test", "test");
 
@@ -229,22 +234,6 @@ const rejectFriendRequest = async(id,idFriend)=>{
   return  updateInfoFriend.value; 
 
 }
-
-// let spotifyApi = new SpotifyWebApi({
-//   clientId: clientId,
-//   clientSecret: clientSecret,
-//   redirectUri: 'localhost:3000/'
-// });
-
-// async function getTopTracks(time_range) {
-//     spotifyApi.getMyTopTracks(time_range, 50).then(
-//         function(data) {
-//             let topArtists = data.body.items;
-//             console.log(topArtists);
-//         }, 
-//         function(e) { console.log(e) }
-//     );
-// }
 
 // Note to self: Need to add time_range
 async function getTopTracks(access_token) {

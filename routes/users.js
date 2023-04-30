@@ -61,26 +61,30 @@ router
       emailInput
     } = req.body;
 
-    const username = helpers.checkName(usernameInput);
-    const email = helpers.checkEmail(emailInput);
-    const password = helpers.checkPassword(passwordInput);
-    const confirmPassword = helpers.checkPassword(confirmPasswordInput);
+    try {
+      const username = helpers.checkName(usernameInput);
+      const email = helpers.checkEmail(emailInput);
+      const password = helpers.checkPassword(passwordInput);
+      const confirmPassword = helpers.checkPassword(confirmPasswordInput);
 
-    if (confirmPassword !== password) {
-      return res.status(400).render('pages/register', { 
-        title: 'Register', 
-        err: true,
-        error: 'Error: Passwords do not match' 
-      })
-    }
+      if (confirmPassword !== password) {
+        return res.status(400).render('pages/register', { 
+          title: 'Register', 
+          err: true,
+          error: 'Error: Passwords do not match' 
+        })
+      }
 
-    const newUser = await create(username, email, password);
-    console.log(newUser);
-    if (newUser.insertedUser) {
-      return res.status(200).redirect('/users/login');
-    }
-    else {
-      return res.status(500).json({ error: 'Internal Server Error '});
+      const newUser = await userData.create(username, email, password);
+      console.log(newUser);
+      if (newUser) {
+        return res.status(200).redirect('/');
+      }
+      else {
+        return res.status(500).json({ error: 'Internal Server Error '});
+      }
+    } catch (e) {
+      return res.status(400).json({ error: 'no lol' });
     }
 
   });
