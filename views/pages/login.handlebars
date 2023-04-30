@@ -1,35 +1,16 @@
 <h1>FRIENDIFY</h1>
 
-  <div class="login-form">
+<div class="login-form">
   <h2>LOGIN</h2>
   <form action="/users/login" method="POST">
-    <label for="username">Username:</label>
-    <input type="text" id="username" name="username">
+    <label for="usernameInput">Username:</label>
+    <input type="text" id="usernameInput" name="usernameInput">
 
-    <label for="password">Password:</label>
-    <input type="password" id="password" name="password">
+    <label for="passwordInput">Password:</label>
+    <input type="password" id="passwordInput" name="passwordInput">
 
     <input type="submit" value="Login">
   </form>
 </div>
 
-
-
-<div class="signup-form">
-  <h2>No account? Sign up!</h2>
-  <form>
-    <label for="username">Username:</label>
-    <input type="text" id="username" name="username">
-
-    <label for="password">Password:</label>
-    <input type="password" id="password" name="password">
-
-    <label for="confirmPassword">Confirm Password:</label>
-    <input type="password" id="confirmPassword" name="confirmPassword">
-
-    <label for="email">Email:</label>
-    <input type="email" id="email" name="email">
-
-    <input type="submit" value="Sign Up">
-  </form>
-</div>
+<a href="/users/register">Click here to register!</a>
