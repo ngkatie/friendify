@@ -37,7 +37,6 @@ app.use(express.static(__dirname + '/public'))
       secret: 'Secret!',
       resave: false,
       saveUninitialized: false,
-      cookie: {maxAge: 6000}
    }));
 
 app.engine('handlebars', exphbs.engine({ defaultLayout: 'main' }));
