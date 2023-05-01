@@ -8,16 +8,126 @@
     <p>Compatibility Score:</p>
     <span class="score">{{score}}</span>
 </div>
-<form action="/comment" method='POST'>
+{{!-- <form action="/comment" method='POST'>
     <label for="comment">Comment:</label>
     <button type="'button" id="add-comment">Comment</button>
-</form>
+</form> --}}
 
-<div>
-    {{#each comments}}
-        <div>
-            <p>{{this.user}}</p>
-            <p>{{this.comment}}</p>
+
+<div class="card postcomments px-2">
+    <input type="hidden" name="users_id" id="users" value="{{users._id}}" />
+    <div class="form-group mt-2">
+        <form id="comments-form" method="POST" action="/comments/{{users._id}}">
+            <label class="commentText" for="commentText">Enter a comment</label>
+            <div class="input-group mb-3">
+                <br>
+                <input type="text" class="form-control" id="commentText" name="commentText" placeholder="Enter comment here" />
+                <div class="input-group-append">
+                    <span class="input-group-button" id="basic-addon2">
+                        <button type="button" id="submit-comment" class="btn btn-primary">Create</button>
+                        {{!-- <button type="button" id="delete-comment" class="btn btn-primary">Delete</button> --}}
+                    </span>
+                </div>
+            </div>
+        </form>
+    </div>
+                <div id="empty-comment" class="alert alert-info div-text" hidden></div>
+
+            <div id="comment-area">
+                {{#each users.comments}}
+                <div class="chat">
+                    <div class="yours messages">
+                        <div class="message last">
+                            {{this.comment}}
+                        </div>
+                        <div class="bold"> - {{this.username}}</div>
+                        <hr>
+                        
+                    </div>
+                </div>
+                {{/each}}
+                <div class="comments">
+                    <div>{{ comment.comment }}</div>
+                    <div class="bold">{{ comment._id }}</div>
+                </div>
+
+            </div>
+    {{!-- <div id="empty-comment" class="alert alert-info div-text" hidden></div>
+    <div id="comment-area">
+        {{#each comments}}
+        <div class="comments">
+            <div>{{ this.user }}</div>
+            <div>{{ this.comment }}</div>
         </div>
-    {{/each}}
+        {{/each}}
+    </div> --}}
+</div>
+<script>
+            $(document).ready(function () {
+
+                var usersId = $('#users').val();
+                console.log(usersId)
+                var commentsArea = $('#comment-area');
+
+                // load the comments from the server
+                $.ajax({
+                    type: 'GET',
+                    url: '/comments/' + usersId,
+                    success: function (comments) {
+                        // iterate over the comments and add them to the comments area
+                        comments.forEach(function (comment) {
+                        var commentDiv = $('<div class="comments"><div>' + comment.userData.comment + '<br></div><div class="bold"> - ' + comment.userData.username + '</div></div>')
+                        {{!-- var commentDiv = $('<div class="chat">' +
+                          '<div class="yours messages">' +
+                          '<div class="message last">' + comment.comment + '</div>' +
+                          '<div class="bold"> - ' + comment.username + '</div>' +
+                          '<button type="button" class="delete-comment-btn btn btn-danger">Delete</button>' +
+                           '<hr>' +
+                          '</div>' +
+                          '</div>'); --}}
+                        commentsArea.append(commentDiv);
+                        });
+                    },
+                    error: function (xhr, status, error) {
+                        console.log(error);
+                    }
+                });
+
+            });
+
+             $('#submit-comment').click(function (e) {
+                    // your existing code for submitting new comments
+                    e.preventDefault();
+                    var commentText = $('#commentText').val();
+                    var usersId = $('#users').val();
+                    var newComments = $("#comment-area");
+
+                    if (commentText === '') {
+                        $('#empty-comment').html('Please enter a comment').show();
+                        return false;
+                    }
+
+                    $.ajax({
+                        type: 'POST',
+                        url: '/comments/' + usersId,
+                        data: {
+                            comment: commentText
+
+                        },
+                        success: function (response) {
+                            // add the new comment to the comments area
+                            var comment = $('<div class="comments"><div>' + response.userData.comment + '<br></div><div class="bold"> - ' + response.userData.username + '</div></div>')
+                            newComments.append(comment);
+                            // reset the comment input field
+                            $('#commentText').val('');
+                        },
+                        error: function (xhr, status, error) {
+                            console.log(error);
+                        }
+                    });
+                });
+            
+
+</script>
+
 </div>

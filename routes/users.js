@@ -4,7 +4,7 @@ import { ObjectId } from 'mongodb';
 import { userData } from '../data/index.js';
 import querystring from 'querystring';
 import { checkValidId } from '../helpers.js';
-import { acceptFriend, sendFriendRequest,rejectFriendRequest } from '../data/users.js';
+import { acceptFriend, sendFriendRequest,rejectFriendRequest,getAll,get } from '../data/users.js';
 import axios from 'axios'; // Axios library
 import dotenv from 'dotenv';
 dotenv.config();
@@ -322,13 +322,21 @@ router.get('/friends', async (req, res) => {
 
 router.get('/friends/:id', async (req, res) => {
   const id = req.params.id;
+  if(req.session.user){
+  let userId = req.session.id  
   try {
     const friend = await userData.get(id);
-    return res.status(200).render('friendProfile', { title: "Friend", friend: friend });
+    const users= getAll()
+    
+    return res.status(200).render('pages/friendProfile', { title: "Friend", users: friend  });
 
   } catch (e) {
     return res.status(400).log(e);
   }
+}
+else{
+  res.redirect("/")
+}
 })
 
 
