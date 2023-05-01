@@ -177,8 +177,6 @@ const acceptFriend = async(id,idFriend) =>{
     return updateInfo1.value;
 }
 
-console.log(await acceptFriend("644b109ba2ab059f766fa4e5","644b109ba2ab059f766fa4e6"))
-
 // Friend 1(id) sends request to Friend2(idFriend), id would be added to pendingRequests of idFriend
 const sendFriendRequest= async(id,idFriend) =>{
 
