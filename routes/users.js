@@ -34,7 +34,7 @@ router
           id: authenticatedUser._id,
           username: req.body.usernameInput,
         };
-        console.log(req.session.user);
+        // console.log(req.session.user);
         const state = generateRandomString(16);
         res.cookie(stateKey, state);
 
@@ -333,12 +333,11 @@ router.get('/dashboard', async (req, res) => {
   }})
 
 router.get('/toptracks', async (req, res) => {
-  //const {id} = req.session.user.id;
-  // const id = '6445bf8f4a4c6219a9fcc324';
   if (req.session.user && req.session.user.access_token) {
-    // const user = await userData.get(id);
+    const { id } = req.session.user;
     const access_token = req.session.user.access_token;
-    const topSongs = await userData.getTopTracks(access_token);
+
+    const topSongs = await userData.getTopTracks(id, access_token);
     return res.status(200).render('pages/top-songs', {
       title: 'top-songs',
       topSongs: topSongs

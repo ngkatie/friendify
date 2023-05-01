@@ -75,9 +75,13 @@ const getAll = async () => {
 }
 
 const get = async (id) => {
-    id = helpers.checkId(id);
+  console.log(id);
+    const user_id = helpers.checkId(id);
+    console.log(user_id);
+
     const userCollection = await users();
-    const user = await userCollection.findOne({ _id: id });
+    const user = await userCollection.findOne({ _id: user_id });
+
     return helpers.idToString(user);
 }
 
@@ -287,19 +291,16 @@ const rejectFriendRequest = async(id,idFriend)=>{
 }
 
 // Note to self: Need to add time_range
-async function getTopTracks(access_token) {
+async function getTopTracks(user_id, access_token) {
 
   const tracksEndpoint = spotifyAPI.getEndpoint('me/top/tracks');
 
   let { data } = await spotifyAPI.callEndpoint(tracksEndpoint, access_token);
 
   if (data) { 
-    // const userCollection = await users();
-    // const user = await get(user_id);
-
+    const user = await get(user_id);
     // Clear outdated topSongs
-    // user.topSongs = [];
-    let topSongs = [];
+    user.topSongs = [];
 
     let tracks = data.items;
     for (let i = 0; i < tracks.length; i++) {
@@ -312,21 +313,62 @@ async function getTopTracks(access_token) {
         albumName: tracks[i].album.name,
         image: tracks[i].album.images[0].url
       }
-      // user.topSongs.push(newTrack);
-      topSongs.push(newTrack);
+      user.topSongs.push(newTrack);
     }
 
-    // const updatedUser = await userCollection.findOneAndUpdate(
-    //   { _id: user._id },
-    //   { $set: user },
-    //   { returnDocument: 'after' }
-    // )
+    const updatedUser = await userCollection.findOneAndUpdate(
+      { _id: user._id.toString() },
+      { $set: user },
+      { returnDocument: 'after' }
+    )
 
-    // if (updatedUser.lastErrorObject.n === 0) {
-    //   throw `Error: Could not store top tracks successfully`;
-    // }
+    if (updatedUser.lastErrorObject.n === 0) {
+      throw `Error: Could not store top tracks successfully`;
+    }
 
-    return topSongs;
+    return user.topSongs;
+  } 
+  else {
+    throw 'Error: Could not fetch top tracks from Spotify API';
+  }
+}
+
+async function getTopArtists(user_id, access_token) {
+
+  const artistsEndpoint = spotifyAPI.getEndpoint('me/top/artists');
+
+  let { data } = await spotifyAPI.callEndpoint(artistsEndpoint, access_token);
+
+  if (data) { 
+    const user = await get(user_id);
+    // Clear outdated topSongs
+    user.topArtists = [];
+
+    let artists = data.items;
+    for (let i = 0; i < artists.length; i++) {
+      const newArtist = {
+        _id: new ObjectId(),
+        trackName: artists[i].name,
+        trackURL: artists[i].external_urls.spotify,
+        spotifyId: artists[i].id,
+        artistName: songs.getArtists(tracks[i]),
+        albumName: artists[i].album.name,
+        image: artists[i].album.images[0].url
+      }
+      user.topSongs.push(newTrack);
+    }
+
+    const updatedUser = await userCollection.findOneAndUpdate(
+      { _id: user._id.toString() },
+      { $set: user },
+      { returnDocument: 'after' }
+    )
+
+    if (updatedUser.lastErrorObject.n === 0) {
+      throw `Error: Could not store top tracks successfully`;
+    }
+
+    return user.topSongs;
   } 
   else {
     throw 'Error: Could not fetch top tracks from Spotify API';
