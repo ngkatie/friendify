@@ -31,6 +31,11 @@ router
     try{
       let authenticatedUser = await userData.checkUser(req.body.usernameInput, req.body.passwordInput);
       if (authenticatedUser) {
+        req.session.user = {
+          id: authenticatedUser,
+          username: req.body.usernameInput,
+        };
+        console.log(req.session.user);
         const state = generateRandomString(16);
         res.cookie(stateKey, state);
 
