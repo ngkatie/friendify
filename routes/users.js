@@ -136,10 +136,8 @@ router.get('/callback', async (req, res) => {
         const { access_token, refresh_token } = body;
 
         // Storing access_token and refresh token in session
-        req.session.user = {
-          access_token : access_token,
-          refresh_token : refresh_token
-        }
+        req.session.user.access_token = access_token;
+        req.session.user.refresh_token = refresh_token;
 
         res.redirect('/users/dashboard');
       } else {
@@ -316,6 +314,8 @@ router.get('/dashboard', async (req, res) => {
       },
     };
 
+    console.log("here should print")
+    console.log(req.session.user)
     try {
       const { data : body } = await axios.get(authOptions.url, { headers: authOptions.headers });
       return res.status(200).render('pages/dashboard', {
