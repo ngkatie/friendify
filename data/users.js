@@ -51,12 +51,8 @@ const checkUser = async (username, password) => {
   const username_ = helpers.checkName(username);
   const password_ = helpers.checkPassword(password);
 
-  console.log(username_);
-  console.log(password_);
-
   const userCollection = await users();
   const user = await userCollection.findOne({ username: username_ });
-  console.log(user);
 
   if (!user) {
     throw  `Either the email address or password is invalid`;

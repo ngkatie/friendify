@@ -24,13 +24,12 @@ const generateRandomString = (length) => {
 };
 
 const stateKey = 'spotify_auth_state';
-
 router
   .route('/login')
   .post(async (req, res) => {
     try{
       let authenticatedUser = await userData.checkUser(req.body.usernameInput, req.body.passwordInput);
-      if (authenticatedUser) {
+      // if (authenticatedUser) {
         const state = generateRandomString(16);
         res.cookie(stateKey, state);
 
@@ -46,7 +45,7 @@ router
               state,
             })
         );
-      }
+      // }
     } catch (e) {
       console.log(e);
       return res.status(400).render('pages/login', {
