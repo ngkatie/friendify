@@ -63,10 +63,8 @@ const checkUser = async (username, password) => {
     throw `Error: Either the email address or password is invalid`;
   }
 
-  return user._id;
+  return helpers.idToString(user);
 }
-
-console.log(await checkUser("kensaysato", "Ks#191080988"));
 
 const getAll = async () => {
     const userCollection = await users();
