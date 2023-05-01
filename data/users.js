@@ -51,12 +51,10 @@ const checkUser = async (username, password) => {
   const username_ = helpers.checkName(username);
   const password_ = helpers.checkPassword(password);
 
-  console.log(username_);
-  console.log(password_);
-
   const userCollection = await users();
-  const user = await userCollection.findOne({ username: username_ });
-  console.log(user);
+  let user = await userCollection.findOne({ username: username_ });
+
+  user = helpers.idToString(user);
 
   if (!user) {
     throw  `Either the email address or password is invalid`;
@@ -67,16 +65,10 @@ const checkUser = async (username, password) => {
     throw `Error: Either the email address or password is invalid`;
   }
 
-  let userFound = {
-    username: user.username,
-    email: user.email,
-    likeCount: user.likeCount,
-    comments: user.comments,
-    friends: user.friends
-  }
-
-  return userFound;
+  return user._id;
 }
+
+console.log(await checkUser("kensaysato", "Ks#191080988"));
 
 const getAll = async () => {
     const userCollection = await users();
