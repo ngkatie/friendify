@@ -52,9 +52,7 @@ const checkUser = async (username, password) => {
   const password_ = helpers.checkPassword(password);
 
   const userCollection = await users();
-  let user = await userCollection.findOne({ username: username_ });
-
-  user = helpers.idToString(user);
+  const user = await userCollection.findOne({ username: username_ });
 
   if (!user) {
     throw  `Either the email address or password is invalid`;
@@ -295,86 +293,45 @@ async function getTopTracks(access_token) {
 
   const tracksEndpoint = spotifyAPI.getEndpoint('me/top/tracks');
 
-  let data = await spotifyAPI.callEndpoint(tracksEndpoint, access_token);
-  return data;
+  let { data } = await spotifyAPI.callEndpoint(tracksEndpoint, access_token);
 
-  // if (data) { 
-  //   const userCollection = await users();
-  //   const user = await get(user_id);
-
-  //   // Clear outdated topSongs
-  //   user.topSongs = [];
-
-  //   let tracks = data.items;
-  //   for (let i = 0; i < tracks.length; i++) {
-  //     const newTrack = {
-  //       _id: new ObjectId(),
-  //       trackName: tracks[i].name,
-  //       trackURL: tracks[i].external_urls.spotify,
-  //       spotifyId: tracks[i].id,
-  //       artistName: songs.getArtists(tracks[i]),
-  //       albumName: tracks[i].album.name,
-  //       image: tracks[i].album.images[0].url
-  //     }
-  //     user.topSongs.push(newTrack);
-  //   }
-
-  //   const updatedUser = await userCollection.findOneAndUpdate(
-  //     { _id: user._id },
-  //     { $set: user },
-  //     { returnDocument: 'after' }
-  //   )
-
-  //   if (updatedUser.lastErrorObject.n === 0) {
-  //     throw `Error: Could not store top tracks successfully`;
-  //   }
-
-  //   return user.topSongs;
-  // } 
-  // else {
-  //   throw 'Error: Could not fetch top tracks from Spotify API';
-  // }
-}
-
-async function getTopArtists(user_id) {
-
-  const tracksEndpoint = spotifyAPI.getEndpoint('me/top/artists');
-  const token = spotifyAPI.getAccessToken();
-
-  let data = spotifyAPI.callEndpoint(tracksEndpoint);
   if (data) { 
-    const userCollection = await users();
-    const user = await get(user_id);
+    // const userCollection = await users();
+    // const user = await get(user_id);
 
     // Clear outdated topSongs
-    user.topArtists = [];
+    // user.topSongs = [];
+    let topSongs = [];
 
-    let artists = data.items;
-    for (let i = 0; i < artists.length; i++) {
-      const newArtist = {
+    let tracks = data.items;
+    for (let i = 0; i < tracks.length; i++) {
+      const newTrack = {
         _id: new ObjectId(),
-        artistName: artists[i].name,
-        artistURL: artists[i].external_urls.spotify,
-        spotifyId: artists[i].id,
-        image: artists[i].images[0].url
+        trackName: tracks[i].name,
+        trackURL: tracks[i].external_urls.spotify,
+        spotifyId: tracks[i].id,
+        artistName: songs.getArtists(tracks[i]),
+        albumName: tracks[i].album.name,
+        image: tracks[i].album.images[0].url
       }
-      user.topArtists.push(newArtist);
+      // user.topSongs.push(newTrack);
+      topSongs.push(newTrack);
     }
 
-    const updatedUser = await userCollection.findOneAndUpdate(
-      { _id: user._id },
-      { $set: user },
-      { returnDocument: 'after' }
-    )
+    // const updatedUser = await userCollection.findOneAndUpdate(
+    //   { _id: user._id },
+    //   { $set: user },
+    //   { returnDocument: 'after' }
+    // )
 
-    if (updatedUser.lastErrorObject.n === 0) {
-      throw `Error: Could not store top artists successfully`;
-    }
+    // if (updatedUser.lastErrorObject.n === 0) {
+    //   throw `Error: Could not store top tracks successfully`;
+    // }
 
-    return user.topArtists;
+    return topSongs;
   } 
   else {
-    throw 'Error: Could not fetch top artists from Spotify API';
+    throw 'Error: Could not fetch top tracks from Spotify API';
   }
 }
 
@@ -386,6 +343,5 @@ export {
   acceptFriend, 
   sendFriendRequest, 
   rejectFriendRequest,
-  getTopTracks,
-  getTopArtists
+  getTopTracks
 }

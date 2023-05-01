@@ -13,13 +13,13 @@
     </div>
 
     <div class="results">
-        <h2>Top 50 Songs</h2>
+        <h2>Top 50 Tracks</h2>
         <div class="results-container">
             {{#each topSongs}}
                 <div class="track-item">
                     <img src="{{image}}" alt="Song Image" class="img-thumbnail" width="200" height="200">
-                    <h3>{{name}}</h3>
-                    <p>Artist: {{artist}}</p>
+                    <h3>{{trackName}}</h3>
+                    <p>Artist: {{artistName}}</p>
                 </div>
             {{/each}}
     </div>

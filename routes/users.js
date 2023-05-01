@@ -24,7 +24,6 @@ const generateRandomString = (length) => {
 };
 
 const stateKey = 'spotify_auth_state';
-
 router
   .route('/login')
   .post(async (req, res) => {
@@ -40,7 +39,7 @@ router
         res.cookie(stateKey, state);
 
         // your application requests authorization
-        const scope = 'user-read-private user-read-email';
+        const scope = 'user-read-private user-read-email user-top-read';
         res.redirect(
           'https://accounts.spotify.com/authorize?' +
             querystring.stringify({
@@ -51,7 +50,7 @@ router
               state,
             })
         );
-      }
+      // }
     } catch (e) {
       console.log(e);
       return res.status(400).render('pages/login', {
@@ -195,7 +194,7 @@ router.get('/userprofile', async(req, res) => {
     try {
       const { data : body } = await axios.get(authOptions.url, { headers: authOptions.headers });
      // res.render('profile', { user: body });
-     console.log({body})
+    //  console.log({body})
     } catch (error) {
       // Handle error
       console.log(error);
@@ -319,7 +318,7 @@ router.get('/dashboard', async (req, res) => {
 
     try {
       const { data : body } = await axios.get(authOptions.url, { headers: authOptions.headers });
-      return res.status(200).render('pages/userProfile', {
+      return res.status(200).render('pages/dashboard', {
         title: 'Dashboard',
         // username: user.username,
         // likeCount: user.likeCount,
@@ -338,14 +337,11 @@ router.get('/toptracks', async (req, res) => {
   // const id = '6445bf8f4a4c6219a9fcc324';
   if (req.session.user && req.session.user.access_token) {
     // const user = await userData.get(id);
-    console.log(req.session.user.access_token);
     const access_token = req.session.user.access_token;
-    console.log(access_token);
     const topSongs = await userData.getTopTracks(access_token);
-    console.log(topSongs);
-    return res.status(200).render('top-songs', {
+    return res.status(200).render('pages/top-songs', {
       title: 'top-songs',
-      topSongs: user.topSongs
+      topSongs: topSongs
     })
   }
   else {
