@@ -31,7 +31,7 @@ router
       let authenticatedUser = await userData.checkUser(req.body.usernameInput, req.body.passwordInput);
       if (authenticatedUser) {
         req.session.user = {
-          id: authenticatedUser,
+          id: authenticatedUser._id,
           username: req.body.usernameInput,
         };
         console.log(req.session.user);
@@ -50,7 +50,7 @@ router
               state,
             })
         );
-      // }
+      }
     } catch (e) {
       console.log(e);
       return res.status(400).render('pages/login', {
@@ -61,7 +61,7 @@ router
     }
   });
 
-  router
+router
   .route('/register')
   .get(async (req, res) => {
     res.status(200).render('pages/register', { title: "Register" })
