@@ -10,15 +10,15 @@ import axios from "axios";
 
 config();
 const saltRounds = await bcryptjs.genSalt(10);
-const CLIENT_ID = process.env.client_id;
-const CLIENT_SECRET = process.env.client_secret;
+const CLIENT_ID = process.env.CLIENT_ID;
+const CLIENT_SECRET = process.env.CLIENT_SECRET;
 
 const create = async (
     username,
     email,
     password
 ) => {
-  const hashed_password = await bcryptjs.hash(password, saltRounds);
+  const hashed_password = bcryptjs.hashSync(password, saltRounds);
   // hashed_password = helpers.hashPassword(hashed_password);
   let newUser = {
     username: username,
@@ -33,15 +33,11 @@ const create = async (
     pendingRequests: [],
     friends: [],
   }
-  console.log('New user created');
+
   const userCollection = await users();
-  console.log('Got collection')
   const insertInfo = await userCollection.insertOne(newUser);
-  console.log('User inserted')
 
   if (!insertInfo.acknowledged || !insertInfo.insertedId) {
-    console.log(insertInfo.acknowledged);
-    console.log(insertInfo.insertedId);
     throw `Could not add user successfully`;
   }
 
@@ -51,14 +47,22 @@ const create = async (
 // create("test", "test", "test");
 
 const checkUser = async (username, password) => {
+
+  const username_ = helpers.checkName(username);
+  const password_ = helpers.checkPassword(password);
+
+  console.log(username_);
+  console.log(password_);
+
   const userCollection = await users();
-  const user = await userCollection.findOne( { username: username });
+  const user = await userCollection.findOne({ username: username_ });
+  console.log(user);
 
   if (!user) {
     throw  `Either the email address or password is invalid`;
   }
 
-  let compareToMatch = await bcryptjs.compare(password, user.hashed_password);
+  let compareToMatch = bcryptjs.compareSync(password_, user.hashed_password);
   if (!compareToMatch) {
     throw `Error: Either the email address or password is invalid`;
   }
