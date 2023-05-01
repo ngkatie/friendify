@@ -32,14 +32,16 @@ async function getAccessToken() {
 }
 
 async function callEndpoint(endpoint, access_token) {
+    let data = undefined;
+    const authOptions = {
+        url: endpoint,
+        headers: {
+          Authorization: `Bearer ${access_token}`,
+        }
+    };
     try {
-        const data = await axios.get({
-            url: endpoint,
-            headers: {
-                "Authorization": `Bearer ${access_token}`
-            }
-        });
-        console.log(data);
+        data = await axios.get(authOptions.url, { headers: authOptions.headers });
+        // console.log(data);
         return data;
     } catch (e) {
         console.log(e);

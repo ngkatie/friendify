@@ -1,21 +1,25 @@
 <div class="Dashboard">    
+
     <div class="user-info">
         <img src="{{user.images.[0].url}}" alt="Profile Picture" class="img-thumbnail" width="200" height="200">
         <h2>{{user.display_name}}</h2>
         <p>Likes: {{likeCount}}</p>
-        <a href="pages/friendsDashboard">Friends</a>
+        <a href="/friends">Friends</a>
     </div>
+
     <form action="/friend" method="POST">
         <label for="email">Enter your friend's email:</label>
         <input type="email" id="email" name="email" required>
         <br>
         <button type="submit">Add Friend</button>
     </form>
+
     <div class="spotify-data">
-        <button type="button" href="./top-songs.handlebars">Top 50 Songs</button>
-        <button type="button" href="./top-artists.handlebars">Top 50 Artists</button>
-        <button type="button" href="./daily-playlist.handlebars">Daily Playlist</button>
+        <a href="toptracks">Top 50 Tracks</a>
+        <a href="topartists">Top 50 Artists</a>
+        <a href="dailyplaylist">Daily Playlist</a>
     </div>
+
     <div>
         {{#each comments}}
         <div>
@@ -24,4 +28,5 @@
         </div>
         {{/each}}
     </div>
+
 </div>

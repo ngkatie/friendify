@@ -240,45 +240,47 @@ async function getTopTracks(access_token) {
 
   const tracksEndpoint = spotifyAPI.getEndpoint('me/top/tracks');
 
-  let data = await spotifyAPI.callEndpoint(tracksEndpoint, access_token);
-  return data;
+  let { data } = await spotifyAPI.callEndpoint(tracksEndpoint, access_token);
 
-  // if (data) { 
-  //   const userCollection = await users();
-  //   const user = await get(user_id);
+  if (data) { 
+    console.log(data);
+    // const userCollection = await users();
+    // const user = await get(user_id);
 
-  //   // Clear outdated topSongs
-  //   user.topSongs = [];
+    // Clear outdated topSongs
+    // user.topSongs = [];
+    let topSongs = [];
 
-  //   let tracks = data.items;
-  //   for (let i = 0; i < tracks.length; i++) {
-  //     const newTrack = {
-  //       _id: new ObjectId(),
-  //       trackName: tracks[i].name,
-  //       trackURL: tracks[i].external_urls.spotify,
-  //       spotifyId: tracks[i].id,
-  //       artistName: songs.getArtists(tracks[i]),
-  //       albumName: tracks[i].album.name,
-  //       image: tracks[i].album.images[0].url
-  //     }
-  //     user.topSongs.push(newTrack);
-  //   }
+    let tracks = data.items;
+    for (let i = 0; i < 5; i++) {
+      const newTrack = {
+        _id: new ObjectId(),
+        trackName: tracks[i].name,
+        trackURL: tracks[i].external_urls.spotify,
+        spotifyId: tracks[i].id,
+        artistName: songs.getArtists(tracks[i]),
+        albumName: tracks[i].album.name,
+        image: tracks[i].album.images[0].url
+      }
+      // user.topSongs.push(newTrack);
+      topSongs.push(newTrack);
+    }
 
-  //   const updatedUser = await userCollection.findOneAndUpdate(
-  //     { _id: user._id },
-  //     { $set: user },
-  //     { returnDocument: 'after' }
-  //   )
+    // const updatedUser = await userCollection.findOneAndUpdate(
+    //   { _id: user._id },
+    //   { $set: user },
+    //   { returnDocument: 'after' }
+    // )
 
-  //   if (updatedUser.lastErrorObject.n === 0) {
-  //     throw `Error: Could not store top tracks successfully`;
-  //   }
+    // if (updatedUser.lastErrorObject.n === 0) {
+    //   throw `Error: Could not store top tracks successfully`;
+    // }
 
-  //   return user.topSongs;
-  // } 
-  // else {
-  //   throw 'Error: Could not fetch top tracks from Spotify API';
-  // }
+    return topSongs;
+  } 
+  else {
+    throw 'Error: Could not fetch top tracks from Spotify API';
+  }
 }
 
 async function getTopArtists(user_id) {
