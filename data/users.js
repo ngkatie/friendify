@@ -298,10 +298,7 @@ async function getTopTracks(user_id, access_token) {
   let { data } = await spotifyAPI.callEndpoint(tracksEndpoint, access_token);
 
   if (data) { 
-    const user = await get(user_id);
-    // Clear outdated topSongs
-    user.topSongs = [];
-
+    let topTracks = [];
     let tracks = data.items;
     for (let i = 0; i < tracks.length; i++) {
       const newTrack = {
@@ -313,11 +310,16 @@ async function getTopTracks(user_id, access_token) {
         albumName: tracks[i].album.name,
         image: tracks[i].album.images[0].url
       }
-      user.topSongs.push(newTrack);
+      topTracks.push(newTrack);
     }
 
+    const currId = helpers.checkId(user_id);
+    const userCollection = await users();
+    const user = await userCollection.findOne({_id: currId});
+    user.topTracks = topTracks;
+    
     const updatedUser = await userCollection.findOneAndUpdate(
-      { _id: user._id.toString() },
+      { _id: currId },
       { $set: user },
       { returnDocument: 'after' }
     )
@@ -326,7 +328,7 @@ async function getTopTracks(user_id, access_token) {
       throw `Error: Could not store top tracks successfully`;
     }
 
-    return user.topSongs;
+    return user.topTracks;
   } 
   else {
     throw 'Error: Could not fetch top tracks from Spotify API';
@@ -355,7 +357,7 @@ async function getTopArtists(user_id, access_token) {
         albumName: artists[i].album.name,
         image: artists[i].album.images[0].url
       }
-      user.topSongs.push(newTrack);
+      user.topArtists.push(newArtist);
     }
 
     const updatedUser = await userCollection.findOneAndUpdate(
