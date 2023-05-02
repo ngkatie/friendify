@@ -8,8 +8,8 @@ const CLIENT_SECRET = process.env.client_secret;
 const BASE_ENDPOINT = `https://api.spotify.com/v1/`;
 const AUTHORIZE_ENDPOINT = "https://accounts.spotify.com/api/token";
 
-function getEndpointByType(type) {
-    return `${BASE_ENDPOINT}${type}`;
+function getEndpoint(ext) {
+    return `${BASE_ENDPOINT}${ext}`;
 }
 
 async function getAccessToken() {
@@ -31,16 +31,17 @@ async function getAccessToken() {
     }
 }
 
-async function callEndpoint(endpoint) {
-    const accessToken = "";
+async function callEndpoint(endpoint, access_token) {
+    let data = undefined;
+    const authOptions = {
+        url: endpoint,
+        headers: {
+          Authorization: `Bearer ${access_token}`,
+        }
+    };
     try {
-        const data = await axios.get({
-            url: endpoint,
-            headers: {
-                "Authorization": `Bearer ${accessToken}`
-            }
-        });
-        console.log(data);
+        data = await axios.get(authOptions.url, { headers: authOptions.headers });
+        // console.log(data);
         return data;
     } catch (e) {
         console.log(e);
@@ -48,7 +49,7 @@ async function callEndpoint(endpoint) {
 }
 
 export {
-    getEndpointByType,
+    getEndpoint,
     getAccessToken,
     callEndpoint
 }

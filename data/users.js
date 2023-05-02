@@ -10,22 +10,22 @@ import axios from "axios";
 
 config();
 const saltRounds = await bcryptjs.genSalt(10);
-const CLIENT_ID = process.env.client_id;
-const CLIENT_SECRET = process.env.client_secret;
+const CLIENT_ID = process.env.CLIENT_ID;
+const CLIENT_SECRET = process.env.CLIENT_SECRET;
 
 const create = async (
     username,
     email,
     password
 ) => {
-  const hashed_password = await bcryptjs.hash(password, saltRounds);
+  const hashed_password = bcryptjs.hashSync(password, saltRounds);
   // hashed_password = helpers.hashPassword(hashed_password);
   let newUser = {
     username: username,
     email: email,
     hashed_password: hashed_password,
-    top_songs: [],
-    top_artists: [],
+    topTracks: [],
+    topArtists: [],
     dailyPlaylist: [],
     likeCount: 0,
     comments: [],
@@ -33,6 +33,7 @@ const create = async (
     pendingRequests: [],
     friends: [],
   }
+
   const userCollection = await users();
   const insertInfo = await userCollection.insertOne(newUser);
 
@@ -40,34 +41,29 @@ const create = async (
     throw `Could not add user successfully`;
   }
 
-  // const newId = insertInfo.insertedId.toString();
-  const user = await get(insertInfo.insertedId.toString());
-  return helpers.idToString(user);
+  // const user = await get(insertInfo.insertedId.toString());
+  return newUser;
 }
-create("test", "test", "test");
+// create("test", "test", "test");
 
 const checkUser = async (username, password) => {
+
+  const username_ = helpers.checkName(username);
+  const password_ = helpers.checkPassword(password);
+
   const userCollection = await users();
-  const user = await userCollection.findOne( { username: username });
+  const user = await userCollection.findOne({ username: username_ });
 
   if (!user) {
     throw  `Either the email address or password is invalid`;
   }
 
-  let compareToMatch = await bcryptjs.compare(password, user.password);
+  let compareToMatch = bcryptjs.compareSync(password_, user.hashed_password);
   if (!compareToMatch) {
     throw `Error: Either the email address or password is invalid`;
   }
 
-  let userFound = {
-    username: user.username,
-    email: user.email,
-    likeCount: user.likeCount,
-    comments: user.comments,
-    friends: user.friends
-  }
-
-  return userFound;
+  return helpers.idToString(user);
 }
 
 const getAll = async () => {
@@ -85,38 +81,95 @@ const get = async (id) => {
     return helpers.idToString(user);
 }
 
-//Friend2 accepts request of friend1, request would be removed from pending requests of friend2
+//Friend2(id)(has pending req) accepts request of friend1(idFriend), request would be removed from pending requests of friend2
 const acceptFriend = async(id,idFriend) =>{
-    hashed_password = helpers.hashPassword(hashed_password);
-    let newUser = {
-        username: username,
-        email: email,
-        hashed_password: hashed_password,
-        top_songs: [],
-        top_artists: [],
-        dailyPlaylist: [],
-        likeCount: 0,
-        comments: [],
-        likedProfiles: [],
-        pendingRequests: [],
-        friends: [],
-    }
-    const userCollection = await users();
-    const insertInfo = await userCollection.insertOne(newUser);
-    if (!insertInfo.acknowledged || !insertInfo.insertedId) {
-        throw `Could not add user successfully`;
-      }
+    helpers.checkValidId(id)
+    helpers.checkValidId(idFriend)
+    id = id.trim();
+    idFriend = idFriend.trim();
 
-    // const newId = insertInfo.insertedId.toString();
-    const user = await get(insertInfo.insertedId.toString());
-    return helpers.idToString(user);
+    const userCollection = await users();
+    const user = await get(id);
+    const user2 = await get(idFriend);
+    const user1Pending = user.pendingRequests;
+
+    if(!user1Pending.includes(idFriend)){
+        throw `${idFriend} has not sent you a friend request`
+    }
+
+    const user1Friends = user.friends;
+    user1Friends.push(idFriend);
+
+    const user2Friends = user2.friends;
+    user2Friends.push(id);
+
+    for (let i = 0; i < user1Pending.length; i++) {
+      if (user1Pending[i] === idFriend) {
+        user1Pending.splice(i, 1);
+      }
+    }
+
+    let user1Info = {
+      username: user.username,
+      email: user.email,
+      hashed_password: user.hashed_password,
+      top_songs: user.top_songs,
+      top_artists: user.top_artists,
+      dailyPlaylist: user.dailyPlaylist,
+      likeCount: user.likeCount,
+      comments: user.comments,
+      likedProfiles: user.likedProfiles,
+      pendingRequests: user1Pending,
+      friends: user1Friends,
+    };
+
+    let user2Info = {
+      username: user2.username,
+      email: user2.email,
+      hashed_password: user2.hashed_password,
+      top_songs: user2.top_songs,
+      top_artists: user2.top_artists,
+      dailyPlaylist: user2.dailyPlaylist,
+      likeCount: user2.likeCount,
+      comments: user2.comments,
+      likedProfiles: user2.likedProfiles,
+      pendingRequests: user2.pendingRequests,
+      friends: user2Friends,
+    }
+
+    const updateInfo1 = await userCollection.findOneAndReplace(
+      {_id: new ObjectId(id)},
+      user1Info,
+      {returnDocument: 'after'}
+    );
+
+    const updateInfo2 = await userCollection.findOneAndReplace(
+      {_id: new ObjectId(idFriend)},
+      user2Info,
+      {returnDocument: 'after'}
+    );
+
+    if (updateInfo1.lastErrorObject.n === 0)
+    throw [
+      404,
+      `Error: Update failed, could not update a user with id of ${id}`
+    ];
+
+    if (updateInfo2.lastErrorObject.n === 0)
+    throw [
+      404,
+      `Error: Update failed, could not update a user with id of ${idFriend}`
+    ];
+
+
+    return updateInfo1.value;
 }
 
 // Friend 1(id) sends request to Friend2(idFriend), id would be added to pendingRequests of idFriend
 const sendFriendRequest= async(id,idFriend) =>{
 
-  checkValidId(id)
-  checkValidId(idFriend)
+  helpers.checkValidId(id)
+  helpers.checkValidId(idFriend)
 
   id = id.trim();
   idFriend = idFriend.trim();
@@ -171,6 +224,8 @@ const sendFriendRequest= async(id,idFriend) =>{
   return  updateInfo.value;
  
 }
+
+//console.log(await sendFriendRequest("644b109ba2ab059f766fa4e6","644b109ba2ab059f766fa4e5"))
 
 //removes the given id from pendingRequests of user
 const rejectFriendRequest = async(id,idFriend)=>{
@@ -231,49 +286,20 @@ const rejectFriendRequest = async(id,idFriend)=>{
 
 }
 
-// let spotifyApi = new SpotifyWebApi({
-//   clientId: clientId,
-//   clientSecret: clientSecret,
-//   redirectUri: 'localhost:3000/'
-// });
-
-// async function getTopTracks(time_range) {
-//     spotifyApi.getMyTopTracks(time_range, 50).then(
-//         function(data) {
-//             let topArtists = data.body.items;
-//             console.log(topArtists);
-//         }, 
-//         function(e) { console.log(e) }
-//     );
-// }
-
-// async function getTopArtists(time_range) {
-//   spotifyApi.getMyTopArtists(time_range, 50).then(
-//       function(data) {
-//           let topArtists = data.body.items;
-//           console.log(topArtists);
-//       }, 
-//       function(e) { console.log(e) }
-//   );
-// }
-
 // Note to self: Need to add time_range
-async function getTopTracks(user_id) {
-  try {
-    const tracksEndpoint = spotifyAPI.getEndpointByType('me/top/tracks');
-    const token = spotifyAPI.getAccessToken();
+async function getTopTracks(access_token) {
 
-    let data = await axios.get(tracksEndpoint, {
-      headers: { 'Authorization': `Bearer ${token}`}
-    });
-  } catch (e) { console.error(e) }
+  const tracksEndpoint = spotifyAPI.getEndpoint('me/top/tracks');
+
+  let { data } = await spotifyAPI.callEndpoint(tracksEndpoint, access_token);
 
   if (data) { 
-    const userCollection = await users();
-    const user = await get(user_id);
+    // const userCollection = await users();
+    // const user = await get(user_id);
 
     // Clear outdated topSongs
-    user.topSongs = [];
+    // user.topSongs = [];
+    let topSongs = [];
 
     let tracks = data.items;
     for (let i = 0; i < tracks.length; i++) {
@@ -286,68 +312,24 @@ async function getTopTracks(user_id) {
         albumName: tracks[i].album.name,
         image: tracks[i].album.images[0].url
       }
-      user.topSongs.push(newTrack);
+      // user.topSongs.push(newTrack);
+      topSongs.push(newTrack);
     }
 
-    const updatedUser = await userCollection.findOneAndUpdate(
-      { _id: user._id },
-      { $set: user },
-      { returnDocument: 'after' }
-    )
+    // const updatedUser = await userCollection.findOneAndUpdate(
+    //   { _id: user._id },
+    //   { $set: user },
+    //   { returnDocument: 'after' }
+    // )
 
-    if (updatedUser.lastErrorObject.n === 0) {
-      throw `Error: Could not store top tracks successfully`;
-    }
+    // if (updatedUser.lastErrorObject.n === 0) {
+    //   throw `Error: Could not store top tracks successfully`;
+    // }
 
-    return user.topSongs;
+    return topSongs;
   } 
   else {
     throw 'Error: Could not fetch top tracks from Spotify API';
-  }
-}
-
-async function getTopArtists(user_id) {
-
-  const tracksEndpoint = spotifyAPI.getEndpointByType('me/top/artists');
-  const token = spotifyAPI.getAccessToken();
-
-  let data = await axios.get(tracksEndpoint, {
-    headers: { 'Authorization': `Bearer ${token}`}
-  });
-
-  if (data) { 
-    const userCollection = await users();
-    const user = await get(user_id);
-
-    // Clear outdated topSongs
-    user.topArtists = [];
-
-    let artists = data.items;
-    for (let i = 0; i < artists.length; i++) {
-      const newArtist = {
-        _id: new ObjectId(),
-        artistName: artists[i].name,
-        artistURL: artists[i].external_urls.spotify,
-        spotifyId: artists[i].id,
-        image: artists[i].images[0].url
-      }
-      user.topArtists.push(newArtist);
-    }
-
-    const updatedUser = await userCollection.findOneAndUpdate(
-      { _id: user._id },
-      { $set: user },
-      { returnDocument: 'after' }
-    )
-
-    if (updatedUser.lastErrorObject.n === 0) {
-      throw `Error: Could not store top artists successfully`;
-    }
-    
-    return user.topArtists;
-  } 
-  else {
-    throw 'Error: Could not fetch top artists from Spotify API';
   }
 }
 
@@ -359,6 +341,5 @@ export {
   acceptFriend, 
   sendFriendRequest, 
   rejectFriendRequest,
-  getTopTracks,
-  // getTopArtists
+  getTopTracks
 }

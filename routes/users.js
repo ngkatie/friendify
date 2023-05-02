@@ -1,20 +1,20 @@
 import { Router } from 'express';
 export const router = Router();
-import { ObjectId } from 'mongodb';
+// import { ObjectId } from 'mongodb';
 import { userData } from '../data/index.js';
 import querystring from 'querystring';
+
 import { checkValidId } from '../helpers.js';
 import { acceptFriend, sendFriendRequest,rejectFriendRequest,getAll,get } from '../data/users.js';
+import * as helpers from '../helpers.js';
 import axios from 'axios'; // Axios library
 import dotenv from 'dotenv';
+
+
 dotenv.config();
-
-
-
 const CLIENT_ID = process.env.CLIENT_ID // Your client id
 const CLIENT_SECRET = process.env.CLIENT_SECRET; // Your secret
 const redirect_uri = 'http://localhost:3000/users/callback'; // Your redirect uri
-let Data;
 
 const generateRandomString = (length) => {
   let text = '';
@@ -27,25 +27,82 @@ const generateRandomString = (length) => {
 };
 
 const stateKey = 'spotify_auth_state';
-
 router
   .route('/login')
   .post(async (req, res) => {
-    const state = generateRandomString(16);
-    res.cookie(stateKey, state);
+    try{
+      let authenticatedUser = await userData.checkUser(req.body.usernameInput, req.body.passwordInput);
+      if (authenticatedUser) {
+        req.session.user = {
+          id: authenticatedUser._id,
+          username: req.body.usernameInput,
+        };
+        console.log(req.session.user);
+        const state = generateRandomString(16);
+        res.cookie(stateKey, state);
 
-    // your application requests authorization
-    const scope = 'user-read-private user-read-email';
-    res.redirect(
-      'https://accounts.spotify.com/authorize?' +
-        querystring.stringify({
-          response_type: 'code',
-          client_id: CLIENT_ID,
-          scope,
-          redirect_uri,
-          state,
+        // your application requests authorization
+        const scope = 'user-read-private user-read-email user-top-read';
+        res.redirect(
+          'https://accounts.spotify.com/authorize?' +
+            querystring.stringify({
+              response_type: 'code',
+              client_id: CLIENT_ID,
+              scope,
+              redirect_uri,
+              state,
+            })
+        );
+      }
+    } catch (e) {
+      console.log(e);
+      return res.status(400).render('pages/login', {
+        title: 'Login',
+        err: true, 
+        error: e
+      })
+    }
+  });
+
+router
+  .route('/register')
+  .get(async (req, res) => {
+    res.status(200).render('pages/register', { title: "Register" })
+  })
+  .post(async (req, res) => {
+    let {
+      usernameInput,
+      passwordInput,
+      confirmPasswordInput,
+      emailInput
+    } = req.body;
+
+    try {
+      const username = helpers.checkName(usernameInput);
+      const email = helpers.checkEmail(emailInput);
+      const password = helpers.checkPassword(passwordInput);
+      const confirmPassword = helpers.checkPassword(confirmPasswordInput);
+
+      if (confirmPassword !== password) {
+        return res.status(400).render('pages/register', { 
+          title: 'Register', 
+          err: true,
+          error: 'Error: Passwords do not match' 
         })
-    );
+      }
+
+      const newUser = await userData.create(username, email, password);
+      // console.log(newUser);
+      if (newUser) {
+        return res.status(200).redirect('/');
+      }
+      else {
+        return res.status(500).json({ error: 'Internal Server Error '});
+      }
+    } catch (e) {
+      return res.status(400).json({ error: e });
+    }
+
   });
 
 router.get('/callback', async (req, res) => {
@@ -81,10 +138,9 @@ router.get('/callback', async (req, res) => {
       if (body && body.access_token) {
         const { access_token, refresh_token } = body;
 
-        //storing accesstoken and refresh token in session
-        req.session.user = {access_token : access_token,
-                            refresh_token : refresh_token}
-
+        // Storing access_token and refresh token in session
+        req.session.user.access_token = access_token;
+        req.session.user.refresh_token = refresh_token;
 
         res.redirect('/users/dashboard');
       } else {
@@ -103,7 +159,7 @@ router.get('/refresh_token', async (req, res) => {
     const refresh_token = req.query.refresh_token;
     const authOptions = {
       url: 'https://accounts.spotify.com/api/token',
-      headers: { 'Authorization': 'Basic ' + (new Buffer.from(client_id + ':' + client_secret).toString('base64')) },
+      headers: { 'Authorization': 'Basic ' + (new Buffer.from(CLIENT_ID + ':' + CLIENT_SECRET).toString('base64')) },
       data: {
         grant_type: 'refresh_token',
         refresh_token: refresh_token
@@ -139,7 +195,7 @@ router.get('/userprofile', async(req, res) => {
     try {
       const { data : body } = await axios.get(authOptions.url, { headers: authOptions.headers });
      // res.render('profile', { user: body });
-     console.log({body})
+    //  console.log({body})
     } catch (error) {
       // Handle error
       console.log(error);
@@ -167,15 +223,15 @@ router.post("/acceptFriend/:id",async(req,res)=>{
  }
   let idFriend = userInfo.idFriend
   try {
-    checkValidId(id)
-    checkValidId(idFriend)  
+    helpers.checkValidId(id)
+    helpers.checkValidId(idFriend)  
   } catch (error) {
     return res.status(404).json({ error: error });
   }
   id = id.trim();
   idFriend = idFriend.trim();
 
-  const result = await acceptFriend(id,idFriend)
+  const result = await userData.acceptFriend(id,idFriend)
 
   return res.json(result)
   } catch (e) {
@@ -198,8 +254,8 @@ router.post("/sendFriendRequest/:id",async(req,res)=>{
   }
    let idFriend = userInfo.idFriend
    try {
-    checkValidId(id)
-    checkValidId(idFriend)  
+    helpers.checkValidId(id)
+    helpers.checkValidId(idFriend)  
   } catch (error) {
     return res.status(404).json({ error: error });
   }
@@ -207,7 +263,7 @@ router.post("/sendFriendRequest/:id",async(req,res)=>{
    id = id.trim();
    idFriend = idFriend.trim();
  
-   const result = await sendFriendRequest(id,idFriend)
+   const result = await userData.sendFriendRequest(id,idFriend)
  
    return res.json(result)
    } catch (e) {
@@ -230,8 +286,8 @@ router.post("/sendFriendRequest/:id",async(req,res)=>{
   }
    let idFriend = userInfo.idFriend
    try {
-    checkValidId(id)
-    checkValidId(idFriend)  
+    helpers.checkValidId(id)
+    helpers.checkValidId(idFriend)  
   } catch (error) {
     return res.status(404).json({ error: error });
   }
@@ -239,7 +295,7 @@ router.post("/sendFriendRequest/:id",async(req,res)=>{
    id = id.trim();
    idFriend = idFriend.trim();
  
-   const result = await rejectFriendRequest(id,idFriend)
+   const result = await userData.rejectFriendRequest(id,idFriend)
  
    return res.json(result)
    } catch (e) {
@@ -261,9 +317,11 @@ router.get('/dashboard', async (req, res) => {
       },
     };
 
+    console.log("here should print")
+    console.log(req.session.user)
     try {
       const { data : body } = await axios.get(authOptions.url, { headers: authOptions.headers });
-      return res.status(200).render('pages/userProfile', {
+      return res.status(200).render('pages/dashboard', {
         title: 'Dashboard',
         // username: user.username,
         // likeCount: user.likeCount,
@@ -279,18 +337,18 @@ router.get('/dashboard', async (req, res) => {
 
 router.get('/toptracks', async (req, res) => {
   //const {id} = req.session.user.id;
-  const id = '6445bf8f4a4c6219a9fcc324';
-  try {
-    const user = await userData.get(id);
-    // IDEA: Change all 'songs' to 'tracks' for consistency
-    user.topSongs = await userData.getTopTracks(id);
-    console.log(user.topSongs)
-    return res.status(200).render('top-songs', {
+  // const id = '6445bf8f4a4c6219a9fcc324';
+  if (req.session.user && req.session.user.access_token) {
+    // const user = await userData.get(id);
+    const access_token = req.session.user.access_token;
+    const topSongs = await userData.getTopTracks(access_token);
+    return res.status(200).render('pages/top-songs', {
       title: 'top-songs',
-      topSongs: user.topSongs
+      topSongs: topSongs
     })
-  } catch (e) {
-    return res.status(400).log(e);
+  }
+  else {
+    console.log('stop');
   }
 })
 

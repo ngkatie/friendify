@@ -16,7 +16,7 @@ const getTrackInformation = async (trackId) => {
     
     let thisTrack = {
         trackName: track.name,
-        trackURL: tracks[i].external_urls.spotify,
+        trackURL: track.external_urls.spotify,
         artistName: getArtists(track),
         albumName: track.album.name,
         image: track.album.images[0].url
@@ -27,9 +27,9 @@ const getTrackInformation = async (trackId) => {
 
 function getArtists(trackObj) {
     // Returns array of artists for a given track
-    let artists = [];
-    trackObj.artists.map(x => artists.push(x));
-    return artists;
+    let res = [];
+    trackObj.artists.map(x => res.push(x.name));
+    return res;
 }
 
 export {

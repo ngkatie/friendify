@@ -31,22 +31,16 @@ app.use(express.static(__dirname + '/public'))
    .use(cors())
    .use(cookieParser())
    .use(express.json())
-   .use(express.urlencoded({ extended: true }));
+   .use(express.urlencoded({ extended: true }))
+   .use(session({
+      name: 'AuthCookie',
+      secret: 'Secret!',
+      resave: false,
+      saveUninitialized: false,
+   }));
 
 app.engine('handlebars', exphbs.engine({ defaultLayout: 'main' }));
 app.set('view engine', 'handlebars');
-   
-
-
-
-
-app.use(session({
-   name: 'AuthCookie',
-   secret: 'Secret!',
-   resave: false,
-   saveUninitialized: false,
-   cookie: {maxAge: 6000}
-}));
 
 configRoutes(app);
 app.listen(3000, () => {

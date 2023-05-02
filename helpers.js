@@ -1,6 +1,7 @@
 import crypto from 'crypto';
 import {ObjectId} from 'mongodb';
 import axios from 'axios'; // "Request" library
+import EmailValidator from 'email-validator';
 //This file contains any functions that are too long or can be used in multiple places
 
 //function to hash a password
@@ -11,6 +12,19 @@ import axios from 'axios'; // "Request" library
 //   return hashedPassword;
 // }
 
+function checkLetter(char) {
+  if (/[a-z]+/gi.test(char)) {
+      return true;
+  }
+  return false;
+}
+
+function isNum(char) {
+  if (/\d+/g.test(char)) {
+      return true;
+  }
+  return false;
+}
 
 function includesUpper(str) {
   if (/[A-Z]+/g.test(str)) {
@@ -48,9 +62,6 @@ export function validString(str){
   return str;
 };
 
-
-
-
 export function checkString(str) {
   if (!str || typeof str !== `string` || str.trim().length === 0) {
     throw `Error: ${str} must be a non-empty string`;
@@ -60,12 +71,12 @@ export function checkString(str) {
 
 export function checkName(str) {
   let name = checkString(str);
-  if (name.length < 2 || name.length > 25) {
-      throw `Error: ${name} must be between 2 to 25 characters`;
+  if (name.length < 3 || name.length > 25) {
+      throw `Error: ${name} must be between 3 to 25 characters`;
   }
   for (let i = 0; i < name.length; i++) {
-      if (!checkLetter(name[i])) {
-          throw `Error: ${name} must only contain valid letters`;
+      if (!checkLetter(name[i]) && !isNum(name[i])) {
+          throw `Error: ${name} must only contain letters and numbers`;
       }
   }
   return name;
