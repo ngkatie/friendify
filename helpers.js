@@ -54,6 +54,7 @@ export function checkValidId(id){
     throw `id ${id} cannot be an empty string or just spaces`;
   id = id.trim();
   if (!ObjectId.isValid(id)) throw `invalid object ID ${id}`;
+  // return id;
 }
 
 export function validString(str){
