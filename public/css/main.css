@@ -6,5 +6,14 @@
   .track-item .track-image:hover + .track-info {
     opacity: 1;
   }
+
+.artist-item .artist-info {
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
   
+.artist-item .artist-image:hover + .artist-info {
+    opacity: 1;
+}
+
   
