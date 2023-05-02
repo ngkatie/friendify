@@ -105,7 +105,7 @@ export function idToString(mongoDocument) {
 
 export function checkId(str) {
   const idString = checkString(str);
-  const id = new ObjectId(str);
+  const id = new ObjectId(idString);
   if (!ObjectId.isValid(id)) {throw `Error: Invalid object ID`};
   // Returns ID as ObjectId, not string
   return id;

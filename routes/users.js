@@ -37,7 +37,7 @@ router
           id: authenticatedUser._id,
           username: req.body.usernameInput,
         };
-        console.log(req.session.user);
+        // console.log(req.session.user);
         const state = generateRandomString(16);
         res.cookie(stateKey, state);
 
@@ -317,8 +317,6 @@ router.get('/dashboard', async (req, res) => {
       },
     };
 
-    console.log("here should print")
-    console.log(req.session.user)
     try {
       const { data : body } = await axios.get(authOptions.url, { headers: authOptions.headers });
       return res.status(200).render('pages/dashboard', {
@@ -336,35 +334,48 @@ router.get('/dashboard', async (req, res) => {
   }})
 
 router.get('/toptracks', async (req, res) => {
-  //const {id} = req.session.user.id;
-  // const id = '6445bf8f4a4c6219a9fcc324';
-  if (req.session.user && req.session.user.access_token) {
-    // const user = await userData.get(id);
-    const access_token = req.session.user.access_token;
-    const topSongs = await userData.getTopTracks(access_token);
-    return res.status(200).render('pages/top-songs', {
-      title: 'top-songs',
-      topSongs: topSongs
+  try {
+    if (req.session.user && req.session.user.access_token) {
+      const { id } = req.session.user;
+      const access_token = req.session.user.access_token;
+
+      const topTracks = await userData.getTopTracks(id, access_token);
+      return res.status(200).render('pages/top-songs', {
+        title: 'Top Tracks',
+        topTracks: topTracks
+      })
+    }
+  } catch (e) {
+    console.log(e);
+    return res.status(400).render('pages/top-songs', {
+      title: 'Error',
+      err: true,
+      error: e
     })
-  }
-  else {
-    console.log('stop');
   }
 })
 
-// router.get('/topartists', async (req, res) => {
-//   const {id} = req.session.user.id;
-//   try {
-//     const user = await userData.get(id);
+router.get('/topartists', async (req, res) => {
+  try {
+    if (req.session.user && req.session.user.access_token) {
+      const { id } = req.session.user;
+      const access_token = req.session.user.access_token;
 
-//     return res.status(200).render('dashboard', {
-//       title: 'Dashboard',
-//       topSongs: user.topArtists
-//     })
-//   } catch (e) {
-//     return res.status(400).log(e);
-//   }
-// })
+      const topArtists = await userData.getTopArtists(id, access_token);
+      return res.status(200).render('pages/top-artists', {
+        title: 'Top Artists',
+        topArtists: topArtists
+      })
+    }
+  } catch (e) {
+    console.log(e);
+    return res.status(400).render('pages/top-artists', {
+      title: 'Error',
+      err: true,
+      error: e
+    })
+  }
+})
 
 router.get('/friends', async (req, res) => {
    const { id } = req.session.user.id;

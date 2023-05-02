@@ -75,9 +75,13 @@ const getAll = async () => {
 }
 
 const get = async (id) => {
-    id = helpers.checkId(id);
+  console.log(id);
+    const user_id = helpers.checkId(id);
+    console.log(user_id);
+
     const userCollection = await users();
-    const user = await userCollection.findOne({ _id: id });
+    const user = await userCollection.findOne({ _id: user_id });
+
     return helpers.idToString(user);
 }
 
@@ -287,20 +291,14 @@ const rejectFriendRequest = async(id,idFriend)=>{
 }
 
 // Note to self: Need to add time_range
-async function getTopTracks(access_token) {
+async function getTopTracks(user_id, access_token) {
 
   const tracksEndpoint = spotifyAPI.getEndpoint('me/top/tracks');
 
   let { data } = await spotifyAPI.callEndpoint(tracksEndpoint, access_token);
 
   if (data) { 
-    // const userCollection = await users();
-    // const user = await get(user_id);
-
-    // Clear outdated topSongs
-    // user.topSongs = [];
-    let topSongs = [];
-
+    let topTracks = [];
     let tracks = data.items;
     for (let i = 0; i < tracks.length; i++) {
       const newTrack = {
@@ -312,21 +310,68 @@ async function getTopTracks(access_token) {
         albumName: tracks[i].album.name,
         image: tracks[i].album.images[0].url
       }
-      // user.topSongs.push(newTrack);
-      topSongs.push(newTrack);
+      topTracks.push(newTrack);
     }
 
-    // const updatedUser = await userCollection.findOneAndUpdate(
-    //   { _id: user._id },
-    //   { $set: user },
-    //   { returnDocument: 'after' }
-    // )
+    const currId = helpers.checkId(user_id);
+    const userCollection = await users();
+    const user = await userCollection.findOne({_id: currId});
+    user.topTracks = topTracks;
+    
+    const updatedUser = await userCollection.findOneAndUpdate(
+      { _id: currId },
+      { $set: user },
+      { returnDocument: 'after' }
+    )
 
-    // if (updatedUser.lastErrorObject.n === 0) {
-    //   throw `Error: Could not store top tracks successfully`;
-    // }
+    if (updatedUser.lastErrorObject.n === 0) {
+      throw `Error: Could not store top tracks successfully`;
+    }
 
-    return topSongs;
+    return user.topTracks;
+  } 
+  else {
+    throw 'Error: Could not fetch top tracks from Spotify API';
+  }
+}
+
+async function getTopArtists(user_id, access_token) {
+
+  const artistsEndpoint = spotifyAPI.getEndpoint('me/top/artists');
+
+  let { data } = await spotifyAPI.callEndpoint(artistsEndpoint, access_token);
+
+  if (data) { 
+    let topArtists = [];
+    let artists = data.items;
+    for (let i = 0; i < artists.length; i++) {
+      const newArtist = {
+        _id: new ObjectId(),
+        artistName: artists[i].name,
+        artistURL: artists[i].external_urls.spotify,
+        spotifyId: artists[i].id,
+        followerCount: artists[i].followers.total,
+        image: artists[i].images[0].url
+      }
+      topArtists.push(newArtist);
+    }
+
+    const currId = helpers.checkId(user_id);
+    const userCollection = await users();
+    const user = await userCollection.findOne({_id: currId});
+    user.topArtists = topArtists;
+    
+    const updatedUser = await userCollection.findOneAndUpdate(
+      { _id: currId },
+      { $set: user },
+      { returnDocument: 'after' }
+    )
+
+    if (updatedUser.lastErrorObject.n === 0) {
+      throw `Error: Could not store top artists successfully`;
+    }
+
+    return user.topArtists;
   } 
   else {
     throw 'Error: Could not fetch top tracks from Spotify API';
@@ -341,5 +386,6 @@ export {
   acceptFriend, 
   sendFriendRequest, 
   rejectFriendRequest,
-  getTopTracks
+  getTopTracks,
+  getTopArtists
 }
