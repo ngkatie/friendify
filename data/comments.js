@@ -114,6 +114,7 @@ const removeComment= async(userId, commentId) => {
 
 const getAllComments= async(userId) => {
   checkValidId(userId)
+  let id=userId
   id = id.trim();
   const userCollection = await users();
   const user = await userCollection.findOne({ _id: new ObjectId(id) });

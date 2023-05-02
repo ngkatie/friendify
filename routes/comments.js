@@ -11,19 +11,23 @@ const router = Router();
 router
   .route("/:userId")
   .get(async (req, res) => {
+
+    if(req.session.user){
+    let userId = req.params.userId
     try {
-      req.params.userId = checkValidId(req.params.userId);
+      
+      userId= userId.trim()
+      checkValidId(userId);
     } catch (e) {
       return res.status(400).json({ error: e });
     }
     try {
-      const userId = req.params.userId;
-      await get(userId);
+      const user = await get(userId);
     } catch (e) {
       return res.status(404).json({ error: "No user with id" });
     }
     try {
-      const userId = req.params.userId;
+      //const userId = req.params.userId;
 
       const comment = await getAllComments(userId);
       res.status(200).json(comment);
@@ -31,6 +35,10 @@ router
     //   res.status(404).json({ error: "No comment for the given id" });
     console.log(e)
     }
+  }
+  else{
+    res.redirect("/")
+  }
   })
   /*
 * This route would be used to create a comment on users profile
@@ -40,6 +48,9 @@ router
 */
 .post(async (req, res) => {
 
+  if(req.session.user){
+    
+    let id = req.session.id
     const commentInfo = req.body
     if (!commentInfo) {
         return res.status(400).json("Comment text is empty");
@@ -56,8 +67,8 @@ router
 
      try{
         // commentInfo.userId = validId(req.session.user);
-        var id= commentInfo.id
-        checkValidId(req.body.id);
+        //var id= commentInfo.id
+        checkValidId(id);
         var userId = req.params.userId
         checkValidId(req.params.userId);
         const userData = await get(id.toString());
@@ -80,7 +91,9 @@ router
         //return lastelm[0];
 
         return res.json({
-         "userData": lastelm[0]
+          layout: null,
+          userData: lastelm[0],
+          userLoggedIn: true,
         })
         
       } catch (e) {
@@ -89,9 +102,11 @@ router
           .render("error", { errors: e});
         
       }
-    // } else {
-    //   res.redirect("/login");
-    // }
+    }
+    else{
+      res.redirect("/")
+    }
+ 
   })
 
   /*
