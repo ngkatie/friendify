@@ -18,8 +18,10 @@
             {{#each topSongs}}
                 <div class="track-item">
                     <img src="{{image}}" alt="Song Image" class="img-thumbnail" width="200" height="200">
-                    <h3>{{trackName}}</h3>
-                    <p>Artist: {{artistName}}</p>
+                    <div class="track-info"></div>
+                        <h3>{{trackName}}</h3>
+                        <p>Artist: {{artistName}}</p>
+                    </div>
                 </div>
             {{/each}}
     </div>
