@@ -1,0 +1,25 @@
+{{!--
+
+You can use this if they try to access a route that they should not be able to. You will redirect them here. For
+example, if they go to /protected without being logged in, or they try to access /admin without beinging logged in or
+they are not an admin user.
+
+--}}
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <link rel="stylesheet" href="../public/css/main-styles.css">
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Error</title>
+    <link rel="stylesheet" href="../public/css/lab10.css">
+</head>
+
+<body>
+    {{errorStatus}}: {{errorMessage}}
+</body>
+
+</html>

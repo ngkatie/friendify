@@ -29,3 +29,4 @@ export {
     checkString,
     checkStrArray
 }
+ 

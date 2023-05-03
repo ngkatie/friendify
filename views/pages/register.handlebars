@@ -2,7 +2,7 @@
 
 <div class="signup-form">
   <h2>REGISTRATION</h2>
-  <form method="POST">
+  <form method="POST" id="signup-form">
     <label for="usernameInput">Username:</label>
     <input type="text" id="usernameInput" name="usernameInput">
 
@@ -18,5 +18,6 @@
     <input type="submit" value="Register">
   </form>
 </div>
-
+ <div id="server">{{error}}</div>
+    <div id="error" hidden></div>
 <a href="/">Already have an account? Click here to log-in</a>

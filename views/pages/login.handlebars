@@ -2,7 +2,7 @@
 
 <div class="login-form">
   <h2>LOGIN</h2>
-  <form action="/users/login" method="POST">
+  <form action="/users/login" method="POST" id ="login-form" >
     <label for="usernameInput">Username:</label>
     <input type="text" id="usernameInput" name="usernameInput">
 
@@ -11,6 +11,12 @@
 
     <input type="submit" value="Login">
   </form>
+  <script src="/public/main.js"></script>
 </div>
+ <div id="server">{{error}}</div>
+    <div id="error" hidden></div>
+
 
 <a href="/users/register">Click here to register!</a>
+ <div id="server">{{error}}</div>
+    <div id="error" hidden></div>
