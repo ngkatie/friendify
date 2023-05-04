@@ -42,7 +42,7 @@ router
         res.cookie(stateKey, state);
 
         // your application requests authorization
-        const scope = 'user-read-private user-read-email user-top-read';
+        const scope = 'user-read-private user-read-email user-top-read user-read-recently-played';
         res.redirect(
           'https://accounts.spotify.com/authorize?' +
             querystring.stringify({
@@ -387,7 +387,6 @@ router
         const time_range = "medium_term";
 
         const topArtists = await userData.getTopArtists(id, time_range, access_token);
-        userData.getRecommendations(id, access_token);
         return res.status(200).render('pages/top-artists', {
           title: 'Top Artists',
           topArtists: topArtists

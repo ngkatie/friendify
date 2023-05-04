@@ -302,7 +302,7 @@ async function getTopTracks(user_id, time_range = "medium_term", access_token) {
   // const time_range = document.getElementById("timeSelect");
   const tracksEndpoint = spotifyAPI.getEndpoint('me/top/tracks');
 
-  let { data } = await spotifyAPI.callEndpoint(tracksEndpoint, time_range, 50, access_token);
+  let { data } = await spotifyAPI.callTopEndpoint(tracksEndpoint, time_range, 50, access_token);
 
   if (data) { 
     let topTracks = [];
@@ -347,7 +347,7 @@ async function getTopArtists(user_id, time_range = "medium_term", access_token) 
 
   const artistsEndpoint = spotifyAPI.getEndpoint('me/top/artists');
 
-  let { data } = await spotifyAPI.callEndpoint(artistsEndpoint, time_range, 50, access_token);
+  let { data } = await spotifyAPI.callTopEndpoint(artistsEndpoint, time_range, 50, access_token);
 
   if (data) { 
     let topArtists = [];
@@ -433,10 +433,6 @@ function constructSeedString(seedArray, limit) {
 
 async function getRecommendations(user_id, access_token) {
   const recsEndpoint = spotifyAPI.getEndpoint('recommendations');
-  
-  const currId = helpers.checkId(user_id);
-  const userCollection = await users();
-  const user = await userCollection.findOne({_id: currId});
 
   // Recommendations endpoint requires seed_tracks, seed_artists, and seed_genres
   let seed_tracks_ = await seedTracks(user_id, access_token);
@@ -472,11 +468,38 @@ async function getRecommendations(user_id, access_token) {
       }
       recommendations.push(newTrack);
     }
-    console.log(recommendations);
+    // console.log(recommendations);
     return recommendations;
   } 
   else {
     throw 'Error: Could not fetch recommendations from Spotify API';
+  }
+}
+
+async function getRecentlyPlayed(access_token) {
+  const recentEndpoint = spotifyAPI.getEndpoint('me/player/recently-played');
+  const limit = 20;   // 40% of 50 tracks
+  let { data } = await spotifyAPI.callRecentEndpoint(recentEndpoint, limit, access_token);
+  let items = data.items;
+
+  if (items) { 
+    let recentlyPlayed = [];
+    for (let i = 0; i < items.length; i++) {
+      const newTrack = {
+        trackName: items[i].track.name,
+        trackURL: items[i].track.external_urls.spotify,
+        spotifyId: items[i].track.id,
+        artistName: songs.getArtists(items[i].track),
+        albumName: items[i].track.album.name,
+        image: items[i].track.album.images[0].url
+      }
+      recentlyPlayed.push(newTrack);
+    }
+    console.log(recentlyPlayed);
+    return recentlyPlayed;
+  } 
+  else {
+    throw 'Error: Could not fetch recently played tracks from Spotify API';
   }
 }
 
@@ -491,5 +514,6 @@ export {
   rejectFriendRequest,
   getTopTracks,
   getTopArtists,
-  getRecommendations
+  getRecommendations,
+  getRecentlyPlayed
 }
