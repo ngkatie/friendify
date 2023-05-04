@@ -175,7 +175,6 @@ router.get('/refresh_token', async (req, res) => {
   }
 });
 
-
 // This function will be used to get data about the user from spotify
 router.get('/userprofile', async(req, res) => {
   // Check if user is authenticated
@@ -203,8 +202,6 @@ router.get('/userprofile', async(req, res) => {
     res.redirect('/login');
   }
 });
-
-
 
 router.post("/acceptFriend/:id",async(req,res)=>{
  try {
@@ -267,11 +264,10 @@ router.post("/sendFriendRequest/:id",async(req,res)=>{
      let message = e[1] ? e[1] : 'Internal Server Error';
      res.status(status).send({error: message});
    }
- })
+})
 
- router.post("/rejectFriendRequest/:id",async(req,res)=>{
+router.post("/rejectFriendRequest/:id",async(req,res)=>{
   try {
-     
    let id = req.params.id
    let userInfo = req.body
 
@@ -299,7 +295,7 @@ router.post("/sendFriendRequest/:id",async(req,res)=>{
      let message = e[1] ? e[1] : 'Internal Server Error';
      res.status(status).send({error: message});
    }
- })
+})
 
 router.get('/dashboard', async (req, res) => {
 
@@ -388,6 +384,7 @@ router
         const time_range = "medium_term";
 
         const topArtists = await userData.getTopArtists(id, time_range, access_token);
+        userData.getRecommendations(id, access_token);
         return res.status(200).render('pages/top-artists', {
           title: 'Top Artists',
           topArtists: topArtists
@@ -426,7 +423,7 @@ router
   })
 
 router.get('/friends', async (req, res) => {
-   const { id } = req.session.user.id;
+  const { id } = req.session.user.id;
   try {
     const user = await userData.get(id);
     const friends = user.friends;
@@ -448,5 +445,26 @@ router.get('/friends/:id', async (req, res) => {
   }
 })
 
+router.get('/dailyplaylist', async (req, res) => {
+  try {
+    if (req.session.user && req.session.user.access_token) {
+      const { id } = req.session.user;
+      const access_token = req.session.user.access_token;
+      // Time range is short_term since playlist should reflect user's most recent history
+      const time_range = "short_term";
+
+      return res.status(200).render('pages/daily-playlist', {
+        title: 'Custom Playlist',
+      })
+    }
+  } catch (e) {
+    console.log(e);
+    return res.status(400).render('pages/daily-playlist', {
+      title: 'Error',
+      err: true,
+      error: e
+    })
+  }
+})
 
 export default router
