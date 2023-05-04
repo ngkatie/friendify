@@ -389,6 +389,7 @@ async function getTopArtists(user_id, time_range = "medium_term", access_token) 
 
 async function seedTracks(user_id, access_token) {
   // Update topTracks in user's database
+  // Time range is short_term since playlist should reflect user's most recent history
   const topTracks = await getTopTracks(user_id, "short_term", access_token);
   let seed_tracks_ = [];
 
@@ -404,6 +405,7 @@ async function seedTracks(user_id, access_token) {
 
 async function seedArtists(user_id, access_token) {
   // Update topArtists info in user's database
+  // Time range is short_term since playlist should reflect user's most recent history
   const topArtists = await getTopArtists(user_id, "short_term", access_token);
   let seed_artists_ = [];
   let seed_genres_ = [];
@@ -416,7 +418,7 @@ async function seedArtists(user_id, access_token) {
     const genreArray = topArtists[i].genres;
     genreArray.forEach(genre => seed_genres_.push(genre));
   }
-  // Return array of strings representing artists' spotify IDs
+  // Return array of strings representing artists' spotify IDs and genres
   return { seed_artists_ , seed_genres_ };
 }
 
@@ -431,7 +433,7 @@ function constructSeedString(seedArray, limit) {
   return seedString;
 }
 
-async function getRecommendations(user_id, access_token) {
+async function getRecommendations(limit, user_id, access_token) {
   const recsEndpoint = spotifyAPI.getEndpoint('recommendations');
 
   // Recommendations endpoint requires seed_tracks, seed_artists, and seed_genres
@@ -447,7 +449,7 @@ async function getRecommendations(user_id, access_token) {
   const seed_artists = constructSeedString(seed_artists_, artist_limit);
   const seed_genres = constructSeedString(seed_genres_, genre_limit);
   const opt_params = {
-    limit: 22,
+    limit: limit,
     seed_tracks,
     seed_artists,
     seed_genres
@@ -468,7 +470,6 @@ async function getRecommendations(user_id, access_token) {
       }
       recommendations.push(newTrack);
     }
-    // console.log(recommendations);
     return recommendations;
   } 
   else {
@@ -476,9 +477,8 @@ async function getRecommendations(user_id, access_token) {
   }
 }
 
-async function getRecentlyPlayed(access_token) {
+async function getRecentlyPlayed(limit, access_token) {
   const recentEndpoint = spotifyAPI.getEndpoint('me/player/recently-played');
-  const limit = 20;   // 40% of 50 tracks
   let { data } = await spotifyAPI.callRecentEndpoint(recentEndpoint, limit, access_token);
   let items = data.items;
 
@@ -495,12 +495,52 @@ async function getRecentlyPlayed(access_token) {
       }
       recentlyPlayed.push(newTrack);
     }
-    console.log(recentlyPlayed);
     return recentlyPlayed;
   } 
   else {
     throw 'Error: Could not fetch recently played tracks from Spotify API';
   }
+}
+
+async function getTopCharts(limit, access_token) {
+  const PLAYLIST_ID = '37i9dQZEVXbLRQDuF5jeBp';     // Spotify ID for "Top 50 - USA" playlist
+  const chartsEndpoint = spotifyAPI.getEndpoint(`playlists/${PLAYLIST_ID}`);
+
+  let { data } = await spotifyAPI.callEndpoint(chartsEndpoint, access_token);
+  let allTracks = data.tracks.items;
+
+  if (allTracks) { 
+    let topCharts = [];
+    for (let i = 0; i < allTracks.length; i++) {
+      const newTrack = {
+        trackName: allTracks[i].track.name,
+        trackURL: allTracks[i].track.external_urls.spotify,
+        spotifyId: allTracks[i].track.id,
+        artistName: songs.getArtists(allTracks[i].track),
+        albumName: allTracks[i].track.album.name,
+        image: allTracks[i].track.album.images[0].url
+      }
+      topCharts.push(newTrack);
+    }
+    return topCharts.slice(0, limit);
+  } 
+  else {
+    throw "Error: Could not fetch 'Top 50' playlist from Spotify API";
+  }
+}
+
+async function getDailyPlaylist(user_id, access_token) {
+
+  const recTracks = await getRecommendations(22, user_id, access_token);
+  const recentTracks = await getRecentlyPlayed(20, access_token);
+  const chartTracks = await getTopCharts(5, access_token);
+
+  const longTermTracks = await getTopTracks(user_id, "short_term", access_token);
+  const jumpBackTracks = longTermTracks.slice(0,3);
+
+  const dailyPlaylist = recTracks.concat(recentTracks, chartTracks, jumpBackTracks);
+  
+  return dailyPlaylist;
 }
 
 export {
@@ -515,5 +555,7 @@ export {
   getTopTracks,
   getTopArtists,
   getRecommendations,
-  getRecentlyPlayed
+  getRecentlyPlayed,
+  getTopCharts,
+  getDailyPlaylist
 }

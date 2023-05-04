@@ -471,11 +471,11 @@ router.get('/dailyplaylist', async (req, res) => {
     if (req.session.user && req.session.user.access_token) {
       const { id } = req.session.user;
       const access_token = req.session.user.access_token;
-      // Time range is short_term since playlist should reflect user's most recent history
-      const time_range = "short_term";
-
+      const dailyPlaylist = await userData.getDailyPlaylist(id, access_token)
+  
       return res.status(200).render('pages/daily-playlist', {
         title: 'Custom Playlist',
+        dailyPlaylist: dailyPlaylist
       })
     }
   } catch (e) {
