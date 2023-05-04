@@ -75,15 +75,23 @@ const getAll = async () => {
 }
 
 const get = async (id) => {
-  console.log(id);
     const user_id = helpers.checkId(id);
-    console.log(user_id);
 
     const userCollection = await users();
     const user = await userCollection.findOne({ _id: user_id });
 
     return helpers.idToString(user);
 }
+
+const getByEmail = async (email) => {
+    email = email.trim();
+
+    const userCollection = await users();
+    const user = await userCollection.findOne({ email: email });
+
+    return helpers.idToString(user)._id;
+}
+
 
 //Friend2(id)(has pending req) accepts request of friend1(idFriend), request would be removed from pending requests of friend2
 const acceptFriend = async(id,idFriend) =>{
@@ -117,8 +125,8 @@ const acceptFriend = async(id,idFriend) =>{
       username: user.username,
       email: user.email,
       hashed_password: user.hashed_password,
-      top_songs: user.top_songs,
-      top_artists: user.top_artists,
+      topTracks: user.topTracks,
+      topSongs: user.topSongs,
       dailyPlaylist: user.dailyPlaylist,
       likeCount: user.likeCount,
       comments: user.comments,
@@ -131,8 +139,8 @@ const acceptFriend = async(id,idFriend) =>{
       username: user2.username,
       email: user2.email,
       hashed_password: user2.hashed_password,
-      top_songs: user2.top_songs,
-      top_artists: user2.top_artists,
+      topTracks: user2.topTracks,
+      topTracks: user2.topTracks,
       dailyPlaylist: user2.dailyPlaylist,
       likeCount: user2.likeCount,
       comments: user2.comments,
@@ -199,8 +207,8 @@ const sendFriendRequest= async(id,idFriend) =>{
       username: user2.username,
       email: user2.email,
       hashed_password: user2.hashed_password,
-      top_songs: user2.top_songs,
-      top_artists: user2.top_artists,
+      topTracks: user2.topTracks,
+      topArtists: user2.topArtists,
       dailyPlaylist: user2.dailyPlaylist,
       likeCount: user2.likeCount,
       comments: user2.comments,
@@ -228,8 +236,6 @@ const sendFriendRequest= async(id,idFriend) =>{
   return  updateInfo.value;
  
 }
-
-//console.log(await sendFriendRequest("644b109ba2ab059f766fa4e6","644b109ba2ab059f766fa4e5"))
 
 //removes the given id from pendingRequests of user
 const rejectFriendRequest = async(id,idFriend)=>{
@@ -262,8 +268,8 @@ const rejectFriendRequest = async(id,idFriend)=>{
       username: user2.username,
       email: user2.email,
       hashed_password: user2.hashed_password,
-      top_songs: user2.top_songs,
-      top_artists: user2.top_artists,
+      topTracks: user2.topTracks,
+      topArtists: user2.topArtists,
       dailyPlaylist: user2.dailyPlaylist,
       likeCount: user2.likeCount,
       comments: user2.comments,
@@ -384,6 +390,7 @@ export {
   checkUser,
   getAll, 
   get, 
+  getByEmail,
   acceptFriend, 
   sendFriendRequest, 
   rejectFriendRequest,

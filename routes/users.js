@@ -429,14 +429,15 @@ router
   })
 
 router.get('/friends', async (req, res) => {
-   const { id } = req.session.user.id;
+   const id = req.session.user.id;
   try {
     const user = await userData.get(id);
     const friends = user.friends;
-    return res.status(200).render('friendsDashboard', { title: "Friends", friends: friends });
+    return res.status(200).render('pages/friendsDashboard', { title: "Friends", friends: friends });
 
   } catch (e) {
-    return res.status(400).log(e);
+    console.error(e)
+    return res.status(400);
   }
 });
 
