@@ -9,6 +9,7 @@ import { acceptFriend, sendFriendRequest,rejectFriendRequest,getAll,get } from '
 import * as helpers from '../helpers.js';
 import axios from 'axios'; // Axios library
 import dotenv from 'dotenv';
+import xss from 'xss';
 
 
 dotenv.config();
@@ -31,7 +32,7 @@ router
   .route('/login')
   .post(async (req, res) => {
     try{
-      let authenticatedUser = await userData.checkUser(req.body.usernameInput, req.body.passwordInput);
+      let authenticatedUser = await userData.checkUser(xss(req.body.usernameInput), xss(req.body.passwordInput));
       if (authenticatedUser) {
         req.session.user = {
           id: authenticatedUser._id,
@@ -82,6 +83,11 @@ router
       const email = helpers.checkEmail(emailInput);
       const password = helpers.checkPassword(passwordInput);
       const confirmPassword = helpers.checkPassword(confirmPasswordInput);
+
+      username = xss(username);
+      email = xss(email);
+      password = xss(password);
+      confirmPassword = xss(confirmPassword);
 
       if (confirmPassword !== password) {
         return res.status(400).render('pages/register', { 
@@ -212,6 +218,9 @@ router.post("/acceptFriend/:id",async(req,res)=>{
   let id = req.params.id
   let userInfo = req.body
 
+  id = xss(id);
+  userInfo = xss(userInfo);
+
   if (!userInfo || Object.keys(userInfo).length === 0) {
    return res
      .status(400)
@@ -243,6 +252,9 @@ router.post("/sendFriendRequest/:id",async(req,res)=>{
    let id = req.params.id
    let userInfo = req.body
 
+    id = xss(id);
+    userInfo = xss(userInfo);
+
    if (!userInfo || Object.keys(userInfo).length === 0) {
     return res
       .status(400)
@@ -273,6 +285,9 @@ router.post("/rejectFriendRequest/:id",async(req,res)=>{
   try {
    let id = req.params.id
    let userInfo = req.body
+
+    id = xss(id);
+    userInfo = xss(userInfo);
 
    if (!userInfo || Object.keys(userInfo).length === 0) {
     return res
@@ -361,6 +376,8 @@ router
         const access_token = req.session.user.access_token;
         const { time_range } = req.body;
 
+        time_range = xss(time_range);
+
         const topTracks = await userData.getTopTracks(id, time_range, access_token);
         return res.status(200).render('pages/top-tracks', {
           title: 'Top Tracks',
@@ -408,6 +425,8 @@ router
         const { id } = req.session.user;
         const access_token = req.session.user.access_token;
         const { time_range } = req.body;
+
+        time_range = xss(time_range);
   
         const topArtists = await userData.getTopArtists(id, time_range, access_token);
         return res.status(200).render('pages/top-artists', {
