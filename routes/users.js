@@ -215,18 +215,9 @@ router.get('/userprofile', async(req, res) => {
 router.post("/acceptFriend/:id",async(req,res)=>{
  try {
     
-  let id = req.params.id
-  let userInfo = req.body
+  let idFriend = req.params.id
+  let id = req.session.user.id
 
-  id = xss(id);
-  userInfo = xss(userInfo);
-
-  if (!userInfo || Object.keys(userInfo).length === 0) {
-   return res
-     .status(400)
-     .json({error: 'There are no fields in the request body'});
- }
-  let idFriend = userInfo.idFriend
   try {
     helpers.checkValidId(id)
     helpers.checkValidId(idFriend)  
@@ -238,11 +229,9 @@ router.post("/acceptFriend/:id",async(req,res)=>{
 
   const result = await userData.acceptFriend(id,idFriend)
 
-  return res.json(result)
+  return res.status(200).redirect('/users/pendingRequests')
   } catch (e) {
-    let status = e[0] ? e[0] : 500;
-    let message = e[1] ? e[1] : 'Internal Server Error';
-    res.status(status).send({error: message});
+    res.status(500).redirect('/users/pendingRequests')
   }
 })
 
@@ -282,37 +271,26 @@ router.post("/sendFriendRequest",async(req,res)=>{
 
 router.post("/rejectFriendRequest/:id",async(req,res)=>{
   try {
-   let id = req.params.id
-   let userInfo = req.body
-
-    id = xss(id);
-    userInfo = xss(userInfo);
-
-   if (!userInfo || Object.keys(userInfo).length === 0) {
-    return res
-      .status(400)
-      .json({error: 'There are no fields in the request body'});
-  }
-   let idFriend = userInfo.idFriend
-   try {
-    helpers.checkValidId(id)
-    helpers.checkValidId(idFriend)  
-  } catch (error) {
-    return res.status(404).json({ error: error });
-  }
- 
-   id = id.trim();
-   idFriend = idFriend.trim();
- 
-   const result = await userData.rejectFriendRequest(id,idFriend)
- 
-   return res.json(result)
-   } catch (e) {
-     let status = e[0] ? e[0] : 500;
-     let message = e[1] ? e[1] : 'Internal Server Error';
-     res.status(status).send({error: message});
-   }
-})
+    
+    let idFriend = req.params.id
+    let id = req.session.user.id
+  
+    try {
+      helpers.checkValidId(id)
+      helpers.checkValidId(idFriend)  
+    } catch (error) {
+      return res.status(404).json({ error: error });
+    }
+    id = id.trim();
+    idFriend = idFriend.trim();
+  
+    const result = await userData.rejectFriendRequest(idFriend,id)
+  
+    return res.status(200).redirect('/users/pendingRequests')
+    } catch (e) {
+      res.status(500).redirect('/users/pendingRequests')
+    }
+  })
 
 router.get('/dashboard', async (req, res) => {
 
@@ -504,6 +482,35 @@ router.get('/dailyplaylist', async (req, res) => {
   } catch (e) {
     console.log(e);
     return res.status(400).render('pages/daily-playlist', {
+      title: 'Error',
+      err: true,
+      error: e
+    })
+  }
+})
+
+router.get('/pendingRequests', async (req, res) => {
+  try {
+    if (req.session.user && req.session.user.access_token) {
+      let { id } = req.session.user;
+      const user = await userData.get(id);
+      let pendingRequests = user.pendingRequests;
+
+      const pendingObjects = [];
+
+    for (const pendingId of pendingRequests) {
+      const pendingObject = await get(pendingId);
+      pendingObjects.push(pendingObject);
+    }
+    console.log(pendingObjects)
+      return res.status(200).render('pages/pendingRequests', {
+        title: 'Pending Requests',
+        pendingRequests: pendingObjects
+      })
+    }
+  } catch (e) {
+    console.log(e);
+    return res.status(400).render('pages/pendingRequests', {
       title: 'Error',
       err: true,
       error: e
