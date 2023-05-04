@@ -79,10 +79,10 @@ router
     } = req.body;
 
     try {
-      const username = helpers.checkName(usernameInput);
-      const email = helpers.checkEmail(emailInput);
-      const password = helpers.checkPassword(passwordInput);
-      const confirmPassword = helpers.checkPassword(confirmPasswordInput);
+      let username = helpers.checkName(usernameInput);
+      let email = helpers.checkEmail(emailInput);
+      let password = helpers.checkPassword(passwordInput);
+      let confirmPassword = helpers.checkPassword(confirmPasswordInput);
 
       username = xss(username);
       email = xss(email);
@@ -374,7 +374,7 @@ router
       if (req.session.user && req.session.user.access_token) {
         const { id } = req.session.user;
         const access_token = req.session.user.access_token;
-        const { time_range } = req.body;
+        let { time_range } = req.body;
 
         time_range = xss(time_range);
 
@@ -423,7 +423,7 @@ router
       if (req.session.user && req.session.user.access_token) {
         const { id } = req.session.user;
         const access_token = req.session.user.access_token;
-        const { time_range } = req.body;
+        let { time_range } = req.body;
 
         time_range = xss(time_range);
   
