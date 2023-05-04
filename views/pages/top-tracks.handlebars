@@ -29,9 +29,13 @@
         <div class="results-container">
             {{#each topTracks}}
                 <div class="track-item">
+                    <div class="track-image">
                     <img src="{{image}}" alt="Song Image" class="img-thumbnail" width="200" height="200">
-                    <h3>{{trackName}}</h3>
-                    <p>Artist: {{artistName}}</p>
+                    </div>
+                    <div class="track-info">
+                        <h3>{{trackName}}</h3>
+                        <p>Artist: {{artistName}}</p>
+                    </div>
                 </div>
             {{/each}}
     </div>

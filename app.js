@@ -19,6 +19,8 @@ const __dirname = path.dirname(__filename);
 
 const app = express();
 
+const staticDir = express.static(__dirname + '/public');
+
 
 const rewriteUnsupportedBrowserMethods = (req, res, next) => {
    if (req.body && req.body._method) {
@@ -27,7 +29,7 @@ const rewriteUnsupportedBrowserMethods = (req, res, next) => {
    }
 }
 
-app.use(express.static(__dirname + '/public'))
+app.use('/public', staticDir)
    .use(cors())
    .use(cookieParser())
    .use(express.json())
