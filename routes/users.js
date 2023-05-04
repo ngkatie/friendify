@@ -89,7 +89,6 @@ router
       }
 
       const newUser = await userData.create(username, email, password);
-      // console.log(newUser);
       if (newUser) {
         return res.status(200).redirect('/');
       }
@@ -330,49 +329,101 @@ router.get('/dashboard', async (req, res) => {
     }
   }})
 
-router.get('/toptracks', async (req, res) => {
-  try {
-    if (req.session.user && req.session.user.access_token) {
-      const { id } = req.session.user;
-      const access_token = req.session.user.access_token;
+router
+  .route('/toptracks')
+  .get(async (req, res) => {
+    try {
+      if (req.session.user && req.session.user.access_token) {
+        const { id } = req.session.user;
+        const access_token = req.session.user.access_token;
+        // Default time range is medium term (6 months)
+        const time_range = "medium_term";
 
-      const topTracks = await userData.getTopTracks(id, access_token);
-      return res.status(200).render('pages/top-songs', {
-        title: 'Top Tracks',
-        topTracks: topTracks
+        const topTracks = await userData.getTopTracks(id, time_range, access_token);
+        return res.status(200).render('pages/top-tracks', {
+          title: 'Top Tracks',
+          topTracks: topTracks
+        })
+      }
+    } catch (e) {
+      console.log(e);
+      return res.status(400).render('pages/top-tracks', {
+        title: 'Error',
+        err: true,
+        error: e
       })
     }
-  } catch (e) {
-    console.log(e);
-    return res.status(400).render('pages/top-songs', {
-      title: 'Error',
-      err: true,
-      error: e
-    })
-  }
-})
+  })
+  .post(async (req, res) => {
+    try {
+      // POST request for changing time range
+      if (req.session.user && req.session.user.access_token) {
+        const { id } = req.session.user;
+        const access_token = req.session.user.access_token;
+        const { time_range } = req.body;
 
-router.get('/topartists', async (req, res) => {
-  try {
-    if (req.session.user && req.session.user.access_token) {
-      const { id } = req.session.user;
-      const access_token = req.session.user.access_token;
-
-      const topArtists = await userData.getTopArtists(id, access_token);
-      return res.status(200).render('pages/top-artists', {
-        title: 'Top Artists',
-        topArtists: topArtists
+        const topTracks = await userData.getTopTracks(id, time_range, access_token);
+        return res.status(200).render('pages/top-tracks', {
+          title: 'Top Tracks',
+          topTracks: topTracks
+        })
+      }
+    } catch (e) {
+      console.log(e);
+      return res.status(400).render('pages/top-tracks', {
+        title: 'Error',
+        err: true,
+        error: e
       })
     }
-  } catch (e) {
-    console.log(e);
-    return res.status(400).render('pages/top-artists', {
-      title: 'Error',
-      err: true,
-      error: e
-    })
-  }
-})
+  })
+
+router
+  .route('/topartists')
+  .get(async (req, res) => {
+    try {
+      if (req.session.user && req.session.user.access_token) {
+        const { id } = req.session.user;
+        const access_token = req.session.user.access_token;
+        const time_range = "medium_term";
+
+        const topArtists = await userData.getTopArtists(id, time_range, access_token);
+        return res.status(200).render('pages/top-artists', {
+          title: 'Top Artists',
+          topArtists: topArtists
+        })
+      }
+    } catch (e) {
+      console.log(e);
+      return res.status(400).render('pages/top-artists', {
+        title: 'Error',
+        err: true,
+        error: e
+      })
+    }
+  })
+  .post(async (req, res) => {
+    try {
+      if (req.session.user && req.session.user.access_token) {
+        const { id } = req.session.user;
+        const access_token = req.session.user.access_token;
+        const { time_range } = req.body;
+  
+        const topArtists = await userData.getTopArtists(id, time_range, access_token);
+        return res.status(200).render('pages/top-artists', {
+          title: 'Top Artists',
+          topArtists: topArtists
+        })
+      }
+    } catch (e) {
+      console.log(e);
+      return res.status(400).render('pages/top-artists', {
+        title: 'Error',
+        err: true,
+        error: e
+      })
+    }
+  })
 
 router.get('/friends', async (req, res) => {
    const { id } = req.session.user.id;
