@@ -31,7 +31,7 @@ async function getAccessToken() {
     }
 }
 
-async function callEndpoint(endpoint, time_range, access_token) {
+async function callEndpoint(endpoint, time_range, limit, access_token) {
     let data = undefined;
     const authOptions = {
         url: endpoint,
@@ -39,8 +39,40 @@ async function callEndpoint(endpoint, time_range, access_token) {
           Authorization: `Bearer ${access_token}`,
         },
         params: { 
-            limit: 50, 
+            limit: limit, 
             time_range: time_range 
+        },
+    };
+    try {
+        data = await axios.get(authOptions.url, { 
+            headers: authOptions.headers, 
+            params: authOptions.params 
+        });
+        return data;
+    } catch (e) {
+        console.log(e);
+    }
+}
+
+async function callRecsEndpoint(endpoint, opt_params, access_token) {
+    let data = undefined;
+    let {
+        limit,
+        seed_tracks, 
+        seed_artists, 
+        seed_genres 
+    } = opt_params;
+    
+    const authOptions = {
+        url: endpoint,
+        headers: {
+          Authorization: `Bearer ${access_token}`,
+        },
+        params: { 
+            limit: limit,
+            seed_tracks: seed_tracks,
+            seed_artists: seed_artists,
+            seed_genres: seed_genres
         },
     };
     try {
@@ -57,5 +89,6 @@ async function callEndpoint(endpoint, time_range, access_token) {
 export {
     getEndpoint,
     getAccessToken,
-    callEndpoint
+    callEndpoint,
+    callRecsEndpoint
 }
