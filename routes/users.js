@@ -433,7 +433,17 @@ router.get('/friends', async (req, res) => {
   try {
     const user = await userData.get(id);
     const friends = user.friends;
-    return res.status(200).render('pages/friendsDashboard', { title: "Friends", friends: friends });
+
+    const friendObjects = [];
+
+    for (const friendId of friends) {
+      const friendObject = await get(friendId);
+      friendObjects.push(friendObject);
+    }
+
+    console.log(friendObjects)
+
+    return res.status(200).render('pages/friendsDashboard', { title: "Friends", friends: friendObjects });
 
   } catch (e) {
     console.error(e)

@@ -83,6 +83,7 @@ const get = async (id) => {
     return helpers.idToString(user);
 }
 
+
 const getByEmail = async (email) => {
     email = email.trim();
 
