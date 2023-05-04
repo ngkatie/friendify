@@ -42,7 +42,7 @@ router
         res.cookie(stateKey, state);
 
         // your application requests authorization
-        const scope = 'user-read-private user-read-email user-top-read';
+        const scope = 'user-read-private user-read-email user-top-read user-read-recently-played';
         res.redirect(
           'https://accounts.spotify.com/authorize?' +
             querystring.stringify({
@@ -387,7 +387,6 @@ router
         const time_range = "medium_term";
 
         const topArtists = await userData.getTopArtists(id, time_range, access_token);
-        userData.getRecommendations(id, access_token);
         return res.status(200).render('pages/top-artists', {
           title: 'Top Artists',
           topArtists: topArtists
@@ -472,11 +471,11 @@ router.get('/dailyplaylist', async (req, res) => {
     if (req.session.user && req.session.user.access_token) {
       const { id } = req.session.user;
       const access_token = req.session.user.access_token;
-      // Time range is short_term since playlist should reflect user's most recent history
-      const time_range = "short_term";
-
+      const dailyPlaylist = await userData.getDailyPlaylist(id, access_token)
+  
       return res.status(200).render('pages/daily-playlist', {
         title: 'Custom Playlist',
+        dailyPlaylist: dailyPlaylist
       })
     }
   } catch (e) {
