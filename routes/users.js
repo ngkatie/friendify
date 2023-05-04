@@ -246,21 +246,22 @@ router.post("/acceptFriend/:id",async(req,res)=>{
   }
 })
 
-router.post("/sendFriendRequest/:id",async(req,res)=>{
+router.post("/sendFriendRequest",async(req,res)=>{
   try {
-     
-   let id = req.params.id
-   let userInfo = req.body
 
-    id = xss(id);
-    userInfo = xss(userInfo);
+   let friendEmail = req.body.email
+   let id = req.session.user.id
 
-   if (!userInfo || Object.keys(userInfo).length === 0) {
+    friendEmail = xss(friendEmail);
+
+   if (!friendEmail || Object.keys(friendEmail).length === 0) {
     return res
       .status(400)
       .json({error: 'There are no fields in the request body'});
   }
-   let idFriend = userInfo.idFriend
+
+    let idFriend = await userData.getByEmail(friendEmail);
+
    try {
     helpers.checkValidId(id)
     helpers.checkValidId(idFriend)  
@@ -273,11 +274,9 @@ router.post("/sendFriendRequest/:id",async(req,res)=>{
  
    const result = await userData.sendFriendRequest(id,idFriend)
  
-   return res.json(result)
+   return res.status(200).redirect("/users/friends?success=true")
    } catch (e) {
-     let status = e[0] ? e[0] : 500;
-     let message = e[1] ? e[1] : 'Internal Server Error';
-     res.status(status).send({error: message});
+     return res.status(500).redirect("/users/friends?error=true")
    }
 })
 
@@ -456,7 +455,12 @@ router.get('/friends', async (req, res) => {
       friendObjects.push(friendObject);
     }
 
-    console.log(friendObjects)
+    if(req.query.success){
+      return res.status(200).render('pages/friendsDashboard', { title: "Friends", friends: friendObjects, success: true });
+    }
+    if(req.query.error){
+      return res.status(200).render('pages/friendsDashboard', { title: "Friends", friends: friendObjects, error: true });
+    }
 
     return res.status(200).render('pages/friendsDashboard', { title: "Friends", friends: friendObjects });
 

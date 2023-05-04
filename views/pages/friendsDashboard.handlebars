@@ -1,8 +1,14 @@
-<form action="/friend" method="POST">
+<form action="/users/sendFriendRequest" method="POST">
         <label for="email">Enter your friend's email:</label>
         <input type="email" id="email" name="email" required>
         <br>
-        <button type="submit">Add Friend</button>
+        <button type="submit">Send Friend Request</button>
+        {{#if success}}
+        <p>Friend request sent!</p>
+        {{/if}}
+        {{#if error}}
+        <p>Could not send friend request.</p>
+        {{/if}}
 </form>
 
 <div id="friends-list">
@@ -11,7 +17,7 @@
         {{#each friends}}
         <div class="friend">
             <h3>{{username}}</h3>
-            <a href="/friendProfile/{{_id}}">View Profile</a>
+            <a href="/users/friendProfile/{{_id}}">View Friend Profile</a>
         </div>
         {{/each}}
     </div>
