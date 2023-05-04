@@ -290,13 +290,12 @@ const rejectFriendRequest = async(id,idFriend)=>{
 
 }
 
-// Note to self: Need to add time_range
 async function getTopTracks(user_id, time_range = "medium_term", access_token) {
 
   // const time_range = document.getElementById("timeSelect");
   const tracksEndpoint = spotifyAPI.getEndpoint('me/top/tracks');
 
-  let { data } = await spotifyAPI.callEndpoint(tracksEndpoint, time_range, access_token);
+  let { data } = await spotifyAPI.callEndpoint(tracksEndpoint, time_range, 50, access_token);
 
   if (data) { 
     let topTracks = [];
@@ -309,6 +308,7 @@ async function getTopTracks(user_id, time_range = "medium_term", access_token) {
         spotifyId: tracks[i].id,
         artistName: songs.getArtists(tracks[i]),
         albumName: tracks[i].album.name,
+        // genres: tracks[i].album.genres,
         image: tracks[i].album.images[0].url
       }
       topTracks.push(newTrack);
@@ -340,7 +340,7 @@ async function getTopArtists(user_id, time_range = "medium_term", access_token) 
 
   const artistsEndpoint = spotifyAPI.getEndpoint('me/top/artists');
 
-  let { data } = await spotifyAPI.callEndpoint(artistsEndpoint, time_range, access_token);
+  let { data } = await spotifyAPI.callEndpoint(artistsEndpoint, time_range, 50, access_token);
 
   if (data) { 
     let topArtists = [];
@@ -351,6 +351,7 @@ async function getTopArtists(user_id, time_range = "medium_term", access_token) 
         artistName: artists[i].name,
         artistURL: artists[i].external_urls.spotify,
         spotifyId: artists[i].id,
+        genres: artists[i].genres,
         followerCount: artists[i].followers.total,
         image: artists[i].images[0].url
       }
@@ -379,6 +380,99 @@ async function getTopArtists(user_id, time_range = "medium_term", access_token) 
   }
 }
 
+async function seedTracks(user_id, access_token) {
+  // Update topTracks in user's database
+  const topTracks = await getTopTracks(user_id, "short_term", access_token);
+  let seed_tracks_ = [];
+
+  for (let i = 0; i < topTracks.length; i++) {
+    const trackId = topTracks[i].spotifyId;
+    if (trackId && trackId !== "") {
+      seed_tracks_.push(trackId);
+    }
+  }
+  // Return array of strings representing tracks' spotify IDs
+  return seed_tracks_;
+}
+
+async function seedArtists(user_id, access_token) {
+  // Update topArtists info in user's database
+  const topArtists = await getTopArtists(user_id, "short_term", access_token);
+  let seed_artists_ = [];
+  let seed_genres_ = [];
+
+  for (let i = 0; i < topArtists.length; i++) {
+    const artistId = topArtists[i].spotifyId;
+    if (artistId && artistId !== "") {
+      seed_artists_.push(artistId);
+    }
+    const genreArray = topArtists[i].genres;
+    genreArray.forEach(genre => seed_genres_.push(genre));
+  }
+  // Return array of strings representing artists' spotify IDs
+  return { seed_artists_ , seed_genres_ };
+}
+
+function constructSeedString(seedArray, limit) {
+  // Base seed (first element)
+  let seedString = seedArray[0];
+
+  // If limit > 1, concatenate other seed data
+  for (let i = 1; i < limit && i < seedArray.length; i++) {
+    seedString = seedString + "," + seedArray[i];
+  }
+  return seedString;
+}
+
+async function getRecommendations(user_id, access_token) {
+  const recsEndpoint = spotifyAPI.getEndpoint('recommendations');
+  
+  const currId = helpers.checkId(user_id);
+  const userCollection = await users();
+  const user = await userCollection.findOne({_id: currId});
+
+  // Recommendations endpoint requires seed_tracks, seed_artists, and seed_genres
+  let seed_tracks_ = await seedTracks(user_id, access_token);
+  let { seed_artists_ , seed_genres_ } = await seedArtists(user_id, access_token);
+
+  // Up to 5 seed values between 3 fields
+  const track_limit = 2;
+  const artist_limit = 2;
+  const genre_limit = 1;
+
+  const seed_tracks = constructSeedString(seed_tracks_, track_limit);
+  const seed_artists = constructSeedString(seed_artists_, artist_limit);
+  const seed_genres = constructSeedString(seed_genres_, genre_limit);
+  const opt_params = {
+    limit: 22,
+    seed_tracks,
+    seed_artists,
+    seed_genres
+  }
+
+  let { data } = await spotifyAPI.callRecsEndpoint(recsEndpoint, opt_params, access_token);
+  let tracks = data.tracks;
+  if (tracks) { 
+    let recommendations = [];
+    for (let i = 0; i < tracks.length; i++) {
+      const newTrack = {
+        trackName: tracks[i].name,
+        trackURL: tracks[i].external_urls.spotify,
+        spotifyId: tracks[i].id,
+        artistName: songs.getArtists(tracks[i]),
+        albumName: tracks[i].album.name,
+        image: tracks[i].album.images[0].url
+      }
+      recommendations.push(newTrack);
+    }
+    console.log(recommendations);
+    return recommendations;
+  } 
+  else {
+    throw 'Error: Could not fetch recommendations from Spotify API';
+  }
+}
+
 export {
   create, 
   checkUser,
@@ -388,5 +482,6 @@ export {
   sendFriendRequest, 
   rejectFriendRequest,
   getTopTracks,
-  getTopArtists
+  getTopArtists,
+  getRecommendations
 }
