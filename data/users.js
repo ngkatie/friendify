@@ -291,11 +291,12 @@ const rejectFriendRequest = async(id,idFriend)=>{
 }
 
 // Note to self: Need to add time_range
-async function getTopTracks(user_id, access_token) {
+async function getTopTracks(user_id, time_range = "medium_term", access_token) {
 
+  // const time_range = document.getElementById("timeSelect");
   const tracksEndpoint = spotifyAPI.getEndpoint('me/top/tracks');
 
-  let { data } = await spotifyAPI.callEndpoint(tracksEndpoint, access_token);
+  let { data } = await spotifyAPI.callEndpoint(tracksEndpoint, time_range, access_token);
 
   if (data) { 
     let topTracks = [];
@@ -335,11 +336,11 @@ async function getTopTracks(user_id, access_token) {
   }
 }
 
-async function getTopArtists(user_id, access_token) {
+async function getTopArtists(user_id, time_range = "medium_term", access_token) {
 
   const artistsEndpoint = spotifyAPI.getEndpoint('me/top/artists');
 
-  let { data } = await spotifyAPI.callEndpoint(artistsEndpoint, access_token);
+  let { data } = await spotifyAPI.callEndpoint(artistsEndpoint, time_range, access_token);
 
   if (data) { 
     let topArtists = [];

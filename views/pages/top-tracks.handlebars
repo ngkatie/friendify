@@ -1,6 +1,8 @@
 <div class="container">    
-    
-    <form action="/users/topartists" method="POST">
+
+    <script src="../../public/js/top_tracks.js"></script>
+
+    <form action="/users/toptracks" method="POST">
         <label for="time_range">Select Timeframe:</label>
         <select id="time_range" name="time_range">
             <option value="short_term">Last Month</option>
@@ -14,8 +16,8 @@
         <a href="/users/dashboard">
             <button>Back to Profile</button>
         </a>
-        <a href="/users/toptracks">
-            <button>Top 50 Tracks</button>
+        <a href="/users/topartists">
+            <button>Top 50 Artists</button>
         </a>
         <a href="/users/dailyplaylist">
             <button>Daily Playlist</button>
@@ -23,15 +25,15 @@
     </div>
 
     <div class="results">
-        <h2>Top 50 Artists</h2>
+        <h2>Top 50 Tracks</h2>
         <div class="results-container">
-            {{#each topArtists}}
-                <div class="result">
-                    <img src="{{image}}" alt="Artist Image" class="img-thumbnail" width="200" height="200">
-                    <h3>{{name}}</h3>
+            {{#each topTracks}}
+                <div class="track-item">
+                    <img src="{{image}}" alt="Song Image" class="img-thumbnail" width="200" height="200">
+                    <h3>{{trackName}}</h3>
+                    <p>Artist: {{artistName}}</p>
                 </div>
             {{/each}}
-        </div>
     </div>
-    
+
 </div>
