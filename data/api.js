@@ -31,17 +31,23 @@ async function getAccessToken() {
     }
 }
 
-async function callEndpoint(endpoint, access_token) {
+async function callEndpoint(endpoint, time_range, access_token) {
     let data = undefined;
     const authOptions = {
         url: endpoint,
         headers: {
           Authorization: `Bearer ${access_token}`,
-        }
+        },
+        params: { 
+            limit: 50, 
+            time_range: time_range 
+        },
     };
     try {
-        data = await axios.get(authOptions.url, { headers: authOptions.headers });
-        // console.log(data);
+        data = await axios.get(authOptions.url, { 
+            headers: authOptions.headers, 
+            params: authOptions.params 
+        });
         return data;
     } catch (e) {
         console.log(e);
