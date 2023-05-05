@@ -238,11 +238,11 @@ const sendFriendRequest= async(id,idFriend) =>{
  
 }
 
-//removes the given id from pendingRequests of user
+//removes the given id from pendingRequests of user, idFriend(has the request)
 const rejectFriendRequest = async(id,idFriend)=>{
 
-  checkValidId(id)
-  checkValidId(idFriend)
+  helpers.checkValidId(id)
+  helpers.checkValidId(idFriend)
 
 
   id = id.trim();

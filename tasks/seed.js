@@ -19,12 +19,15 @@ let id_4 = await users.getByEmail('alicejones@example.com');
 
 
 //await users.sendFriendRequest(id_user, id_1);
-await users.sendFriendRequest(id_user, id_2);
-await users.sendFriendRequest(id_user, id_3);
-await users.sendFriendRequest(id_user, id_4);
+// await users.sendFriendRequest(id_user, id_2);
+// await users.sendFriendRequest(id_user, id_3);
+// await users.sendFriendRequest(id_user, id_4);
 
-await users.acceptFriend(id_1, id_user);
-await users.acceptFriend(id_2, id_user);
+//await users.sendFriendRequest(id_3, id_user);
+await users.sendFriendRequest(id_4, id_user);
+
+// await users.acceptFriend(id_1, id_user);
+// await users.acceptFriend(id_2, id_user);
 
 
 

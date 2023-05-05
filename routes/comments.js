@@ -2,7 +2,7 @@ import  { Router } from 'express';
 import { ObjectId } from 'mongodb';
 import { getAllComments, createComment, removeComment } from '../data/comments.js';
 import { checkValidId,validString } from "../helpers.js";
-
+import xss from 'xss';
 import { get } from '../data/users.js';
 import { userData } from '../data/index.js';
 
@@ -51,7 +51,8 @@ router
   if(req.session.user){
     
     let id = req.session.id
-    const commentInfo = req.body
+    let commentInfo = req.body
+    commentInfo = xss(commentInfo);
     if (!commentInfo) {
         return res.status(400).json("Comment text is empty");
     }
@@ -120,6 +121,7 @@ router
       //code here for DELETE
       let comment = req.body
       let commentId = comment.commentId
+      comment = xss(comment);
       try {
         checkValidId(req.params.userId);
         checkValidId(commentId);

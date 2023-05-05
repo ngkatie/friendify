@@ -9,6 +9,7 @@ import { acceptFriend, sendFriendRequest,rejectFriendRequest,getAll,get } from '
 import * as helpers from '../helpers.js';
 import axios from 'axios'; // Axios library
 import dotenv from 'dotenv';
+import xss from 'xss';
 
 
 dotenv.config();
@@ -31,7 +32,7 @@ router
   .route('/login')
   .post(async (req, res) => {
     try{
-      let authenticatedUser = await userData.checkUser(req.body.usernameInput, req.body.passwordInput);
+      let authenticatedUser = await userData.checkUser(xss(req.body.usernameInput), xss(req.body.passwordInput));
       if (authenticatedUser) {
         req.session.user = {
           id: authenticatedUser._id,
@@ -78,10 +79,15 @@ router
     } = req.body;
 
     try {
-      const username = helpers.checkName(usernameInput);
-      const email = helpers.checkEmail(emailInput);
-      const password = helpers.checkPassword(passwordInput);
-      const confirmPassword = helpers.checkPassword(confirmPasswordInput);
+      let username = helpers.checkName(usernameInput);
+      let email = helpers.checkEmail(emailInput);
+      let password = helpers.checkPassword(passwordInput);
+      let confirmPassword = helpers.checkPassword(confirmPasswordInput);
+
+      username = xss(username);
+      email = xss(email);
+      password = xss(password);
+      confirmPassword = xss(confirmPassword);
 
       if (confirmPassword !== password) {
         return res.status(400).render('pages/register', { 
@@ -209,15 +215,9 @@ router.get('/userprofile', async(req, res) => {
 router.post("/acceptFriend/:id",async(req,res)=>{
  try {
     
-  let id = req.params.id
-  let userInfo = req.body
+  let idFriend = req.params.id
+  let id = req.session.user.id
 
-  if (!userInfo || Object.keys(userInfo).length === 0) {
-   return res
-     .status(400)
-     .json({error: 'There are no fields in the request body'});
- }
-  let idFriend = userInfo.idFriend
   try {
     helpers.checkValidId(id)
     helpers.checkValidId(idFriend)  
@@ -229,26 +229,28 @@ router.post("/acceptFriend/:id",async(req,res)=>{
 
   const result = await userData.acceptFriend(id,idFriend)
 
-  return res.json(result)
+  return res.status(200).redirect('/users/pendingRequests')
   } catch (e) {
-    let status = e[0] ? e[0] : 500;
-    let message = e[1] ? e[1] : 'Internal Server Error';
-    res.status(status).send({error: message});
+    res.status(500).redirect('/users/pendingRequests')
   }
 })
 
-router.post("/sendFriendRequest/:id",async(req,res)=>{
+router.post("/sendFriendRequest",async(req,res)=>{
   try {
-     
-   let id = req.params.id
-   let userInfo = req.body
 
-   if (!userInfo || Object.keys(userInfo).length === 0) {
+   let friendEmail = req.body.email
+   let id = req.session.user.id
+
+    friendEmail = xss(friendEmail);
+
+   if (!friendEmail || Object.keys(friendEmail).length === 0) {
     return res
       .status(400)
       .json({error: 'There are no fields in the request body'});
   }
-   let idFriend = userInfo.idFriend
+
+    let idFriend = await userData.getByEmail(friendEmail);
+
    try {
     helpers.checkValidId(id)
     helpers.checkValidId(idFriend)  
@@ -261,44 +263,34 @@ router.post("/sendFriendRequest/:id",async(req,res)=>{
  
    const result = await userData.sendFriendRequest(id,idFriend)
  
-   return res.json(result)
+   return res.status(200).redirect("/users/friends?success=true")
    } catch (e) {
-     let status = e[0] ? e[0] : 500;
-     let message = e[1] ? e[1] : 'Internal Server Error';
-     res.status(status).send({error: message});
+     return res.status(500).redirect("/users/friends?error=true")
    }
 })
 
 router.post("/rejectFriendRequest/:id",async(req,res)=>{
   try {
-   let id = req.params.id
-   let userInfo = req.body
-
-   if (!userInfo || Object.keys(userInfo).length === 0) {
-    return res
-      .status(400)
-      .json({error: 'There are no fields in the request body'});
-  }
-   let idFriend = userInfo.idFriend
-   try {
-    helpers.checkValidId(id)
-    helpers.checkValidId(idFriend)  
-  } catch (error) {
-    return res.status(404).json({ error: error });
-  }
- 
-   id = id.trim();
-   idFriend = idFriend.trim();
- 
-   const result = await userData.rejectFriendRequest(id,idFriend)
- 
-   return res.json(result)
-   } catch (e) {
-     let status = e[0] ? e[0] : 500;
-     let message = e[1] ? e[1] : 'Internal Server Error';
-     res.status(status).send({error: message});
-   }
-})
+    
+    let idFriend = req.params.id
+    let id = req.session.user.id
+  
+    try {
+      helpers.checkValidId(id)
+      helpers.checkValidId(idFriend)  
+    } catch (error) {
+      return res.status(404).json({ error: error });
+    }
+    id = id.trim();
+    idFriend = idFriend.trim();
+  
+    const result = await userData.rejectFriendRequest(idFriend,id)
+  
+    return res.status(200).redirect('/users/pendingRequests')
+    } catch (e) {
+      res.status(500).redirect('/users/pendingRequests')
+    }
+  })
 
 router.get('/dashboard', async (req, res) => {
 
@@ -359,7 +351,9 @@ router
       if (req.session.user && req.session.user.access_token) {
         const { id } = req.session.user;
         const access_token = req.session.user.access_token;
-        const { time_range } = req.body;
+        let { time_range } = req.body;
+
+        time_range = xss(time_range);
 
         const topTracks = await userData.getTopTracks(id, time_range, access_token);
         return res.status(200).render('pages/top-tracks', {
@@ -406,7 +400,9 @@ router
       if (req.session.user && req.session.user.access_token) {
         const { id } = req.session.user;
         const access_token = req.session.user.access_token;
-        const { time_range } = req.body;
+        let { time_range } = req.body;
+
+        time_range = xss(time_range);
   
         const topArtists = await userData.getTopArtists(id, time_range, access_token);
         return res.status(200).render('pages/top-artists', {
@@ -437,7 +433,12 @@ router.get('/friends', async (req, res) => {
       friendObjects.push(friendObject);
     }
 
-    console.log(friendObjects)
+    if(req.query.success){
+      return res.status(200).render('pages/friendsDashboard', { title: "Friends", friends: friendObjects, success: true });
+    }
+    if(req.query.error){
+      return res.status(200).render('pages/friendsDashboard', { title: "Friends", friends: friendObjects, error: true });
+    }
 
     return res.status(200).render('pages/friendsDashboard', { title: "Friends", friends: friendObjects });
 
@@ -481,6 +482,35 @@ router.get('/dailyplaylist', async (req, res) => {
   } catch (e) {
     console.log(e);
     return res.status(400).render('pages/daily-playlist', {
+      title: 'Error',
+      err: true,
+      error: e
+    })
+  }
+})
+
+router.get('/pendingRequests', async (req, res) => {
+  try {
+    if (req.session.user && req.session.user.access_token) {
+      let { id } = req.session.user;
+      const user = await userData.get(id);
+      let pendingRequests = user.pendingRequests;
+
+      const pendingObjects = [];
+
+    for (const pendingId of pendingRequests) {
+      const pendingObject = await get(pendingId);
+      pendingObjects.push(pendingObject);
+    }
+    console.log(pendingObjects)
+      return res.status(200).render('pages/pendingRequests', {
+        title: 'Pending Requests',
+        pendingRequests: pendingObjects
+      })
+    }
+  } catch (e) {
+    console.log(e);
+    return res.status(400).render('pages/pendingRequests', {
       title: 'Error',
       err: true,
       error: e
