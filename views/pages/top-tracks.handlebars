@@ -1,6 +1,15 @@
+<link rel="stylesheet" href="../../public/css/tracks.css">
+
 <div class="container">    
 
     <script src="../../public/js/top_tracks.js"></script>
+
+    <nav id="navbar" class="spotify-data">
+        <a href="/users/dashboard" class="nav-option">Back to Profile</a>
+        <a href="/users/toptracks" class="nav-option nav-active">Top 50 Tracks</a>
+        <a href="/users/topartists" class="nav-option">Top 50 Artists</a>
+        <a href="/users/dailyplaylist" class="nav-option">Daily Playlist</a>
+    </nav>
 
     <form action="/users/toptracks" method="POST">
         <label for="time_range">Select Timeframe:</label>
@@ -9,20 +18,8 @@
             <option value="medium_term">Last 6 Months</option>
             <option value="long_term">All-Time</option>
         </select>
-        <input type="submit" value="Send">
+        <input type="submit" value="Show Tracks">
     </form>
-
-    <div class="spotify-data">
-        <a href="/users/dashboard">
-            <button>Back to Profile</button>
-        </a>
-        <a href="/users/topartists">
-            <button>Top 50 Artists</button>
-        </a>
-        <a href="/users/dailyplaylist">
-            <button>Daily Playlist</button>
-        </a>
-    </div>
 
     <div class="results">
         <h2>Top 50 Tracks</h2>
@@ -35,6 +32,7 @@
                     <div class="track-info">
                         <h3>{{trackName}}</h3>
                         <p>Artist: {{artistName}}</p>
+                        <p>Album: {{albumName}}</p>
                     </div>
                 </div>
             {{/each}}

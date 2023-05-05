@@ -1,0 +1,9 @@
+.artist-item .artist-info {
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+    
+  .artist-item .artist-image:hover + .artist-info {
+    opacity: 1;
+  }
+  

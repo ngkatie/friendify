@@ -1,5 +1,14 @@
+<link rel="stylesheet" href="../../public/css/artists.css">
+
 <div class="container">    
-    
+
+    <nav id="navbar" class="spotify-data">
+        <a href="/users/dashboard" class="nav-option">Back to Profile</a>
+        <a href="/users/toptracks" class="nav-option">Top 50 Tracks</a>
+        <a href="/users/topartists" class="nav-option nav-active">Top 50 Artists</a>
+        <a href="/users/dailyplaylist" class="nav-option">Daily Playlist</a>
+    </nav>
+
     <form action="/users/topartists" method="POST">
         <label for="time_range">Select Timeframe:</label>
         <select id="time_range" name="time_range">
@@ -7,20 +16,9 @@
             <option value="medium_term" selected>Last 6 Months</option>
             <option value="long_term">All-Time</option>
         </select>
-        <input type="submit" value="Send">
+        <input type="submit" value="Show Artists">
     </form>
 
-    <div class="spotify-data">
-        <a href="/users/dashboard">
-            <button>Back to Profile</button>
-        </a>
-        <a href="/users/toptracks">
-            <button>Top 50 Tracks</button>
-        </a>
-        <a href="/users/dailyplaylist">
-            <button>Daily Playlist</button>
-        </a>
-    </div>
 
     <div class="results">
         <h2>Top 50 Artists</h2>
