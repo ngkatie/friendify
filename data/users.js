@@ -3,10 +3,10 @@ import { config } from "dotenv";
 import { ObjectId } from "mongodb";
 import bcryptjs from 'bcryptjs';
 import * as spotifyAPI from './api.js';
-import SpotifyWebApi from "spotify-web-api-node";
-import * as songs from "./songs.js";
+import * as songs from './songs.js';
+// import SpotifyWebApi from "spotify-web-api-node";
 import * as helpers from "../helpers.js";
-import axios from "axios";
+// import axios from "axios";
 
 config();
 const saltRounds = await bcryptjs.genSalt(10);
@@ -18,11 +18,15 @@ const create = async (
     email,
     password
 ) => {
-  const hashed_password = bcryptjs.hashSync(password, saltRounds);
-  // hashed_password = helpers.hashPassword(hashed_password);
+
+  const username_ = helpers.checkName(username);
+  const email_ = helpers.checkEmail(email);
+  const password_ = helpers.checkPassword(password);
+  const hashed_password = bcryptjs.hashSync(password_, saltRounds);
+
   let newUser = {
-    username: username,
-    email: email,
+    username: username_,
+    email: email_,
     hashed_password: hashed_password,
     topTracks: [],
     topArtists: [],
@@ -44,7 +48,6 @@ const create = async (
   // const user = await get(insertInfo.insertedId.toString());
   return newUser;
 }
-// create("test", "test", "test");
 
 const checkUser = async (username, password) => {
 
@@ -69,13 +72,13 @@ const checkUser = async (username, password) => {
 const getAll = async () => {
     const userCollection = await users();
     let userList = await userCollection.find({}).toArray();
-    if(!userList) {throw 'Could not get all users'};
+    if (!userList) {throw 'Could not get all users'};
     userList = userList.map(helpers.idToString);
     return userList;
 }
 
 const get = async (id) => {
-    const user_id = helpers.checkId(id);
+    const user_id = helpers.checkValidId(id);
 
     const userCollection = await users();
     const user = await userCollection.findOne({ _id: user_id });
@@ -85,216 +88,219 @@ const get = async (id) => {
 
 
 const getByEmail = async (email) => {
-    email = email.trim();
+    const email_ = helpers.checkEmail(email);
 
     const userCollection = await users();
-    const user = await userCollection.findOne({ email: email });
+    const user = await userCollection.findOne({ email: email_ });
 
     return helpers.idToString(user)._id;
 }
 
 
 //Friend2(id)(has pending req) accepts request of friend1(idFriend), request would be removed from pending requests of friend2
-const acceptFriend = async(id,idFriend) =>{
-    helpers.checkValidId(id)
-    helpers.checkValidId(idFriend)
-    id = id.trim();
-    idFriend = idFriend.trim();
+const acceptFriend = async(id_, idFriend_) => {
 
-    const userCollection = await users();
-    const user = await get(id);
-    const user2 = await get(idFriend);
-    const user1Pending = user.pendingRequests;
+  // Validate ID
+  id_ = helpers.checkValidId(id_);
+  idFriend_ = helpers.checkValidId(idFriend_);
+  
+  const id = id_.toString();
+  const idFriend = idFriend_.toString();
 
-    if(!user1Pending.includes(idFriend)){
-        throw `${idFriend} has not sent you a friend request`
+  const userCollection = await users();
+  const user1 = await get(id);
+  const user2 = await get(idFriend);
+  const user1Pending = user1.pendingRequests;
+
+  if(!user1Pending.includes(idFriend)){
+    throw `${idFriend} has not sent you a friend request`;
+  }
+
+  const user1Friends = user1.friends;
+  user1Friends.push(idFriend);
+
+  const user2Friends = user2.friends;
+  user2Friends.push(id);
+
+  for (let i = 0; i < user1Pending.length; i++) {
+    if (user1Pending[i] === idFriend) {
+      user1Pending.splice(i, 1);
     }
+  }
 
-    const user1Friends = user.friends;
-    user1Friends.push(idFriend);
+  let user1Info = {
+    username: user1.username,
+    email: user1.email,
+    hashed_password: user1.hashed_password,
+    topTracks: user1.topTracks,
+    topArtists: user1.topArtists,
+    dailyPlaylist: user1.dailyPlaylist,
+    likeCount: user1.likeCount,
+    comments: user1.comments,
+    likedProfiles: user1.likedProfiles,
+    pendingRequests: user1Pending,
+    friends: user1Friends,
+  };
 
-    const user2Friends = user2.friends;
-    user2Friends.push(id);
+  let user2Info = {
+    username: user2.username,
+    email: user2.email,
+    hashed_password: user2.hashed_password,
+    topTracks: user2.topTracks,
+    topArtists: user2.topArtists,
+    dailyPlaylist: user2.dailyPlaylist,
+    likeCount: user2.likeCount,
+    comments: user2.comments,
+    likedProfiles: user2.likedProfiles,
+    pendingRequests: user2.pendingRequests,
+    friends: user2Friends,
+  }
 
-    for (let i = 0; i < user1Pending.length; i++) {
-      if (user1Pending[i] === idFriend) {
-        user1Pending.splice(i, 1);
-      }
-    }
+  const updateInfo1 = await userCollection.findOneAndReplace(
+    { _id: id_ },
+    user1Info,
+    { returnDocument: 'after' }
+  );
 
-    let user1Info = {
-      username: user.username,
-      email: user.email,
-      hashed_password: user.hashed_password,
-      topTracks: user.topTracks,
-      topSongs: user.topSongs,
-      dailyPlaylist: user.dailyPlaylist,
-      likeCount: user.likeCount,
-      comments: user.comments,
-      likedProfiles: user.likedProfiles,
-      pendingRequests: user1Pending,
-      friends: user1Friends,
-    };
+  const updateInfo2 = await userCollection.findOneAndReplace(
+    { _id: idFriend_},
+    user2Info,
+    { returnDocument: 'after' }
+  );
 
-    let user2Info = {
-      username: user2.username,
-      email: user2.email,
-      hashed_password: user2.hashed_password,
-      topTracks: user2.topTracks,
-      topTracks: user2.topTracks,
-      dailyPlaylist: user2.dailyPlaylist,
-      likeCount: user2.likeCount,
-      comments: user2.comments,
-      likedProfiles: user2.likedProfiles,
-      pendingRequests: user2.pendingRequests,
-      friends: user2Friends,
-    }
-
-    const updateInfo1 = await userCollection.findOneAndReplace(
-      {_id: new ObjectId(id)},
-      user1Info,
-      {returnDocument: 'after'}
-    );
-
-    const updateInfo2 = await userCollection.findOneAndReplace(
-      {_id: new ObjectId(idFriend)},
-      user2Info,
-      {returnDocument: 'after'}
-    );
-
-    if (updateInfo1.lastErrorObject.n === 0)
+  if (updateInfo1.lastErrorObject.n === 0) {
     throw [
       404,
       `Error: Update failed, could not update a user with id of ${id}`
     ];
+  }
 
-    if (updateInfo2.lastErrorObject.n === 0)
+  if (updateInfo2.lastErrorObject.n === 0) {
     throw [
       404,
       `Error: Update failed, could not update a user with id of ${idFriend}`
     ];
-
-
-    return updateInfo1.value;
+  }
+  
+  return updateInfo1.value;
 }
 
 // Friend 1(id) sends request to Friend2(idFriend), id would be added to pendingRequests of idFriend
-const sendFriendRequest= async(id,idFriend) =>{
+const sendFriendRequest = async(id_, idFriend_) => {
 
-  helpers.checkValidId(id)
-  helpers.checkValidId(idFriend)
-
-  id = id.trim();
-  idFriend = idFriend.trim();
+  id_ = helpers.checkValidId(id_);
+  idFriend_ = helpers.checkValidId(idFriend_);
+  
+  const id = id_.toString(); 
+  const idFriend = idFriend_.toString();
 
   const userCollection = await users();
-  const user = await get(id)
-  const user2 = await get(idFriend)
-  const user1Friends = user.friends;
+  const user1 = await get(id);        // Sender
+  const user2 = await get(idFriend);  // Receiver
 
-  
-  if(user1Friends.includes(idFriend))
-  throw `${idFriend} is already a friend`
-
-  // const user1Friends = user.friends;
-  const user2PendingRequest = user2.pendingRequests
-
-  if(user2PendingRequest.includes(id))
-  throw 'Friend Request already sent'
-
-  user2PendingRequest.push(id)
-  
-  let userInfo  = {
-      username: user2.username,
-      email: user2.email,
-      hashed_password: user2.hashed_password,
-      topTracks: user2.topTracks,
-      topArtists: user2.topArtists,
-      dailyPlaylist: user2.dailyPlaylist,
-      likeCount: user2.likeCount,
-      comments: user2.comments,
-      likedProfiles: user2.likedProfiles,
-      pendingRequests: user2PendingRequest,
-      friends: user2.friends,
+  const user1Friends = user1.friends;
+  if (user1Friends.includes(idFriend)) {
+    throw `${idFriend} is already a friend`
   }
 
+  // const user1Friends = user.friends;
+  const user2PendingRequest = user2.pendingRequests;
+  if(user2PendingRequest.includes(id)) {
+    throw 'Friend Request already sent'
+  }
+
+  user2PendingRequest.push(id);
   
+  let userInfo  = {
+    username: user2.username,
+    email: user2.email,
+    hashed_password: user2.hashed_password,
+    topTracks: user2.topTracks,
+    topArtists: user2.topArtists,
+    dailyPlaylist: user2.dailyPlaylist,
+    likeCount: user2.likeCount,
+    comments: user2.comments,
+    likedProfiles: user2.likedProfiles,
+    pendingRequests: user2PendingRequest,
+    friends: user2.friends,
+  }
+
   const updateInfo = await userCollection.findOneAndReplace(
-      {_id: new ObjectId(idFriend)},
+      { _id: idFriend_ },
       userInfo,
-      {returnDocument: 'after'}
+      { returnDocument: 'after' }
     );
 
-
-
-  if (updateInfo.lastErrorObject.n === 0)
+  if (updateInfo.lastErrorObject.n === 0) {
     throw [
       404,
       `Error: Update failed, could not update a band with id of ${idFriend}`
     ];
-
+  }
 
   return  updateInfo.value;
- 
 }
 
-//removes the given id from pendingRequests of user, idFriend(has the request)
-const rejectFriendRequest = async(id,idFriend)=>{
+// Removes the given id from pendingRequests of user, idFriend(has the request)
+const rejectFriendRequest = async(id_, idFriend_) => {
 
-  helpers.checkValidId(id)
-  helpers.checkValidId(idFriend)
+  id_ = helpers.checkValidId(id_);
+  idFriend_ = helpers.checkValidId(idFriend_);
 
-
-  id = id.trim();
-  idFriend = idFriend.trim();
+  const id = id_.toString(); 
+  const idFriend = idFriend_.toString();
 
   const userCollection = await users();
   const user = await get(id);
   const user2 = await get(idFriend);
 
-  let temp=[];
-  let i=0;
-  if(user2.pendingRequests.includes(id)){
-    user2.pendingRequests.forEach(element => {
-      if(element !== id) {
-        temp[i++] = element;
-      }
-    });
+  // Remove sender id from receiver's list of pending requests
+  if (user2.pendingRequests.includes(id)) {
+    let temp = user2.pendingRequests.filter(element => element != id);
   }
-  else{
-    throw `Pending request does not exist for the given id`
+  // let temp = [];
+  // let i = 0;
+  // if(user2.pendingRequests.includes(id)) {
+  //   user2.pendingRequests.forEach(element => {
+  //     if(element !== id) {
+  //       temp[i++] = element;
+  //     }
+  //   });
+  // }
+  else {
+    throw `Pending request does not exist for the given id`;
   }
 
   let userInfoFriend  = {
-      username: user2.username,
-      email: user2.email,
-      hashed_password: user2.hashed_password,
-      topTracks: user2.topTracks,
-      topArtists: user2.topArtists,
-      dailyPlaylist: user2.dailyPlaylist,
-      likeCount: user2.likeCount,
-      comments: user2.comments,
-      likedProfiles: user2.likedProfiles,
-      pendingRequests: temp,
-      friends: user2.friends,
+    username: user2.username,
+    email: user2.email,
+    hashed_password: user2.hashed_password,
+    topTracks: user2.topTracks,
+    topArtists: user2.topArtists,
+    dailyPlaylist: user2.dailyPlaylist,
+    likeCount: user2.likeCount,
+    comments: user2.comments,
+    likedProfiles: user2.likedProfiles,
+    pendingRequests: temp,
+    friends: user2.friends,
   }
 ;
 
   const updateInfoFriend = await userCollection.findOneAndReplace(
-      {_id: new ObjectId(idFriend)},
-      userInfoFriend,
-      {returnDocument: 'after'}
-    );
+    { _id: idFriend_ },
+    userInfoFriend,
+    { returnDocument: 'after' }
+  );
 
 
-  if (updateInfoFriend.lastErrorObject.n === 0)
+  if (updateInfoFriend.lastErrorObject.n === 0) {
     throw [
       404,
       `Error: Update failed, could not update a band with id of ${idFriend}`
     ];
-
-  return  updateInfoFriend.value; 
-
+  }
+    
+  return updateInfoFriend.value; 
 }
 
 async function getTopTracks(user_id, time_range = "medium_term", access_token) {
@@ -321,7 +327,7 @@ async function getTopTracks(user_id, time_range = "medium_term", access_token) {
       topTracks.push(newTrack);
     }
 
-    const currId = helpers.checkId(user_id);
+    const currId = helpers.checkValidId(user_id);
     const userCollection = await users();
     const user = await userCollection.findOne({_id: currId});
     user.topTracks = topTracks;
@@ -365,7 +371,7 @@ async function getTopArtists(user_id, time_range = "medium_term", access_token) 
       topArtists.push(newArtist);
     }
 
-    const currId = helpers.checkId(user_id);
+    const currId = helpers.checkValidId(user_id);
     const userCollection = await users();
     const user = await userCollection.findOne({_id: currId});
     user.topArtists = topArtists;
@@ -544,14 +550,17 @@ async function getDailyPlaylist(user_id, access_token) {
 }
 
 export {
+  // user
   create, 
   checkUser,
   getAll, 
   get, 
   getByEmail,
+  // friend requests
   acceptFriend, 
   sendFriendRequest, 
   rejectFriendRequest,
+  // music information
   getTopTracks,
   getTopArtists,
   getRecommendations,
