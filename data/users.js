@@ -225,6 +225,7 @@ const sendFriendRequest = async(id_, idFriend_) => {
     friends: user2.friends,
   }
 
+
   const updateInfo = await userCollection.findOneAndReplace(
       { _id: idFriend_ },
       userInfo,
@@ -510,18 +511,33 @@ async function topSongTogether(iD1,iD2){
   let topTracks1 = user1.topTracks
   let topTracks2 = user2.topTracks
 
-  let topSong;
-  let commSongCount=0
-  topTracks1.forEach(element => {
-    topTracks2.forEach(element2=>{
-      if(element.trim().lowercase() == element2.trim().lowercase()){
-        topSong = element;
-        commSongCount++;
-      }
-    })
-  });
+ let topSong;
+ let commSongCount = 0;
+ let t1 = 0;
+ let t2 = 0;
+ 
+ if(!Array.isArray(topTracks1) || !Array.isArray(topTracks2) || typeof topTracks1 === null || typeof topTracks2 === null){
+  topSong = "";
+  commSongCount = 0;
+ }
+ else if (topTracks1.length === 0 || topTracks2.length === 0){
+  topSong = "";
+  commSongCount = 0;
+ }
+ else {
+  tl = topTracks1.length;
+  t2 = topTracks2.length;
+ topTracks1.forEach(element => {
+  topTracks2.forEach(element2=>{
+    if(element.trim().lowercase() == element2.trim().lowercase()){
+       topSong = element 
+       commSongCount++
+     }
+  })
+ });
+}
 
-  return [topSong, commSongCount, (topTracks1 + topTracks2)];
+ return [topSong, commSongCount, (t1+t2)];
 
 }
 
@@ -541,41 +557,79 @@ async function topArtistTogether(iD1,iD2){
   } catch (error) {
     throw [400, error];
   }
-  let topArtist1 = user1.topArtists
-  let topArtist2 = user2.topArtists
+  let topArtist1 = user1.topArtists;
+  let topArtist2 = user2.topArtists;
+
 
   let topArtist;
+  let t1 = 0;
+  let t2 = 0;
   let commArtistCount = 0;
-  topArtist1.forEach(element => {
-    topArtist2.forEach(element2 => {
-      if(element.trim().lowercase() == element2.trim().lowercase()){
-        topArtist = element;
-        commArtistCount++;
-      }
-    })
-  });
 
-  return [topArtist, commArtistCount, (topArtist1+topArtist2)];
+  if (!Array.isArray(topArtist1) || !Array.isArray(topArtist2) || typeof topArtist1 === null || typeof topArtist2 === null){
+    topArtist = "",
+    commArtistCount = 0;
+  }
+  else if (topArtist1.length === 0 || topArtist2.length === 0){
+    topArtist = "",
+    commArtistCount = 0
+  }
+  else {
+    tl = topArtist1.length;
+    t2 = topArtist2.length;
+    
+    topArtist1.forEach(element => {
+      topArtist2.forEach(element2=>{
+        if(element.trim().lowercase() == element2.trim().lowercase()){
+          topArtist = element ,
+          commArtistCount++
+        }
+      })
+    });
+  }
+
+ return [topArtist, commArtistCount, (tl+t2)];
+
 }
 
 async function musicCompatibility(iD1, iD2){
 
-  const id1 = helpers.checkValidId(iD1);
-  const id2 = helpers.checkValidId(iD2);
+  let id1_;
+  let id2_;
 
-  let arr1 = topSongTogether(id1, id2);
-  let arr2 = topArtistTogether(id1, id2);
+  try {
+    id1_ = helpers.checkValidId(iD1);
+    id2_ = helpers.checkValidId(iD2);
+  } catch (e) {
+    throw [400, e];
+  }
 
-  let totArtist = arr2[3];
-  let totTrack = arr1[3];
+  const id1 = id1_.toString();
+  const id2 = id2_.toString();
 
-  let commSong = arr1[1];
-  let commArtist = arr2[1];
+  let arr1 = await topSongTogether(id1, id2);
+  let arr2 = await topArtistTogether(id1, id2);
 
-  let perComp = ((commSong + commArtist)/(totArtist + totTrack) * 100);
+  try {
+    let totArtist = arr2[2];
+    let totTrack = arr1[2];
 
-  const compatibility = perComp + "%";
-  return compatibility;
+    let commSong = arr1[1];
+    let commArtist = arr2[1];
+  
+    let perComp;
+    if(commSong == 0 || commArtist == 0) {
+      perComp = 0;
+    }
+    else {
+      perComp = ((commSong + commArtist)/(totArtist+ totTrack) * 100);
+    }
+
+    const compatibility = perComp + "%";
+    return compatibility;
+  } catch (e) {
+    throw [400, error];
+  }
    
 }
 async function seedTracks(user_id, access_token) {

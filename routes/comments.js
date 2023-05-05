@@ -49,29 +49,36 @@ router
 
   if(req.session.user){
     
-    let id_ = req.session.id;
-    let commentInfo_ = req.body;
-    commentInfo_ = xss(commentInfo);
-    if (!commentInfo_) {
+    let id = req.session.user.id
+
+    let commentInfo = req.body
+    // commentInfo = xss(commentInfo);
+
+    if (!commentInfo) {
         return res.status(400).json("Comment text is empty");
     }
 
-    const commentInfo = undefined;
+    const comment = undefined;
     try {
-      commentInfo = helpers.checkString(commentInfo_);
+      comment = helpers.checkString(commentInfo);
     } catch (e) {
       return res.status(400).json("Comment Text Invalid");
     }
 
-    try{
-      // commentInfo.userId = validId(req.session.user);
-      //var id= commentInfo.id
-      var id = helpers.checkValidId(id_);
-      var userId = req.params.userId;
-      userId = helpers.checkValidId(req.params.userId);
-      
-      const userData = await get(id.toString());
-      var userName = userData.username
+
+     try{
+        // commentInfo.userId = validId(req.session.user);
+        //var id= commentInfo.id
+        commentInfo.comment = xss(
+          validString(commentInfo.comment)
+        );
+
+        checkValidId(id);
+        var userId = req.params.userId
+        checkValidId(req.params.userId);
+        
+        const userData = await get(id.toString());
+        var userName = userData.username
         
     } catch (e) {
       return res.status(404).json({ error: "No user for the given id" });  
