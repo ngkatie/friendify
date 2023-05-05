@@ -573,9 +573,6 @@ async function topArtistTogether(iD1,iD2){
  let topArtist2 = id2.topArtists
  let topArtist=""
 
-
-
-  let topArtist;
   let t1 = 0;
   let t2 = 0;
   let commArtistCount = 0;
@@ -590,7 +587,7 @@ async function topArtistTogether(iD1,iD2){
   commArtistCount=0
  }
  else{
-  tl = topArtist1.length;
+  t1 = topArtist1.length;
   t2 = topArtist2.length
   
   topArtist1.forEach(element => {
@@ -604,7 +601,7 @@ async function topArtistTogether(iD1,iD2){
 }
 
 
- return [topArtist, commArtistCount, (tl+t2)];
+ return [topArtist, commArtistCount, (t1+t2)];
 
 }
 
