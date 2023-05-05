@@ -39,20 +39,26 @@ const create = async (
   }
 
   const userCollection = await users();
+
+  const dupe = await userCollection.findOne({ email: email })
+  if(dupe){
+    throw `Email already exists`;
+  }
+
   const insertInfo = await userCollection.insertOne(newUser);
 
   if (!insertInfo.acknowledged || !insertInfo.insertedId) {
     throw `Could not add user successfully`;
   }
-
   // const user = await get(insertInfo.insertedId.toString());
   return newUser;
 }
 
 const checkUser = async (username, password) => {
-
-  const username_ = helpers.checkName(username);
-  const password_ = helpers.checkPassword(password);
+if(!helpers.checkName(username)) throw "invalid username"
+if(!helpers.checkPassword(password)) throw "invalid password"
+const username_ = username;
+const password_ = password;
 
   const userCollection = await users();
   const user = await userCollection.findOne({ username: username_ });
@@ -844,5 +850,4 @@ export {
   getRecentlyPlayed,
   getTopCharts,
   getDailyPlaylist
-
 }
