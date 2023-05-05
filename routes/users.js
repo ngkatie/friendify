@@ -5,7 +5,7 @@ import { userData } from '../data/index.js';
 import querystring from 'querystring';
 
 import { checkValidId } from '../helpers.js';
-import { acceptFriend, sendFriendRequest,rejectFriendRequest,getAll,get } from '../data/users.js';
+import { acceptFriend, sendFriendRequest,rejectFriendRequest,getAll,get, likeProfile } from '../data/users.js';
 import * as helpers from '../helpers.js';
 import axios from 'axios'; // Axios library
 import dotenv from 'dotenv';
@@ -305,13 +305,23 @@ router.get('/dashboard', async (req, res) => {
       },
     };
 
+
+    console.log("here should print")
+    try {
+      checkValidId(req.session.user.id)    
+    } catch (error) {
+      res.status(400).json(error)
+    }
+
+    const userData  = await get(req.session.user.id);
+
     try {
       const { data : body } = await axios.get(authOptions.url, { headers: authOptions.headers });
       return res.status(200).render('pages/dashboard', {
         title: 'Dashboard',
         // username: user.username,
-        // likeCount: user.likeCount,
-        // comments: user.comments
+        likeCount: userData.likeCount,
+        //comments: user.comments
         user : body
       })
     } catch (error) {
@@ -452,12 +462,19 @@ router.get('/friends', async (req, res) => {
 router.get('/friends/:id', async (req, res) => {
   const id = req.params.id;
   if(req.session.user){
-  let userId = req.session.id  
+  let userId = req.session.user.id  
+  //let userId = '643cb4bf7f4290f4eb398d26'
+  let profileLiked=false
   try {
     const friend = await userData.get(id);
+    const friend2 = await userData.get(userId);
     const users= getAll()
+
+    if(friend2.likedProfiles.includes(id))
+    profileLiked = true;
+
     
-    return res.status(200).render('pages/friendProfile', { title: "Friend", users: friend  });
+    return res.status(200).render('pages/friendProfile', { title: "Friend", users: friend , userId:friend._id, likeCount: friend.likeCount, profileLiked:profileLiked });
 
   } catch (e) {
     return res.status(400).log(e);
@@ -466,6 +483,123 @@ router.get('/friends/:id', async (req, res) => {
 else{
   res.redirect("/")
 }
+});
+
+router.put('/likeProfile/:id', async(req,res)=>{
+  if(req.session.user){
+    let id1 = req.session.user.id
+    //let id1= '643cb4bf7f4290f4eb398d26'
+    let id2 = req.params.id
+
+    try {
+      helpers.checkValidId(id1)
+      helpers.checkValidId(id2)
+    } catch (error) {
+      return res.status(400).json(error);
+      return
+    }
+   
+    try {
+      let result = await likeProfile(id1,id2);
+
+      return res.status(200).json(result)
+    } catch (e) {
+     let status = e[0] ? e[0] : 500;
+     let message = e[1] ? e[1] : 'Internal Server Error';
+     return res.status(status).json(message)
+    }
+
+  }
+  else{
+    res.redirect("/")
+  }
+})
+
+router.get('/topSong/:id', async(req, res)=>{
+  if(req.session.user){
+
+    let id1 = req.session.user.id
+    let id2 = req.params.id
+
+    try {
+      helpers.checkValidId(id1)
+      helpers.checkValidId(id2)
+    } catch (error) {
+      return res.status(400).json(error);
+    }
+
+    try {
+      let result = await userData.topSongTogether(id1,id2);
+      if(result[0] === "")
+      return res.status(200).json({ message: " No Top song together" })
+      
+      return res.status(200).json(result[0])
+    } catch (e) {
+     let status = e[0] ? e[0] : 500;
+     let message = e[1] ? e[1] : 'Internal Server Error';
+     return res.status(status).json(message)
+    }
+  }
+  else{
+    res.redirect("/")
+  }
+})
+
+router.get('/topArtist/:id', async(req, res)=>{
+  if(req.session.user){
+
+    let id1 = req.session.user.id
+    let id2 = req.params.id
+
+    try {
+      helpers.checkValidId(id1)
+      helpers.checkValidId(id2)
+    } catch (error) {
+      return res.status(400).json(error);
+    }
+
+    try {
+      let result = await userData.topArtistTogether(id1,id2);
+      if(result[0] === "")
+      return res.status(200).json({ message: " No Top Artist together" })
+
+      return res.status(200).json(result[0])
+    } catch (e) {
+     let status = e[0] ? e[0] : 500;
+     let message = e[1] ? e[1] : 'Internal Server Error';
+     return res.status(status).json(message)
+    }
+  }
+  else{
+    res.redirect("/")
+  }
+})
+
+router.get('/musicCompatibility/:id', async(req, res)=>{
+  if(req.session.user){
+
+    let id1 = req.session.user.id
+    let id2 = req.params.id
+
+    try {
+      helpers.checkValidId(id1)
+      helpers.checkValidId(id2)
+    } catch (error) {
+      return res.status(400).json(error);
+    }
+
+    try {
+      let result = await userData.musicCompatibility(id1,id2);
+      return res.status(200).json(result)
+    } catch (e) {
+     let status = e[0] ? e[0] : 500;
+     let message = e[1] ? e[1] : 'Internal Server Error';
+     return res.status(status).json(message)
+    }
+  }
+  else{
+    res.redirect("/")
+  }
 })
 
 router.get('/dailyplaylist', async (req, res) => {

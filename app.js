@@ -10,16 +10,17 @@ import exphbs from 'express-handlebars';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-
+const stat = express.static(__dirname+"/public")
 /**
  * Generates a random string containing numbers and letters
  * @param  {number} length The length of the string
  * @return {string} The generated string
  */
 
-const app = express();
 
-const staticDir = express.static(__dirname + '/public');
+
+const app = express();
+app.use("/public",stat)
 
 
 const rewriteUnsupportedBrowserMethods = (req, res, next) => {
@@ -29,8 +30,9 @@ const rewriteUnsupportedBrowserMethods = (req, res, next) => {
    }
 }
 
-app.use('/public', staticDir)
-   .use(cors())
+
+// app.use(express.static(__dirname + '/public'))
+app.use(cors())
    .use(cookieParser())
    .use(express.json())
    .use(express.urlencoded({ extended: true }))
@@ -40,7 +42,6 @@ app.use('/public', staticDir)
       resave: false,
       saveUninitialized: false,
    }));
-
 app.engine('handlebars', exphbs.engine({ defaultLayout: 'main' }));
 app.set('view engine', 'handlebars');
 
