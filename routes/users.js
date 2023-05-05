@@ -513,7 +513,7 @@ router.get('/friends/:id', async (req, res) => {
   } catch (e) {
     let status = e[0] ? e[0] : 500;
     let message = e[1] ? e[1] : 'Internal Server Error';
-    return res.status(status).json(message)
+    return res.status(status).render("pages/friendProfile", { title: "Friend", error:true, errorMessage:message})
   }
 }
 else{

@@ -127,7 +127,7 @@ const acceptFriend = async(id,idFriend) =>{
       email: user.email,
       hashed_password: user.hashed_password,
       topTracks: user.topTracks,
-      topSongs: user.topSongs,
+      topArtists: user.topArtists,
       dailyPlaylist: user.dailyPlaylist,
       likeCount: user.likeCount,
       comments: user.comments,
@@ -141,7 +141,7 @@ const acceptFriend = async(id,idFriend) =>{
       email: user2.email,
       hashed_password: user2.hashed_password,
       topTracks: user2.topTracks,
-      topTracks: user2.topTracks,
+      topArtists: user2.topArtists,
       dailyPlaylist: user2.dailyPlaylist,
       likeCount: user2.likeCount,
       comments: user2.comments,
@@ -496,7 +496,7 @@ async function topSongTogether(iD1,iD2){
  let topTracks1 = id1.topTracks
  let topTracks2 = id2.topTracks
 
- let topSong
+ let topSong=""
  let commSongCount=0
  let t1=0
  let t2=0;
@@ -512,12 +512,12 @@ async function topSongTogether(iD1,iD2){
   commSongCount=0
  }
  else{
-  tl =topTracks1.length;
+  t1 =topTracks1.length;
   t2 = topTracks2.length
  topTracks1.forEach(element => {
   topTracks2.forEach(element2=>{
-    if(element.trim().lowercase() == element2.trim().lowercase()){
-       topSong = element 
+    if(element.trackName.trim().toLowerCase() == element2.trackName.trim().toLowerCase()){
+       topSong = element.trackName 
        commSongCount++
      }
   })
@@ -546,7 +546,7 @@ async function topArtistTogether(iD1,iD2){
   }
  let topArtist1 = id1.topArtists
  let topArtist2 = id2.topArtists
- let topArtist
+ let topArtist=""
 
  let tl=0
  let t2=0;
@@ -567,8 +567,8 @@ async function topArtistTogether(iD1,iD2){
   
   topArtist1.forEach(element => {
   topArtist2.forEach(element2=>{
-    if(element.trim().lowercase() == element2.trim().lowercase()){
-      topArtist = element ,
+    if(element.artistName.trim().toLowerCase() == element2.artistName.trim().toLowerCase()){
+      topArtist = element.artistName ,
       commArtistCount++
      }
   })
@@ -600,12 +600,12 @@ try {
   let commArtist = arr2[1]
   
   let perComp;
-  if(commSong == 0 || commArtist ==0)
-  perComp=0
-  else
+  // if(commSong == 0 || commArtist ==0)
+  // perComp=0
+  // else
   perComp = ((commSong + commArtist)/(totArtist+ totTrack) * 100)
 
-  let comp = perComp + "%"
+  let comp = perComp.toFixed(2) + "%"
   return comp
 } catch (e) {
   throw [400, error]
