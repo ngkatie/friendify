@@ -50,10 +50,10 @@ router
 
   if(req.session.user){
     
-    let id = req.session.id
+    let id = req.session.user.id
 
     let commentInfo = req.body
-    commentInfo = xss(commentInfo);
+    
 
     if (!commentInfo) {
         return res.status(400).json("Comment text is empty");
@@ -71,6 +71,9 @@ router
      try{
         // commentInfo.userId = validId(req.session.user);
         //var id= commentInfo.id
+        commentInfo.comment = xss(
+          validString(commentInfo.comment)
+        );
         checkValidId(id);
         var userId = req.params.userId
         checkValidId(req.params.userId);
