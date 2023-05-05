@@ -35,27 +35,26 @@ const create = async (
   }
 
   const userCollection = await users();
-  const insertInfo = await userCollection.insertOne(newUser);
-
-  if (!insertInfo.acknowledged || !insertInfo.insertedId) {
-    throw `Could not add user successfully`;
-  }
 
   const dupe = await userCollection.findOne({ email: email })
   if(dupe){
     throw `Email already exists`;
   }
 
+  const insertInfo = await userCollection.insertOne(newUser);
+
+  if (!insertInfo.acknowledged || !insertInfo.insertedId) {
+    throw `Could not add user successfully`;
+  }
   // const user = await get(insertInfo.insertedId.toString());
   return newUser;
 }
-// create("test", "test", "test");
 
 const checkUser = async (username, password) => {
-  if(helpers.checkName(username) && helpers.checkPassword(password)){
-    const username_ = username;
-    const password_ = password;
-  }
+if(!helpers.checkName(username)) throw "invalid username"
+if(!helpers.checkPassword(password)) throw "invalid password"
+const username_ = username;
+const password_ = password;
 
   const userCollection = await users();
   const user = await userCollection.findOne({ username: username_ });

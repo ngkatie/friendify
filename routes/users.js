@@ -35,7 +35,7 @@ router
   })
   .post(async (req, res) => {
       let missingFields = [];
-      let error = [];
+      let error = false;
       if (!req.body.usernameInput.trim()) {
         missingFields.push('username');
       }
@@ -45,19 +45,19 @@ router
       if (missingFields.length > 0) {
         return res.status(400).render('pages/login', { title: 'Login', missingFields: missingFields.join(', '), missing: true });
       }
-      try{
+
+      if(!helpers.checkName(req.body.usernameInput)) error = true;
+      if(!helpers.checkPassword(req.body.passwordInput)) error = true;
+      if (error) {
+        return res.status(400).render('pages/login', { title: 'Login', error: error });
+      }
+
         let authenticatedUser = await userData.checkUser(xss(req.body.usernameInput), xss(req.body.passwordInput));
       if (authenticatedUser) {
         req.session.user = {
           id: authenticatedUser._id,
           username: req.body.usernameInput,
         } }
-      } catch(e){
-        error.push('Invalid username or password')
-      }
-        if (error.length > 0) {
-          return res.status(400).render('pages/login', { title: 'Login', error: error.join(', ') });
-        }
         const state = generateRandomString(16);
         res.cookie(stateKey, state);
 
@@ -73,8 +73,8 @@ router
               state,
             })
         );
-      }
-);
+      } 
+    )
 
 router
   .route('/register')
@@ -122,8 +122,8 @@ router
       confirmPasswordInput = xss(confirmPasswordInput);
 
         try {
-          await userData.create(usernameInput, emailInput, passwordInput);
-          return res.status(200).redirect('/');
+          await userData.create(usernameInput, emailInput, passwordInput)
+          return res.status(200).redirect('/users/login');
         } catch(e){
           return res.status(500).json({error: 'internal server error'})
         }
