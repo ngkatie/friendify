@@ -7,6 +7,7 @@ import configRoutes from './routes/index.js';
 import { fileURLToPath } from 'url';
 import path from 'path';
 import exphbs from 'express-handlebars';
+import * as middleware from './middleware.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -44,6 +45,20 @@ app.use(cors())
    }));
 app.engine('handlebars', exphbs.engine({ defaultLayout: 'main' }));
 app.set('view engine', 'handlebars');
+
+app.get('/', middleware.hasCookie);
+app.get('/users/login', middleware.hasCookie);
+app.get('/users/register', middleware.hasCookie);
+
+app.get('/users/dashboard', middleware.noCookie);
+app.get('/users/friends', middleware.noCookie);
+app.get('/users/toptracks', middleware.noCookie);
+app.get('/users/topartists', middleware.noCookie);
+app.get('/users/topdailyplaylist', middleware.noCookie);
+app.get('/users/friends', middleware.noCookie);
+app.get('/users/pendingRequests', middleware.noCookie);
+app.get('/users/friendsProfile/:id', middleware.noCookie);
+
 
 configRoutes(app);
 app.listen(3000, () => {
