@@ -1,16 +1,13 @@
+<link rel="stylesheet" href="../../public/css/tracks.css">
+
 <div class="container">    
 
-    <div class="spotify-data">
-        <a href="/users/dashboard">
-            <button>Back to Profile</button>
-        </a>
-        <a href="/users/topartists">
-            <button>Top 50 Artists</button>
-        </a>
-        <a href="/users/dailyplaylist">
-            <button>Daily Playlist</button>
-        </a>
-    </div>
+    <nav id="navbar" class="spotify-data">
+        <a href="/users/dashboard" class="nav-option">Back to Profile</a>
+        <a href="/users/toptracks" class="nav-option">Top 50 Tracks</a>
+        <a href="/users/topartists" class="nav-option">Top 50 Artists</a>
+        <a href="/users/dailyplaylist" class="nav-option nav-active">Daily Playlist</a>
+    </nav>
 
     <div class="results">
         <h2>Daily Playlist</h2>
@@ -23,6 +20,7 @@
                     <div class="track-info">
                         <h3>{{trackName}}</h3>
                         <p>Artist: {{artistName}}</p>
+                        <p>Album: {{albumName}}</p>
                     </div>
                 </div>
                 {{!-- <div class="result">

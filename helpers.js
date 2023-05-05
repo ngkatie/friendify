@@ -47,26 +47,31 @@ function includesSpecial(str) {
   return false;
 }
 
-export function checkValidId(id){
-  if (!id) throw `You must provide an id to search for`;
-  if (typeof id !== 'string') throw `Id ${id} must be a string`;
-  if (id.trim().length === 0)
-    throw `id ${id} cannot be an empty string or just spaces`;
-  id = id.trim();
-  if (!ObjectId.isValid(id)) throw `invalid object ID ${id}`;
-  // return id;
+export function checkValidId(str) {
+  const str_ = checkString(str);
+  const id = new ObjectId(str_);
+  if (!ObjectId.isValid(id)) {
+    throw `Error: Invalid object ID`
+  };
+  return id;
 }
-
-export function validString(str){
-  if (!str || typeof str !== "string" || !str.trim()) throw "not a valid string";
-  return str;
-};
 
 export function checkString(str) {
   if (!str || typeof str !== `string` || str.trim().length === 0) {
     throw `Error: ${str} must be a non-empty string`;
   }
   return str.trim();
+};
+
+export function checkStrArray(arr) {
+  if (!arr || !Array.isArray(arr) || arr.length < 1) {
+    throw `Error: ${arr} must be an non-empty array`;
+  }
+  arr = arr.map(str => {
+    checkString(str);
+    return str.trim();
+  });
+  return arr;
 };
 
 export function checkName(str) {
@@ -85,28 +90,20 @@ export function checkName(str) {
 export function checkEmail(str) {
   const email = checkString(str).toLowerCase();
   if (!EmailValidator.validate(email)) {
-      throw `Error: ${email} is an invalid email`;
+      return false;
   }
-  return email;
+  return true;
 }
 
 export function checkPassword(str) {
   const password = checkString(str);
   if (password.length < 8 || password.includes(' ') || !includesNum(password) || !includesUpper(password) || !includesSpecial(password)) {
-      throw `Error: Password must contain at least one number, one uppercase character, and one special character`;
+      return false;
   }
-  return password;
+  return true;
 }
 
 export function idToString(mongoDocument) {
   mongoDocument._id = mongoDocument._id.toString();
   return mongoDocument;
-}
-
-export function checkId(str) {
-  const idString = checkString(str);
-  const id = new ObjectId(idString);
-  if (!ObjectId.isValid(id)) {throw `Error: Invalid object ID`};
-  // Returns ID as ObjectId, not string
-  return id;
 }

@@ -12,25 +12,6 @@ function getEndpoint(ext) {
     return `${BASE_ENDPOINT}${ext}`;
 }
 
-async function getAccessToken() {
-    try {
-        const response = await axios.post(AUTHORIZE_ENDPOINT, {
-            grant_type: "authorization_code",
-            code: null 
-        }, {
-            headers: {
-                "Auhtorization": `Basic ${CLIENT_ID}:${CLIENT_SECRET}`,
-                "Content-Type": "application/x-www-form-urlencoded"
-            }
-        });
-    
-        console.log(response);
-        return response;
-    } catch(e) {
-        console.log(e);
-    }
-}
-
 async function callEndpoint(endpoint, access_token) {
     let data = undefined;
     try {
@@ -123,7 +104,6 @@ async function callRecentEndpoint(endpoint, limit, access_token) {
 
 export {
     getEndpoint,
-    getAccessToken,
     callEndpoint,
     callTopEndpoint,
     callRecsEndpoint,
