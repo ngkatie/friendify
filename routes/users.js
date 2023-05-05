@@ -237,7 +237,6 @@ router.post("/acceptFriend/:id",async(req,res)=>{
 
 router.post("/sendFriendRequest",async(req,res)=>{
   try {
-
    let friendEmail = req.body.email
    let id = req.session.user.id
 
@@ -251,6 +250,9 @@ router.post("/sendFriendRequest",async(req,res)=>{
 
     let idFriend = await userData.getByEmail(friendEmail);
 
+    id = id.trim();
+    idFriend = idFriend.trim();
+
    try {
     helpers.checkValidId(id)
     helpers.checkValidId(idFriend)  
@@ -258,8 +260,7 @@ router.post("/sendFriendRequest",async(req,res)=>{
     return res.status(404).json({ error: error });
   }
  
-   id = id.trim();
-   idFriend = idFriend.trim();
+   
  
    const result = await userData.sendFriendRequest(id,idFriend)
  
