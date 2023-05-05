@@ -31,7 +31,8 @@
     "lodash": "^4.17.21",
     "mongodb": "^5.1.0",
     "querystring": "^0.2.1",
-    "spotify-web-api-node": "^5.0.2"
+    "spotify-web-api-node": "^5.0.2",
+    "xss": "^1.0.14"
   },
   "devDependencies": {
     "dotenv-webpack": "^2.0.0"

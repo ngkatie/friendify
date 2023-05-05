@@ -18,8 +18,10 @@ const stat = express.static(__dirname+"/public")
  */
 
 
+
 const app = express();
 app.use("/public",stat)
+
 
 const rewriteUnsupportedBrowserMethods = (req, res, next) => {
    if (req.body && req.body._method) {
@@ -27,6 +29,7 @@ const rewriteUnsupportedBrowserMethods = (req, res, next) => {
       delete req.body._method
    }
 }
+
 
 // app.use(express.static(__dirname + '/public'))
 app.use(cors())

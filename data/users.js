@@ -75,11 +75,24 @@ const getAll = async () => {
 }
 
 const get = async (id) => {
-    id = helpers.checkId(id);
+    const user_id = helpers.checkId(id);
+
     const userCollection = await users();
-    const user = await userCollection.findOne({ _id: id });
+    const user = await userCollection.findOne({ _id: user_id });
+
     return helpers.idToString(user);
 }
+
+
+const getByEmail = async (email) => {
+    email = email.trim();
+
+    const userCollection = await users();
+    const user = await userCollection.findOne({ email: email });
+
+    return helpers.idToString(user)._id;
+}
+
 
 //Friend2(id)(has pending req) accepts request of friend1(idFriend), request would be removed from pending requests of friend2
 const acceptFriend = async(id,idFriend) =>{
@@ -113,8 +126,8 @@ const acceptFriend = async(id,idFriend) =>{
       username: user.username,
       email: user.email,
       hashed_password: user.hashed_password,
-      top_songs: user.top_songs,
-      top_artists: user.top_artists,
+      topTracks: user.topTracks,
+      topSongs: user.topSongs,
       dailyPlaylist: user.dailyPlaylist,
       likeCount: user.likeCount,
       comments: user.comments,
@@ -127,8 +140,8 @@ const acceptFriend = async(id,idFriend) =>{
       username: user2.username,
       email: user2.email,
       hashed_password: user2.hashed_password,
-      top_songs: user2.top_songs,
-      top_artists: user2.top_artists,
+      topTracks: user2.topTracks,
+      topTracks: user2.topTracks,
       dailyPlaylist: user2.dailyPlaylist,
       likeCount: user2.likeCount,
       comments: user2.comments,
@@ -195,8 +208,8 @@ const sendFriendRequest= async(id,idFriend) =>{
       username: user2.username,
       email: user2.email,
       hashed_password: user2.hashed_password,
-      top_songs: user2.top_songs,
-      top_artists: user2.top_artists,
+      topTracks: user2.topTracks,
+      topArtists: user2.topArtists,
       dailyPlaylist: user2.dailyPlaylist,
       likeCount: user2.likeCount,
       comments: user2.comments,
@@ -225,13 +238,11 @@ const sendFriendRequest= async(id,idFriend) =>{
  
 }
 
-//console.log(await sendFriendRequest("644b109ba2ab059f766fa4e6","644b109ba2ab059f766fa4e5"))
-
-//removes the given id from pendingRequests of user
+//removes the given id from pendingRequests of user, idFriend(has the request)
 const rejectFriendRequest = async(id,idFriend)=>{
 
-  checkValidId(id)
-  checkValidId(idFriend)
+  helpers.checkValidId(id)
+  helpers.checkValidId(idFriend)
 
 
   id = id.trim();
@@ -258,8 +269,8 @@ const rejectFriendRequest = async(id,idFriend)=>{
       username: user2.username,
       email: user2.email,
       hashed_password: user2.hashed_password,
-      top_songs: user2.top_songs,
-      top_artists: user2.top_artists,
+      topTracks: user2.topTracks,
+      topArtists: user2.topArtists,
       dailyPlaylist: user2.dailyPlaylist,
       likeCount: user2.likeCount,
       comments: user2.comments,
@@ -286,21 +297,15 @@ const rejectFriendRequest = async(id,idFriend)=>{
 
 }
 
-// Note to self: Need to add time_range
-async function getTopTracks(access_token) {
+async function getTopTracks(user_id, time_range = "medium_term", access_token) {
 
+  // const time_range = document.getElementById("timeSelect");
   const tracksEndpoint = spotifyAPI.getEndpoint('me/top/tracks');
 
-  let { data } = await spotifyAPI.callEndpoint(tracksEndpoint, access_token);
+  let { data } = await spotifyAPI.callTopEndpoint(tracksEndpoint, time_range, 50, access_token);
 
   if (data) { 
-    // const userCollection = await users();
-    // const user = await get(user_id);
-
-    // Clear outdated topSongs
-    // user.topSongs = [];
-    let topSongs = [];
-
+    let topTracks = [];
     let tracks = data.items;
     for (let i = 0; i < tracks.length; i++) {
       const newTrack = {
@@ -310,28 +315,78 @@ async function getTopTracks(access_token) {
         spotifyId: tracks[i].id,
         artistName: songs.getArtists(tracks[i]),
         albumName: tracks[i].album.name,
+        // genres: tracks[i].album.genres,
         image: tracks[i].album.images[0].url
       }
-      // user.topSongs.push(newTrack);
-      topSongs.push(newTrack);
+      topTracks.push(newTrack);
     }
 
-    // const updatedUser = await userCollection.findOneAndUpdate(
-    //   { _id: user._id },
-    //   { $set: user },
-    //   { returnDocument: 'after' }
-    // )
+    const currId = helpers.checkId(user_id);
+    const userCollection = await users();
+    const user = await userCollection.findOne({_id: currId});
+    user.topTracks = topTracks;
+    
+    const updatedUser = await userCollection.findOneAndUpdate(
+      { _id: currId },
+      { $set: user },
+      { returnDocument: 'after' }
+    )
 
-    // if (updatedUser.lastErrorObject.n === 0) {
-    //   throw `Error: Could not store top tracks successfully`;
-    // }
+    if (updatedUser.lastErrorObject.n === 0) {
+      throw `Error: Could not store top tracks successfully`;
+    }
 
-    return topSongs;
+    return user.topTracks;
   } 
   else {
     throw 'Error: Could not fetch top tracks from Spotify API';
   }
 }
+
+async function getTopArtists(user_id, time_range = "medium_term", access_token) {
+
+  const artistsEndpoint = spotifyAPI.getEndpoint('me/top/artists');
+
+  let { data } = await spotifyAPI.callTopEndpoint(artistsEndpoint, time_range, 50, access_token);
+
+  if (data) { 
+    let topArtists = [];
+    let artists = data.items;
+    for (let i = 0; i < artists.length; i++) {
+      const newArtist = {
+        _id: new ObjectId(),
+        artistName: artists[i].name,
+        artistURL: artists[i].external_urls.spotify,
+        spotifyId: artists[i].id,
+        genres: artists[i].genres,
+        followerCount: artists[i].followers.total,
+        image: artists[i].images[0].url
+      }
+      topArtists.push(newArtist);
+    }
+
+    const currId = helpers.checkId(user_id);
+    const userCollection = await users();
+    const user = await userCollection.findOne({_id: currId});
+    user.topArtists = topArtists;
+    
+    const updatedUser = await userCollection.findOneAndUpdate(
+      { _id: currId },
+      { $set: user },
+      { returnDocument: 'after' }
+    )
+
+    if (updatedUser.lastErrorObject.n === 0) {
+      throw `Error: Could not store top artists successfully`;
+    }
+
+    return user.topArtists;
+  } 
+  else {
+    throw 'Error: Could not fetch top tracks from Spotify API';
+  }
+}
+
 
 // user with id1 likes profile of user with id2, add id2 to likeProfile object of id1, increase likedcount of id2
 async function likeProfile(iD1,iD2){
@@ -508,12 +563,169 @@ async function musicCompatibility(iD1, iD2){
   return comp
    
 }
+async function seedTracks(user_id, access_token) {
+  // Update topTracks in user's database
+  // Time range is short_term since playlist should reflect user's most recent history
+  const topTracks = await getTopTracks(user_id, "short_term", access_token);
+  let seed_tracks_ = [];
+
+  for (let i = 0; i < topTracks.length; i++) {
+    const trackId = topTracks[i].spotifyId;
+    if (trackId && trackId !== "") {
+      seed_tracks_.push(trackId);
+    }
+  }
+  // Return array of strings representing tracks' spotify IDs
+  return seed_tracks_;
+}
+
+async function seedArtists(user_id, access_token) {
+  // Update topArtists info in user's database
+  // Time range is short_term since playlist should reflect user's most recent history
+  const topArtists = await getTopArtists(user_id, "short_term", access_token);
+  let seed_artists_ = [];
+  let seed_genres_ = [];
+
+  for (let i = 0; i < topArtists.length; i++) {
+    const artistId = topArtists[i].spotifyId;
+    if (artistId && artistId !== "") {
+      seed_artists_.push(artistId);
+    }
+    const genreArray = topArtists[i].genres;
+    genreArray.forEach(genre => seed_genres_.push(genre));
+  }
+  // Return array of strings representing artists' spotify IDs and genres
+  return { seed_artists_ , seed_genres_ };
+}
+
+function constructSeedString(seedArray, limit) {
+  // Base seed (first element)
+  let seedString = seedArray[0];
+
+  // If limit > 1, concatenate other seed data
+  for (let i = 1; i < limit && i < seedArray.length; i++) {
+    seedString = seedString + "," + seedArray[i];
+  }
+  return seedString;
+}
+
+async function getRecommendations(limit, user_id, access_token) {
+  const recsEndpoint = spotifyAPI.getEndpoint('recommendations');
+
+  // Recommendations endpoint requires seed_tracks, seed_artists, and seed_genres
+  let seed_tracks_ = await seedTracks(user_id, access_token);
+  let { seed_artists_ , seed_genres_ } = await seedArtists(user_id, access_token);
+
+  // Up to 5 seed values between 3 fields
+  const track_limit = 2;
+  const artist_limit = 2;
+  const genre_limit = 1;
+
+  const seed_tracks = constructSeedString(seed_tracks_, track_limit);
+  const seed_artists = constructSeedString(seed_artists_, artist_limit);
+  const seed_genres = constructSeedString(seed_genres_, genre_limit);
+  const opt_params = {
+    limit: limit,
+    seed_tracks,
+    seed_artists,
+    seed_genres
+  }
+
+  let { data } = await spotifyAPI.callRecsEndpoint(recsEndpoint, opt_params, access_token);
+  let tracks = data.tracks;
+  if (tracks) { 
+    let recommendations = [];
+    for (let i = 0; i < tracks.length; i++) {
+      const newTrack = {
+        trackName: tracks[i].name,
+        trackURL: tracks[i].external_urls.spotify,
+        spotifyId: tracks[i].id,
+        artistName: songs.getArtists(tracks[i]),
+        albumName: tracks[i].album.name,
+        image: tracks[i].album.images[0].url
+      }
+      recommendations.push(newTrack);
+    }
+    return recommendations;
+  } 
+  else {
+    throw 'Error: Could not fetch recommendations from Spotify API';
+  }
+}
+
+async function getRecentlyPlayed(limit, access_token) {
+  const recentEndpoint = spotifyAPI.getEndpoint('me/player/recently-played');
+  let { data } = await spotifyAPI.callRecentEndpoint(recentEndpoint, limit, access_token);
+  let items = data.items;
+
+  if (items) { 
+    let recentlyPlayed = [];
+    for (let i = 0; i < items.length; i++) {
+      const newTrack = {
+        trackName: items[i].track.name,
+        trackURL: items[i].track.external_urls.spotify,
+        spotifyId: items[i].track.id,
+        artistName: songs.getArtists(items[i].track),
+        albumName: items[i].track.album.name,
+        image: items[i].track.album.images[0].url
+      }
+      recentlyPlayed.push(newTrack);
+    }
+    return recentlyPlayed;
+  } 
+  else {
+    throw 'Error: Could not fetch recently played tracks from Spotify API';
+  }
+}
+
+async function getTopCharts(limit, access_token) {
+  const PLAYLIST_ID = '37i9dQZEVXbLRQDuF5jeBp';     // Spotify ID for "Top 50 - USA" playlist
+  const chartsEndpoint = spotifyAPI.getEndpoint(`playlists/${PLAYLIST_ID}`);
+
+  let { data } = await spotifyAPI.callEndpoint(chartsEndpoint, access_token);
+  let allTracks = data.tracks.items;
+
+  if (allTracks) { 
+    let topCharts = [];
+    for (let i = 0; i < allTracks.length; i++) {
+      const newTrack = {
+        trackName: allTracks[i].track.name,
+        trackURL: allTracks[i].track.external_urls.spotify,
+        spotifyId: allTracks[i].track.id,
+        artistName: songs.getArtists(allTracks[i].track),
+        albumName: allTracks[i].track.album.name,
+        image: allTracks[i].track.album.images[0].url
+      }
+      topCharts.push(newTrack);
+    }
+    return topCharts.slice(0, limit);
+  } 
+  else {
+    throw "Error: Could not fetch 'Top 50' playlist from Spotify API";
+  }
+}
+
+async function getDailyPlaylist(user_id, access_token) {
+
+  const recTracks = await getRecommendations(22, user_id, access_token);
+  const recentTracks = await getRecentlyPlayed(20, access_token);
+  const chartTracks = await getTopCharts(5, access_token);
+
+  const longTermTracks = await getTopTracks(user_id, "short_term", access_token);
+  const jumpBackTracks = longTermTracks.slice(0,3);
+
+  const dailyPlaylist = recTracks.concat(recentTracks, chartTracks, jumpBackTracks);
+  
+  return dailyPlaylist;
+
+}
 
 export {
   create, 
   checkUser,
   getAll, 
   get, 
+  getByEmail,
   acceptFriend, 
   sendFriendRequest, 
   rejectFriendRequest,
@@ -522,4 +734,10 @@ export {
   topSongTogether,
   topArtistTogether,
   musicCompatibility
+  getTopArtists,
+  getRecommendations,
+  getRecentlyPlayed,
+  getTopCharts,
+  getDailyPlaylist
+
 }
