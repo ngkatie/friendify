@@ -1,6 +1,6 @@
 import { ObjectId } from "mongodb";
 import { users } from "../config/mongoCollections.js";
-import { checkValidId,validString } from "../helpers.js";
+import * as helpers from "../helpers.js";
 import { get } from "./users.js";
 
 
@@ -11,45 +11,58 @@ import { get } from "./users.js";
 * @username: the username of the user creating the comment
 * @comment: comment created by the user
 */
-const createComment = async (id, userId,username, comment) => {
+const createComment = async (id, userId, username, comment) => {
   
-    checkValidId(id)
-    checkValidId(userId)
-    if (!validString(comment))
-      throw "must give comment text as a string";
+    let id_ = helpers.checkValidId(id);             // User receiving comment (receiver)
+    let userId_ = helpers.checkValidId(userId);     // User creating comment (writer)
+    let username_ = helpers.checkName(username);    // Writer's username
+    let comment_ = helpers.checkString(comment);
+    // if (!helpers.checkString(comment)) {
+      // throw "Error: Must give comment text as a string";
+    // }
   
     const userCollections = await users();
   
-    const user1 = await get(id)
-    const user2 = await get(userId)
-    const userNameFromData= user2.username
+    const receiver = await get(id_);
+    const writer = await get(userId_);
+    const writer_username = writer.username;
 
-    if(username !== userNameFromData)
-    throw 'UserId and Username do not match'
-  
-    if (user1 === null) throw "User profile to which comment added doesnt exist";
-    
-    let newComment = {
-      
-      _id: new ObjectId(),
-      userId: userId ,
-      username: username,
-      comment: comment
-    };
-
-    const updatedInfo = await userCollections.updateOne(
-      { _id: new ObjectId(id) },
-      { $push: { comments: newComment } }
-    );
-    if (updatedInfo.modifiedCount === 0) {
-      throw "Could not update user Collection with comment Data!";
+    // Verify that id and username provided match
+    if (username_ !== writer_username) {
+      throw 'UserId and Username do not match';
     }
 
-    const user = await userCollections.findOne({ _id: new ObjectId(id) });
-    if (user === null) throw "No user found with that id";
+    // Check that user exists 
+    if (receiver === null) { 
+      throw "Error: The user receiving the comment cannot be found";
+    };
+    
+    let newComment = {
+      _id: new ObjectId(),
+      userId: userId_,
+      username: username_,
+      comment: comment_
+    };
+
+    const updatedInfo = await userCollections.findOneAndUpdate(
+      { _id: id_ },
+      { $push: { comments: newComment } }
+    );
+
+    // const updatedInfo = await userCollections.updateOne(
+    //   { _id: new ObjectId(id) },
+    //   { $push: { comments: newComment } }
+    // );
+
+    if (updatedInfo.modifiedCount === 0) {
+      throw "Could not update user collection with comment Data!";
+    }
+
+    const user = await userCollections.findOne({ _id: id_ });
+    if (user === null) { throw "No user found with that id" }
   
-    user._id = user._id.toString();
-    return user;
+    // Returns user object with _id as string instead of ObjectId
+    return helpers.idToString(user);
   };
 
 
@@ -58,70 +71,75 @@ const createComment = async (id, userId,username, comment) => {
  * @userId: the id of the user from which comment is to be removed
  * @commentId: comment id of the comment
  */
-const removeComment= async(userId, commentId) => {
+const removeComment = async(userId, commentId) => {
   
-    checkValidId(commentId)
-    checkValidId(userId)
+  // userId_ and commentId_ are ObjectId
+  const userId_ = checkValidId(userId);
+  const commentId_ = checkValidId(commentId);
 
-    const userCollection = await users();
+  const userCollection = await users();
 
-    const user = await get(userId)
-    let newCommenArray = []
+  const user = await get(userId_);
+  let newCommentArray = [];
 
-    const comment = user.comments
+  const comment = user.comments;
 
-    if(comment.length === 0)
-    return "Error: There are no comments to Remove"
-    let i=0;
+  if (comment.length === 0) {
+    return "Error: There are no comments to Remove";
+  }
 
-    comment.forEach(element => {
-        if(element._id != commentId){
-            newCommenArray[i++] = element
-        }
-    });
-
-    let userInfo  = {
-        username: user.username,
-        email: user.email,
-        spotify_access_token: user.spotify_access_token,
-        hashed_password: user.hashed_password,
-        top_songs: user.top_songs,
-        top_artists: user.top_artists,
-        dailyPlaylist: user.dailyPlaylist,
-        likeCount: user.likeCount,
-        comments: newCommenArray,
-        likedProfiles: user.likedProfiles,
-        pendingRequests: user.pendingRequests,
-        friends: user.friends,
+  let i = 0;
+  comment.forEach(element => {
+    if (element._id != commentId) {
+      newCommentArray[i++] = element;
     }
+  });
 
-    const updateInfo = await userCollection.findOneAndReplace(
-        {_id: new ObjectId(userId)},
-        userInfo,
-        {returnDocument: 'after'}
-      );
+  let userInfo = {
+    username: user.username,
+    email: user.email,
+    // spotify_access_token: user.spotify_access_token,
+    hashed_password: user.hashed_password,
+    topTracks: user.topTracks,
+    topArtists: user.topArtists,
+    dailyPlaylist: user.dailyPlaylist,
+    likeCount: user.likeCount,
+    comments: newCommentArray,
+    likedProfiles: user.likedProfiles,
+    pendingRequests: user.pendingRequests,
+    friends: user.friends,
+  }
+
+  const updateInfo = await userCollection.findOneAndReplace(
+    { _id: userId_ },
+    userInfo,
+    { returnDocument: 'after' }
+  );
   
   
-    if (updateInfo.lastErrorObject.n === 0)
-      throw [
-        404,
-        `Error: Update failed, could not update a user with id of ${idFriend}`
-      ];
-  
-    return  updateInfo.value; 
+  if (updateInfo.lastErrorObject.n === 0) {
+    throw [
+      404,
+      `Error: Update failed, could not update a user with id of ${idFriend}`
+    ]
+  }
+    return updateInfo.value; 
 
 }
 
-const getAllComments= async(userId) => {
-  checkValidId(userId)
-  let id=userId
-  id = id.trim();
+const getAllComments = async(userId) => {
+  const userId_ = checkValidId(userId)
+  
   const userCollection = await users();
-  const user = await userCollection.findOne({ _id: new ObjectId(id) });
-  user._id = user._id.toString();
+  const user = await userCollection.findOne({ _id: userId_ });
+
   return user.comments;  
 
 }
 
-  export {createComment, removeComment, getAllComments}
+export {
+  createComment, 
+  removeComment, 
+  getAllComments
+}
   

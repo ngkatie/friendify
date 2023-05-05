@@ -1,19 +1,37 @@
-.track-item .track-info {
-    opacity: 0;
-    transition: opacity 0.3s ease;
-  }
-  
-  .track-item .track-image:hover + .track-info {
-    opacity: 1;
-  }
-
-.artist-item .artist-info {
-    opacity: 0;
-    transition: opacity 0.3s ease;
-}
-  
-.artist-item .artist-image:hover + .artist-info {
-    opacity: 1;
+#friendify-title {
+  text-align: center;
+  padding: 40px 15px;
+  margin: 20px 0px;
+  font-family: 'Gotham Rounded', sans-serif;
+  background-color: #1DB954;
+  color: #fff;
 }
 
-  
+#navbar {
+  display: flex;
+  align-items: left;
+  justify-content: start;
+  padding: 15px;
+  margin: 20px 0px;
+  font-family: 'Gotham Rounded', sans-serif;
+  background-color: #1DB954;
+  color: #fff;
+  list-style-type: none;
+  overflow: hidden;
+}
+
+.nav-option {
+  display: inline-block;
+  color: white;
+  text-align: center;
+  padding: 14px 16px;
+  text-decoration: none;
+}
+
+.nav-option:hover {
+  color: #2E6A33;
+}
+
+.nav-active {
+  background-color: #1ED760;
+}

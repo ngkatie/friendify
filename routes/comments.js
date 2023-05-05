@@ -1,7 +1,7 @@
 import  { Router } from 'express';
 import { ObjectId } from 'mongodb';
-import { getAllComments, createComment, removeComment } from '../data/comments.js';
-import { checkValidId,validString } from "../helpers.js";
+import { commentData } from '../data/index.js';
+import * as helpers from "../helpers.js";
 import xss from 'xss';
 import { get } from '../data/users.js';
 import { userData } from '../data/index.js';
@@ -13,32 +13,31 @@ router
   .get(async (req, res) => {
 
     if(req.session.user){
-    let userId = req.params.userId
-    try {
-      
-      userId= userId.trim()
-      checkValidId(userId);
-    } catch (e) {
-      return res.status(400).json({ error: e });
-    }
-    try {
-      const user = await get(userId);
-    } catch (e) {
-      return res.status(404).json({ error: "No user with id" });
-    }
-    try {
-      //const userId = req.params.userId;
+      const userId_ = req.params.userId;
+      const userId = undefined;
+      try {
+        userId = helpers.checkValidId(userId_);
+      } catch (e) {
+        return res.status(400).json({ error: e });
+      }
 
-      const comment = await getAllComments(userId);
-      res.status(200).json(comment);
-    } catch (e) {
-    //   res.status(404).json({ error: "No comment for the given id" });
-    console.log(e)
+      try {
+        const user = await get(userId);
+      } catch (e) {
+        return res.status(404).json({ error: "No user with id" });
+      }
+      try {
+        //const userId = req.params.userId;
+        const comments = await commentData.getAllComments(userId);
+        res.status(200).json(comments);
+      } catch (e) {
+        //   res.status(404).json({ error: "No comment for the given id" });
+        console.log(e);
+      }
     }
-  }
-  else{
-    res.redirect("/")
-  }
+    else {
+      res.redirect("/");
+    }
   })
   /*
 * This route would be used to create a comment on users profile
@@ -53,19 +52,18 @@ router
     let id = req.session.user.id
 
     let commentInfo = req.body
-    
+    // commentInfo = xss(commentInfo);
 
     if (!commentInfo) {
         return res.status(400).json("Comment text is empty");
     }
-    if (
-        !commentInfo.comment ||
-        typeof commentInfo.comment != "string" ||
-        commentInfo.comment.trim().length == 0
-      ) {
-        // errors.push("Comment text is invalid");
-        return res.status(400).json("Comment Text Invalid")
-      }
+
+    const comment = undefined;
+    try {
+      comment = helpers.checkString(commentInfo);
+    } catch (e) {
+      return res.status(400).json("Comment Text Invalid");
+    }
 
 
      try{
@@ -74,46 +72,46 @@ router
         commentInfo.comment = xss(
           validString(commentInfo.comment)
         );
+
         checkValidId(id);
         var userId = req.params.userId
         checkValidId(req.params.userId);
+        
         const userData = await get(id.toString());
         var userName = userData.username
         
-      } catch (e) {
-        return res.status(404).json({ error: "No user for the given id" });
-        
-      }
-      try {
-        const user = await createComment(
-          userId,
-          id,
-          userName,
-          commentInfo.comment.trim()
-        );
-        var allcomm = user["comments"];
-
-        let lastelm = allcomm.slice(-1);
-        //return lastelm[0];
-
-        return res.json({
-          layout: null,
-          userData: lastelm[0],
-          userLoggedIn: true,
-        })
-        
-      } catch (e) {
-        return res
-          .status(500)
-          .render("error", { errors: e});
-        
-      }
+    } catch (e) {
+      return res.status(404).json({ error: "No user for the given id" });  
     }
-    else{
-      res.redirect("/")
+    
+    try {
+      const user = await commentData.createComment(
+        userId,
+        id,
+        userName,
+        commentInfo.comment.trim()
+      );
+      var allcomm = user["comments"];
+
+      let lastelm = allcomm.slice(-1);
+      //return lastelm[0];
+
+      return res.json({
+        layout: null,
+        userData: lastelm[0],
+        userLoggedIn: true,
+      })
+        
+    } catch (e) {
+      return res
+        .status(500)
+        .render("error", { errors: e});   
     }
- 
-  })
+  }
+  else{
+    res.redirect("/")
+  } 
+})
 
   /*
 * This route would be used to remove a comment on users profile
@@ -124,24 +122,28 @@ router
   .route("/remove/:userId")
   .post(async(req,res)=>{
       //code here for DELETE
-      let comment = req.body
-      let commentId = comment.commentId
-      comment = xss(comment);
+      let comment_ = req.body;
+      let commentId_ = comment_.commentId;
+      comment_ = xss(comment_);
+
+      const userId = undefined;
+      const commentId = undefined;
       try {
-        checkValidId(req.params.userId);
-        checkValidId(commentId);
+        userId = helpers.checkValidId(req.params.userId);
+        commentId = helpers.checkValidId(commentId_);
       } catch (e) {
         return res.status(400).json({error: e});
       }
+
+      // Ensure user exists
       try {
         let userData = await get(req.params.userId);
-       // res.json(band);
       } catch (e) {
         return res.status(404).json({error: 'User not found'});
       }
+
       try {
-        let deletedband = await removeComment(req.params.userId, commentId);
-        
+        let deletedband = await removeComment(userId, commentId);
         res.json(deletedband);
       } catch (e) {
         let status = e[0] ? e[0] : 500;
@@ -151,4 +153,4 @@ router
 
   });
 
-  export default router
+  export default router;
