@@ -742,7 +742,7 @@ export {
   likeProfile,
   topSongTogether,
   topArtistTogether,
-  musicCompatibility
+  musicCompatibility,
   getTopArtists,
   getRecommendations,
   getRecentlyPlayed,
