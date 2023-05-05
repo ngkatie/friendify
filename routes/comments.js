@@ -51,6 +51,7 @@ router
   if(req.session.user){
     
     let id = req.session.id
+   // let id ='643cb4bf7f4290f4eb398d26'
     const commentInfo = req.body
     if (!commentInfo) {
         return res.status(400).json("Comment text is empty");
