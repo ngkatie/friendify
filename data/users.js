@@ -163,7 +163,7 @@ const acceptFriend = async(id_, idFriend_) => {
   );
 
   const updateInfo2 = await userCollection.findOneAndReplace(
-    { _id: idFriend_},
+    { _id: idFriend_ },
     user2Info,
     { returnDocument: 'after' }
   );
@@ -303,7 +303,13 @@ const rejectFriendRequest = async(id_, idFriend_) => {
   return updateInfoFriend.value; 
 }
 
-async function getTopTracks(user_id, time_range = "medium_term", access_token) {
+async function getTopTracks(user_id, time_range_ = "medium_term", access_token) {
+
+  const currId = helpers.checkValidId(user_id);
+  const time_range = helpers.checkString(time_range_);
+  if (!access_token) {
+    throw 'Error: No access token provided';
+  }
 
   // const time_range = document.getElementById("timeSelect");
   const tracksEndpoint = spotifyAPI.getEndpoint('me/top/tracks');
@@ -327,7 +333,6 @@ async function getTopTracks(user_id, time_range = "medium_term", access_token) {
       topTracks.push(newTrack);
     }
 
-    const currId = helpers.checkValidId(user_id);
     const userCollection = await users();
     const user = await userCollection.findOne({_id: currId});
     user.topTracks = topTracks;
@@ -349,7 +354,13 @@ async function getTopTracks(user_id, time_range = "medium_term", access_token) {
   }
 }
 
-async function getTopArtists(user_id, time_range = "medium_term", access_token) {
+async function getTopArtists(user_id, time_range_ = "medium_term", access_token) {
+
+  const currId = helpers.checkValidId(user_id);
+  const time_range = helpers.checkString(time_range_);
+  if (!access_token) {
+    throw 'Error: No access token provided';
+  }
 
   const artistsEndpoint = spotifyAPI.getEndpoint('me/top/artists');
 
@@ -371,7 +382,6 @@ async function getTopArtists(user_id, time_range = "medium_term", access_token) 
       topArtists.push(newArtist);
     }
 
-    const currId = helpers.checkValidId(user_id);
     const userCollection = await users();
     const user = await userCollection.findOne({_id: currId});
     user.topArtists = topArtists;
@@ -399,70 +409,68 @@ async function likeProfile(iD1,iD2){
 
   let id1;
   let id2;
+  let user1;
+  let user2;
 
-  iD1=iD1.trim()
-  iD2=iD2.trim()
   try {
-    helpers.checkValidId(iD1)
-    helpers.checkValidId(iD2)
+    const id1 = helpers.checkValidId(iD1);
+    const id2 = helpers.checkValidId(iD2);
 
-     id1 = await get(iD1)
-     id2 = await get(iD2)
+    user1 = await get(id1.toString());
+    user2 = await get(id2.toString());
   } catch (error) {
-    throw [400, error]
+    throw [400, error];
   }
   
+  const likedProfiles = user1.likedProfiles;
+  let likeCount = user2.likeCount;
 
+  if (likedProfiles.includes(user2._id)) {
+    throw [400,"Profile already liked"]
+  }
 
-  const likedProfiles = id1.likedProfiles
-  let likeCount = id2.likeCount
-
-  if(likedProfiles.includes(id2._id))
-  throw [400,"Profile already liked"]
-
-  likeCount = likeCount+1;
-  likedProfiles.push(id2._id)
+  likeCount += 1;
+  likedProfiles.push(user2._id);
 
   let user1Info = {
-    username: id1.username,
-    email: id1.email,
-    hashed_password: id1.hashed_password,
-    topTracks: id1.topTracks,
-    topArtists: id1.topArtists,
-    dailyPlaylist: id1.dailyPlaylist,
-    likeCount: id1.likeCount,
-    comments: id1.comments,
+    username: user1.username,
+    email: user1.email,
+    hashed_password: user1.hashed_password,
+    topTracks: user1.topTracks,
+    topArtists: user1.topArtists,
+    dailyPlaylist: user1.dailyPlaylist,
+    likeCount: user1.likeCount,
+    comments: user1.comments,
     likedProfiles: likedProfiles,
-    pendingRequests: id1.pendingRequests,
-    friends: id1.friends,
+    pendingRequests: user1.pendingRequests,
+    friends: user1.friends,
   };
 
   let user2Info = {
-    username: id2.username,
-    email: id2.email,
-    hashed_password: id2.hashed_password,
-    topTracks: id2.topTracks,
-    topArtists: id2.topArtists,
-    dailyPlaylist: id2.dailyPlaylist,
+    username: user2.username,
+    email: user2.email,
+    hashed_password: user2.hashed_password,
+    topTracks: user2.topTracks,
+    topArtists: user2.topArtists,
+    dailyPlaylist: user2.dailyPlaylist,
     likeCount: likeCount,
-    comments: id2.comments,
-    likedProfiles: id2.likedProfiles,
-    pendingRequests: id2.pendingRequests,
-    friends: id2.friends,
+    comments: user2.comments,
+    likedProfiles: user2.likedProfiles,
+    pendingRequests: user2.pendingRequests,
+    friends: user2.friends,
   }
-
 
   const userCollection = await users();
   const updateInfo1 = await userCollection.findOneAndReplace(
-    {_id: new ObjectId(id1._id)},
+    { _id: id1 },
     user1Info,
-    {returnDocument: 'after'}
+    { returnDocument: 'after' }
   );
 
   const updateInfo2 = await userCollection.findOneAndReplace(
-    {_id: new ObjectId(id2._id)},
+    { _id: id2 },
     user2Info,
-    {returnDocument: 'after'}
+    { returnDocument: 'after' }
   );
 
   if (updateInfo1.lastErrorObject.n === 0)
@@ -477,9 +485,7 @@ async function likeProfile(iD1,iD2){
     `Error: Update failed, could not update a user with id of ${id2}`
   ];
 
-
   return [updateInfo1.value, updateInfo2.value];
-
 
 };
 
@@ -487,33 +493,35 @@ async function topSongTogether(iD1,iD2){
    
   let id1;
   let id2;
+  let user1;
+  let user2;
 
-  iD1=iD1.trim()
-  iD2=iD2.trim()
+  // iD1=iD1.trim()
+  // iD2=iD2.trim()
   try {
-    helpers.checkValidId(iD1)
-    helpers.checkValidId(iD2)
+    id1 = helpers.checkValidId(iD1);
+    id2 = helpers.checkValidId(iD2);
 
-     id1 = await get(iD1)
-     id2 = await get(iD2)
+    user1 = await get(id1.toString());
+    user2 = await get(iD2.toString());
   } catch (error) {
     throw [400, error]
   }
- let topTracks1 = id1.topTracks
- let topTracks2 = id2.topTracks
+  let topTracks1 = user1.topTracks
+  let topTracks2 = user2.topTracks
 
- let topSong
- let commSongCount=0
- topTracks1.forEach(element => {
-  topTracks2.forEach(element2=>{
-    if(element.trim().lowercase() == element2.trim().lowercase()){
-       topSong = element 
-       commSongCount++
-     }
-  })
- });
+  let topSong;
+  let commSongCount=0
+  topTracks1.forEach(element => {
+    topTracks2.forEach(element2=>{
+      if(element.trim().lowercase() == element2.trim().lowercase()){
+        topSong = element;
+        commSongCount++;
+      }
+    })
+  });
 
- return [topSong, commSongCount, (topTracks1 + topTracks2)]
+  return [topSong, commSongCount, (topTracks1 + topTracks2)];
 
 }
 
@@ -521,55 +529,62 @@ async function topArtistTogether(iD1,iD2){
    
   let id1;
   let id2;
+  let user1;
+  let user2;
 
-  iD1=iD1.trim()
-  iD2=iD2.trim()
   try {
-    helpers.checkValidId(iD1)
-    helpers.checkValidId(iD2)
+    id1 = helpers.checkValidId(iD1);
+    id2 = helpers.checkValidId(iD2);
 
-     id1 = await get(iD1)
-     id2 = await get(iD2)
+    user1 = await get(id1.toString());
+    user2 = await get(id2.toString());
   } catch (error) {
-    throw [400, error]
+    throw [400, error];
   }
- let topArtist1 = id1.topArtists
- let topArtist2 = id2.topArtists
+  let topArtist1 = user1.topArtists
+  let topArtist2 = user2.topArtists
 
+  let topArtist;
+  let commArtistCount = 0;
+  topArtist1.forEach(element => {
+    topArtist2.forEach(element2 => {
+      if(element.trim().lowercase() == element2.trim().lowercase()){
+        topArtist = element;
+        commArtistCount++;
+      }
+    })
+  });
 
- let topArtist
- let commArtistCount =0;
- topArtist1.forEach(element => {
-  topArtist2.forEach(element2=>{
-    if(element.trim().lowercase() == element2.trim().lowercase()){
-      topArtist = element ,
-      commArtistCount++
-     }
-  })
- });
-
- return [topArtist, commArtistCount, (topArtist1+topArtist2)]
-
+  return [topArtist, commArtistCount, (topArtist1+topArtist2)];
 }
 
 async function musicCompatibility(iD1, iD2){
 
-  let arr1 = topSongTogether(iD1, iD2)
-  let arr2 = topArtistTogether(iD1, iD2)
+  const id1 = helpers.checkValidId(iD1);
+  const id2 = helpers.checkValidId(iD2);
 
-  let totArtist = arr2[3]
-  let totTrack = arr1[3]
+  let arr1 = topSongTogether(id1, id2);
+  let arr2 = topArtistTogether(id1, id2);
 
-  let commSong = arr1[1]
-  let commArtist = arr2[1]
+  let totArtist = arr2[3];
+  let totTrack = arr1[3];
 
-  let perComp = ((commSong + commArtist)/(totArtist+ totTrack) * 100)
+  let commSong = arr1[1];
+  let commArtist = arr2[1];
 
-  let comp = perComp + "%"
-  return comp
+  let perComp = ((commSong + commArtist)/(totArtist + totTrack) * 100);
+
+  const compatibility = perComp + "%";
+  return compatibility;
    
 }
 async function seedTracks(user_id, access_token) {
+
+  const currId = helpers.checkValidId(user_id);
+  if (!access_token) {
+    throw 'Error: No access token provided';
+  }
+
   // Update topTracks in user's database
   // Time range is short_term since playlist should reflect user's most recent history
   const topTracks = await getTopTracks(user_id, "short_term", access_token);
@@ -586,6 +601,12 @@ async function seedTracks(user_id, access_token) {
 }
 
 async function seedArtists(user_id, access_token) {
+
+  const currId = helpers.checkValidId(user_id);
+  if (!access_token) {
+    throw 'Error: No access token provided';
+  }
+
   // Update topArtists info in user's database
   // Time range is short_term since playlist should reflect user's most recent history
   const topArtists = await getTopArtists(user_id, "short_term", access_token);
@@ -616,6 +637,12 @@ function constructSeedString(seedArray, limit) {
 }
 
 async function getRecommendations(limit, user_id, access_token) {
+
+  const currId = helpers.checkValidId(user_id);
+  if (!access_token) {
+    throw 'Error: No access token provided';
+  }
+  
   const recsEndpoint = spotifyAPI.getEndpoint('recommendations');
 
   // Recommendations endpoint requires seed_tracks, seed_artists, and seed_genres
@@ -660,6 +687,11 @@ async function getRecommendations(limit, user_id, access_token) {
 }
 
 async function getRecentlyPlayed(limit, access_token) {
+
+  if (!access_token) {
+    throw 'Error: No access token provided';
+  }
+
   const recentEndpoint = spotifyAPI.getEndpoint('me/player/recently-played');
   let { data } = await spotifyAPI.callRecentEndpoint(recentEndpoint, limit, access_token);
   let items = data.items;
@@ -685,6 +717,11 @@ async function getRecentlyPlayed(limit, access_token) {
 }
 
 async function getTopCharts(limit, access_token) {
+
+  if (!access_token) {
+    throw 'Error: No access token provided';
+  }
+
   const PLAYLIST_ID = '37i9dQZEVXbLRQDuF5jeBp';     // Spotify ID for "Top 50 - USA" playlist
   const chartsEndpoint = spotifyAPI.getEndpoint(`playlists/${PLAYLIST_ID}`);
 
@@ -712,6 +749,11 @@ async function getTopCharts(limit, access_token) {
 }
 
 async function getDailyPlaylist(user_id, access_token) {
+
+  const currId = helpers.checkValidId(user_id);
+  if (!access_token) {
+    throw 'Error: No access token provided';
+  }
 
   const recTracks = await getRecommendations(22, user_id, access_token);
   const recentTracks = await getRecentlyPlayed(20, access_token);

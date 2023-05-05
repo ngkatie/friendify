@@ -48,8 +48,8 @@ function includesSpecial(str) {
 }
 
 export function checkValidId(str) {
-  checkString(str);
-  const id = new ObjectId(str);
+  const str_ = checkString(str);
+  const id = new ObjectId(str_);
   if (!ObjectId.isValid(id)) {
     throw `Error: Invalid object ID`
   };
@@ -61,6 +61,17 @@ export function checkString(str) {
     throw `Error: ${str} must be a non-empty string`;
   }
   return str.trim();
+};
+
+export function checkStrArray(arr) {
+  if (!arr || !Array.isArray(arr) || arr.length < 1) {
+    throw `Error: ${arr} must be an non-empty array`;
+  }
+  arr = arr.map(str => {
+    checkString(str);
+    return str.trim();
+  });
+  return arr;
 };
 
 export function checkName(str) {
