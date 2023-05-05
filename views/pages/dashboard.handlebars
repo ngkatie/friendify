@@ -13,13 +13,41 @@
         <a href="dailyplaylist">Daily Playlist</a>
     </div>
 
-    <div>
-        {{#each comments}}
-        <div>
-            <p>{{this.user}}</p>
-            <p>{{this.comment}}</p>
+    <div class="card postcomments px-2">
+        <input type="hidden" name="users_id" id="users" value="{{users._id}}" />
+        <div class="form-group mt-2">
+            <form id="comments-form" method="POST" action="/comments/{{users._id}}">
+                <label class="commentText" for="commentText">Enter a comment</label>
+                <div class="input-group mb-3">
+                    <input type="text" class="form-control" id="commentText" name="commentText" placeholder="Enter comment here" />
+                    <div class="input-group-append">
+                        <span class="input-group-button" id="basic-addon2">
+                            <button type="button" id="submit-comment" class="btn btn-primary">Create</button>
+                        </span>
+                    </div>
+                </div>
+            </form>
         </div>
-        {{/each}}
+        <div id="empty-comment" class="alert alert-info div-text" hidden></div>
+        <div id="comment-area">
+            {{#each users.comments}}
+            <div class="chat">
+                <div class="yours messages">
+                    <div class="message last">
+                        {{this.comment}}
+                    </div>
+                    <div class="bold"> - {{this.username}}</div>
+                    <hr>
+                </div>
+            </div>
+            {{/each}}
+        </div>
+    </div>
+    <div id="error-message"></div>
+    <div>  
+        {{#if error}}
+        <p>{{errorMessage}}</p>
+        {{/if}}
     </div>
 
 </div>
