@@ -30,6 +30,9 @@ const generateRandomString = (length) => {
 const stateKey = 'spotify_auth_state';
 router
   .route('/login')
+  .get(async (req, res) => {
+    res.status(200).render('pages/login', { title: "Login" })
+  })
   .post(async (req, res) => {
     try{
       let authenticatedUser = await userData.checkUser(xss(req.body.usernameInput), xss(req.body.passwordInput));
