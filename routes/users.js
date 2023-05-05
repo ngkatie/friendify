@@ -325,9 +325,14 @@ router.get('/dashboard', async (req, res) => {
 
 
     try {
-      checkValidId(req.session.user.id)    
+       checkValidId(req.session.user.id) 
+       
     } catch (error) {
-      res.status(400).json(error)
+      return res.status(400).render('pages/dashboard', {
+        title: 'Dashboard',
+        error:true,
+        errorMessage: error
+      })
     }
 
     const userData  = await get(req.session.user.id);
@@ -338,15 +343,25 @@ router.get('/dashboard', async (req, res) => {
         title: 'Dashboard',
         // username: user.username,
         likeCount: userData.likeCount,
-        //comments: user.comments
-        user : body
+        user : body,
+        users : userData
       })
     } catch (error) {
       // Handle error
-      console.log(error);
-      res.redirect('/');
+      return res.render("pages/dashboard",{        title: 'Dashboard',
+      // username: user.username,
+      likeCount: userData.likeCount,
+      user : body,
+      users : userData,
+      errorMessage : error
+    })
+      // console.log(error);
+      // res.redirect('/');
     }
-  }})
+  }
+  else
+  res.redirect("/")
+})
 
 router
   .route('/toptracks')
@@ -450,6 +465,7 @@ router
 
 router.get('/friends', async (req, res) => {
    const id = req.session.user.id;
+  
   try {
     const user = await userData.get(id);
     const friends = user.friends;
@@ -462,13 +478,13 @@ router.get('/friends', async (req, res) => {
     }
 
     if(req.query.success){
-      return res.status(200).render('pages/friendsDashboard', { title: "Friends", friends: friendObjects, success: true });
+      return res.status(200).render('pages/friendsDashboard', { title: "Friends", friends: friendObjects, success: true, _id:id });
     }
     if(req.query.error){
       return res.status(200).render('pages/friendsDashboard', { title: "Friends", friends: friendObjects, error: true });
     }
 
-    return res.status(200).render('pages/friendsDashboard', { title: "Friends", friends: friendObjects });
+    return res.status(200).render('pages/friendsDashboard', { title: "Friends", friends: friendObjects ,_id:id});
 
   } catch (e) {
     console.error(e)
@@ -491,10 +507,31 @@ router.get('/friends/:id', async (req, res) => {
     profileLiked = true;
 
     
-    return res.status(200).render('pages/friendProfile', { title: "Friend", users: friend , userId:friend._id, likeCount: friend.likeCount, profileLiked:profileLiked });
+    let result = await userData.topArtistTogether(id,userId);
+    let result2 = await userData.topSongTogether(id,userId);
+    let musicCompatibility = await userData.musicCompatibility(id,userId);
+    let topArtist;
+    let topSong;
+    if(result[0] === "")
+    topArtist = " No Top Artist together"
+    else
+    topArtist = result[0]
+
+    if(result2[0] === "")
+    topSong = " No Top Song together"
+    else
+    topSong = result2[0]
+    // return res.status(200).json({ message: " No Top Artist together" })
+
+    // return res.status(200).json(result[0])
+
+    
+    return res.status(200).render('pages/friendProfile', { title: "Friend", users: friend , userId:friend._id, likeCount: friend.likeCount, profileLiked:profileLiked, topArtist:topArtist, topSong:topSong , musicCompatibility:musicCompatibility});
 
   } catch (e) {
-    return res.status(400).log(e);
+    let status = e[0] ? e[0] : 500;
+    let message = e[1] ? e[1] : 'Internal Server Error';
+    return res.status(status).json(message)
   }
 }
 else{

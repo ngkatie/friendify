@@ -503,6 +503,22 @@ async function topSongTogether(iD1,iD2){
 
  let topSong
  let commSongCount=0
+ let t1=0
+ let t2=0;
+ 
+ if(!Array.isArray(topTracks1) || !Array.isArray(topTracks2) || typeof topTracks1 === null || typeof topTracks2 === null){
+
+  topSong ="",
+  commSongCount=0
+
+ }
+ else if(topTracks1.length === 0 || topTracks2.length ===0){
+  topSong ="",
+  commSongCount=0
+ }
+ else{
+  tl =topTracks1.length;
+  t2 = topTracks2.length
  topTracks1.forEach(element => {
   topTracks2.forEach(element2=>{
     if(element.trim().lowercase() == element2.trim().lowercase()){
@@ -511,8 +527,9 @@ async function topSongTogether(iD1,iD2){
      }
   })
  });
+}
 
- return [topSong, commSongCount, (topTracks1 + topTracks2)]
+ return [topSong, commSongCount, (t1+t2)]
 
 }
 
@@ -534,11 +551,26 @@ async function topArtistTogether(iD1,iD2){
   }
  let topArtist1 = id1.topArtists
  let topArtist2 = id2.topArtists
-
-
  let topArtist
- let commArtistCount =0;
- topArtist1.forEach(element => {
+
+ let tl=0
+ let t2=0;
+ let commArtistCount=0;
+ if(!Array.isArray(topArtist1) || !Array.isArray(topArtist2) || typeof topArtist1 === null || typeof topArtist2 === null){
+
+  topArtist ="",
+  commArtistCount=0;
+
+ }
+ else if(topArtist1.length === 0 || topArtist2.length ===0){
+  topArtist ="",
+  commArtistCount=0
+ }
+ else{
+  tl = topArtist1.length;
+  t2 = topArtist2.length
+  
+  topArtist1.forEach(element => {
   topArtist2.forEach(element2=>{
     if(element.trim().lowercase() == element2.trim().lowercase()){
       topArtist = element ,
@@ -546,26 +578,43 @@ async function topArtistTogether(iD1,iD2){
      }
   })
  });
+}
 
- return [topArtist, commArtistCount, (topArtist1+topArtist2)]
+ return [topArtist, commArtistCount, (tl+t2)]
 
 }
 
 async function musicCompatibility(iD1, iD2){
 
-  let arr1 = topSongTogether(iD1, iD2)
-  let arr2 = topArtistTogether(iD1, iD2)
+  iD1=iD1.trim()
+  iD2=iD2.trim()
+  try {
+    helpers.checkValidId(iD1)
+    helpers.checkValidId(iD2)
+  } catch (error) {
+    throw [400, error]
+  }
+  let arr1 = await topSongTogether(iD1, iD2)
+  let arr2 = await topArtistTogether(iD1, iD2)
 
-  let totArtist = arr2[3]
-  let totTrack = arr1[3]
+try {
+  let totArtist = arr2[2]
+  let totTrack = arr1[2]
 
   let commSong = arr1[1]
   let commArtist = arr2[1]
-
-  let perComp = ((commSong + commArtist)/(totArtist+ totTrack) * 100)
+  
+  let perComp;
+  if(commSong == 0 || commArtist ==0)
+  perComp=0
+  else
+  perComp = ((commSong + commArtist)/(totArtist+ totTrack) * 100)
 
   let comp = perComp + "%"
   return comp
+} catch (e) {
+  throw [400, error]
+}
    
 }
 async function seedTracks(user_id, access_token) {

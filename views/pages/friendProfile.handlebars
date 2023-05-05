@@ -3,11 +3,13 @@
         <img src="{{profilePicture}}" alt="Profile Picture" class="img-thumbnail" width="200" height="200">
         <h2>{{username}}</h2>
         <p>Likes: {{likeCount}}</p>
+        <p>Top Artist Together : {{topArtist}}</p>
+        <p>Top Song Together : {{topSong}}</p>
        
     </div>
     <div class="compatibility-score">
         <p>Compatibility Score:</p>
-        <span class="score">{{score}}</span>
+        <span class="score">{{musicCompatibility}}</span>
     </div>
     <div>
     <form action="/users/likeProfile/{{userId}}" method="PUT">
@@ -55,8 +57,6 @@
     <div>  
         {{#if errorMessage}}
         <p>{{errorMessage}}</p>
-        {{else}}
-        
         {{/if}}
     </div>
 </div>
