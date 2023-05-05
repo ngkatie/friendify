@@ -11,6 +11,9 @@
 
     <input type="submit" value="Login">
   </form>
+  {{#if error}}
+  <p>Invalid username or password</p>
+  {{/if}}
 </div>
 
 <a href="/users/register">Click here to register!</a>

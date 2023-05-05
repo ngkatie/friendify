@@ -17,6 +17,9 @@
 
     <input type="submit" value="Register">
   </form>
+  {{#if error}}
+  <p>{{errMsg}}</p>
+  {{/if}}
 </div>
 
 <a href="/">Already have an account? Click here to log-in</a>

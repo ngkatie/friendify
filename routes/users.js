@@ -59,8 +59,7 @@ router
       console.log(e);
       return res.status(400).render('pages/login', {
         title: 'Login',
-        err: true, 
-        error: e
+        error: true,
       })
     }
   });
@@ -92,8 +91,8 @@ router
       if (confirmPassword !== password) {
         return res.status(400).render('pages/register', { 
           title: 'Register', 
-          err: true,
-          error: 'Error: Passwords do not match' 
+          error: true,
+          errMsg: 'Error: Passwords do not match' 
         })
       }
 
@@ -102,10 +101,10 @@ router
         return res.status(200).redirect('/');
       }
       else {
-        return res.status(500).json({ error: 'Internal Server Error '});
+        return res.status(500).render('pages/register', {title: 'Register', error: true, errMsg: 'Error: User could not be created'});
       }
     } catch (e) {
-      return res.status(400).json({ error: e });
+      return res.status(400).render('pages/register', { title: 'Register', error: true, errMsg: e });
     }
 
   });
@@ -306,7 +305,6 @@ router.get('/dashboard', async (req, res) => {
     };
 
 
-    console.log("here should print")
     try {
       checkValidId(req.session.user.id)    
     } catch (error) {
