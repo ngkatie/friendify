@@ -1,9 +1,15 @@
+.artist-item .artist-image{
+  display: inline-block;
+}
+
 .artist-item .artist-info {
-    opacity: 0;
-    transition: opacity 0.3s ease;
-  }
+  display: inline-block;
+  padding: 0px 15px;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
     
-  .artist-item .artist-image:hover + .artist-info {
-    opacity: 1;
-  }
+.artist-item .artist-image:hover + .artist-info {
+  opacity: 1;
+}
   
