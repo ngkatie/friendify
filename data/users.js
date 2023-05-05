@@ -41,15 +41,21 @@ const create = async (
     throw `Could not add user successfully`;
   }
 
+  const dupe = await userCollection.findOne({ email: email })
+  if(dupe){
+    throw `Email already exists`;
+  }
+
   // const user = await get(insertInfo.insertedId.toString());
   return newUser;
 }
 // create("test", "test", "test");
 
 const checkUser = async (username, password) => {
-
-  const username_ = helpers.checkName(username);
-  const password_ = helpers.checkPassword(password);
+  if(helpers.checkName(username) && helpers.checkPassword(password)){
+    const username_ = username;
+    const password_ = password;
+  }
 
   const userCollection = await users();
   const user = await userCollection.findOne({ username: username_ });

@@ -85,17 +85,17 @@ export function checkName(str) {
 export function checkEmail(str) {
   const email = checkString(str).toLowerCase();
   if (!EmailValidator.validate(email)) {
-      throw `Error: ${email} is an invalid email`;
+      return false;
   }
-  return email;
+  return true;
 }
 
 export function checkPassword(str) {
   const password = checkString(str);
   if (password.length < 8 || password.includes(' ') || !includesNum(password) || !includesUpper(password) || !includesSpecial(password)) {
-      throw `Error: Password must contain at least one number, one uppercase character, and one special character`;
+      return false;
   }
-  return password;
+  return true;
 }
 
 export function idToString(mongoDocument) {
