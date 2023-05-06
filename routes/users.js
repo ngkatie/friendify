@@ -3,7 +3,7 @@ export const router = Router();
 // import { ObjectId } from 'mongodb';
 import { userData } from '../data/index.js';
 import querystring from 'querystring';
-
+import { users } from "../config/mongoCollections.js";
 import { checkValidId } from '../helpers.js';
 import { acceptFriend, sendFriendRequest,rejectFriendRequest,getAll,get, likeProfile } from '../data/users.js';
 import * as helpers from '../helpers.js';
@@ -30,15 +30,34 @@ const generateRandomString = (length) => {
 const stateKey = 'spotify_auth_state';
 router
   .route('/login')
+  .get(async (req, res) => {
+    res.status(200).render('pages/login', { title: "Login" })
+  })
   .post(async (req, res) => {
-    try{
-      let authenticatedUser = await userData.checkUser(xss(req.body.usernameInput), xss(req.body.passwordInput));
+      let missingFields = [];
+      let error = false;
+      if (!req.body.usernameInput.trim()) {
+        missingFields.push('username');
+      }
+      if (!req.body.passwordInput.trim()) {
+        missingFields.push('password');
+      }
+      if (missingFields.length > 0) {
+        return res.status(400).render('pages/login', { title: 'Login', missingFields: missingFields.join(', '), missing: true });
+      }
+
+      if(!helpers.checkName(req.body.usernameInput)) error = true;
+      if(!helpers.checkPassword(req.body.passwordInput)) error = true;
+      if (error) {
+        return res.status(400).render('pages/login', { title: 'Login', error: error });
+      }
+
+        let authenticatedUser = await userData.checkUser(xss(req.body.usernameInput), xss(req.body.passwordInput));
       if (authenticatedUser) {
         req.session.user = {
           id: authenticatedUser._id,
           username: req.body.usernameInput,
-        };
-        // console.log(req.session.user);
+        } }
         const state = generateRandomString(16);
         res.cookie(stateKey, state);
 
@@ -54,16 +73,8 @@ router
               state,
             })
         );
-      }
-    } catch (e) {
-      console.log(e);
-      return res.status(400).render('pages/login', {
-        title: 'Login',
-        err: true, 
-        error: e
-      })
-    }
-  });
+      } 
+    )
 
 router
   .route('/register')
@@ -78,38 +89,45 @@ router
       emailInput
     } = req.body;
 
-    try {
-      let username = helpers.checkName(usernameInput);
-      let email = helpers.checkEmail(emailInput);
-      let password = helpers.checkPassword(passwordInput);
-      let confirmPassword = helpers.checkPassword(confirmPasswordInput);
+    let error = []
+    let missingFields = []
 
-      username = xss(username);
-      email = xss(email);
-      password = xss(password);
-      confirmPassword = xss(confirmPassword);
-
-      if (confirmPassword !== password) {
-        return res.status(400).render('pages/register', { 
-          title: 'Register', 
-          err: true,
-          error: 'Error: Passwords do not match' 
-        })
+      if(!usernameInput.trim()) missingFields.push('username')
+      if(!passwordInput.trim()) missingFields.push('password')
+      if(!confirmPasswordInput.trim()) missingFields.push('confirm password')
+      if(!emailInput.trim()) missingFields.push('email')
+      if(missingFields.length > 0){
+        return res.status(400).render('pages/register', { title: 'Register', missingFields: missingFields.join(', '), missing: true });
       }
-
-      const newUser = await userData.create(username, email, password);
-      if (newUser) {
-        return res.status(200).redirect('/');
+      
+      const userCollection = await users();
+      
+      if(!helpers.checkName(usernameInput)) error.push('Invalid username')
+      if(!helpers.checkEmail(emailInput)) error.push('Invalid email')
+      if(!helpers.checkPassword(passwordInput)) error.push('Invalid password')
+      if(!helpers.checkPassword(confirmPasswordInput)) error.push('Invalid confirm password')
+      if (confirmPasswordInput.trim() !== passwordInput.trim()) {
+        error.push('Passwords do not match')
       }
-      else {
-        return res.status(500).json({ error: 'Internal Server Error '});
+      const dupe = await userCollection.findOne({ email: emailInput })
+      if(dupe){
+        error.push(`Email already exists`);
       }
-    } catch (e) {
-      return res.status(400).json({ error: e });
-    }
+      if (error.length > 0){
+      return res.status(400).render('pages/register', { title: 'Register', errorMessage: error.join(', '), error: true });
+      }
+      usernameInput = xss(usernameInput);
+      emailInput = xss(emailInput);
+      passwordInput = xss(passwordInput);
+      confirmPasswordInput = xss(confirmPasswordInput);
 
-  });
-
+        try {
+          await userData.create(usernameInput, emailInput, passwordInput)
+          return res.status(200).redirect('/users/login');
+        } catch(e){
+          return res.status(500).json({error: 'internal server error'})
+        }
+    });
 router.get('/callback', async (req, res) => {
   // your application requests refresh and access tokens
   // after checking the state parameter
@@ -239,7 +257,6 @@ router.post("/acceptFriend/:id",async(req,res)=>{
 
 router.post("/sendFriendRequest",async(req,res)=>{
   try {
-
    let friendEmail = req.body.email
    let id = req.session.user.id
 
@@ -253,6 +270,9 @@ router.post("/sendFriendRequest",async(req,res)=>{
 
     let idFriend = await userData.getByEmail(friendEmail);
 
+    id = id.trim();
+    idFriend = idFriend.trim();
+
    try {
     helpers.checkValidId(id)
     helpers.checkValidId(idFriend)  
@@ -260,8 +280,7 @@ router.post("/sendFriendRequest",async(req,res)=>{
     return res.status(404).json({ error: error });
   }
  
-   id = id.trim();
-   idFriend = idFriend.trim();
+   
  
    const result = await userData.sendFriendRequest(id,idFriend)
  
