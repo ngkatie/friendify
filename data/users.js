@@ -18,10 +18,11 @@ const create = async (
     email,
     password
 ) => {
-
   const username_ = helpers.checkName(username);
-  const email_ = helpers.checkEmail(email);
-  const password_ = helpers.checkPassword(password);
+  if(!helpers.checkEmail(email)) throw "invalid email"
+  const email_ = email.trim().toLowerCase();
+  if(!helpers.checkPassword(password)) throw "invalid password"
+  const password_ = password.trim();
   const hashed_password = bcryptjs.hashSync(password_, saltRounds);
 
   let newUser = {
@@ -40,9 +41,14 @@ const create = async (
 
   const userCollection = await users();
 
-  const dupe = await userCollection.findOne({ email: email })
-  if(dupe){
+  let dupeEmail = await userCollection.findOne({ email: email })
+  if(dupeEmail){
     throw `Email already exists`;
+  }
+
+  let dupeName = await userCollection.findOne({ username: username_ })
+  if(dupeName){
+    throw `Username already exists`;
   }
 
   const insertInfo = await userCollection.insertOne(newUser);
@@ -50,6 +56,7 @@ const create = async (
   if (!insertInfo.acknowledged || !insertInfo.insertedId) {
     throw `Could not add user successfully`;
   }
+
   // const user = await get(insertInfo.insertedId.toString());
   return newUser;
 }

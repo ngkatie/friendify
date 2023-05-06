@@ -117,6 +117,10 @@ router
       if(dupe){
         error.push(`Email already exists`);
       }
+      let dupeName = await userCollection.findOne({ username: usernameInput })
+      if(dupeName){
+        error.push(`Username already exists`);
+      }
       if (error.length > 0){
       return res.status(400).render('pages/register', { title: 'Register', errorMessage: error.join(', '), error: true });
       }
