@@ -52,7 +52,7 @@ router
         return res.status(400).render('pages/login', { title: 'Login', error: error });
       }
       try{
-        let authenticatedUser = await userData.checkUser(xss(req.body.usernameInput), xss(req.body.passwordInput));
+        let authenticatedUser = await userData.checkUser(xss(req.body.usernameInput.trim().toLowerCase()), xss(req.body.passwordInput.trim()));
       if (authenticatedUser) {
         req.session.user = {
           id: authenticatedUser._id,

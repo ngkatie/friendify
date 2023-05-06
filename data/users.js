@@ -95,20 +95,19 @@ const get = async (id) => {
 
     const userCollection = await users();
     const user = await userCollection.findOne({ _id: user_id });
-
     return helpers.idToString(user);
 }
 
 
 const getByEmail = async (email) => {
-    const email_ = helpers.checkEmail(email);
+  if(!helpers.checkEmail(email)) throw "invalid email"
+    const email_ = email.trim().toLowerCase();
 
     const userCollection = await users();
     const user = await userCollection.findOne({ email: email_ });
 
     return helpers.idToString(user)._id;
 }
-
 
 //Friend2(id)(has pending req) accepts request of friend1(idFriend), request would be removed from pending requests of friend2
 const acceptFriend = async(id_, idFriend_) => {
@@ -271,9 +270,9 @@ const rejectFriendRequest = async(id_, idFriend_) => {
   const user2 = await get(idFriend);
 
   // Remove sender id from receiver's list of pending requests
-  if (user2.pendingRequests.includes(id)) {
-    let temp = user2.pendingRequests.filter(element => element != id);
-  }
+  if (!user2.pendingRequests.includes(id)) throw `Pending request does not exist for the given id`
+
+  const temp = user2.pendingRequests.filter(element => element != id);
   // let temp = [];
   // let i = 0;
   // if(user2.pendingRequests.includes(id)) {
@@ -283,9 +282,6 @@ const rejectFriendRequest = async(id_, idFriend_) => {
   //     }
   //   });
   // }
-  else {
-    throw `Pending request does not exist for the given id`;
-  }
 
   let userInfoFriend  = {
     username: user2.username,
