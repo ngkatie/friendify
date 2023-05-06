@@ -1,6 +1,7 @@
 (function ($) {
  $('#submit-comment').click(function (e) {
         e.preventDefault();
+        //var profileLiked = {{profileLiked}};
         var commentText = $('#commentText').val();
         var usersId = $('#users').val();
         var newComments = $("#comment-area");
@@ -40,13 +41,18 @@
       success: function(result) {
 
         $("#like-profile").css("background-color", "green");
+        //profileLiked = true;
       },
       error: function(error) {
          $("#error-message").text(error.responseText);
       }
     });
   });
-
+  // if (profileLiked) {
+  //   $("#like-profile").css("background-color", "green");
+  // } else {
+  //   $("#like-profile").css("background-color", "");
+  // }
 
 
 })(jQuery); // jQuery is exported as $ and jQuery
