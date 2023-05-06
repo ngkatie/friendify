@@ -51,13 +51,17 @@ router
       if (error) {
         return res.status(400).render('pages/login', { title: 'Login', error: error });
       }
-
+      try{
         let authenticatedUser = await userData.checkUser(xss(req.body.usernameInput), xss(req.body.passwordInput));
       if (authenticatedUser) {
         req.session.user = {
           id: authenticatedUser._id,
           username: req.body.usernameInput,
         } }
+      } catch(e){
+        return res.status(400).render('pages/login', { title: 'Login', error: true });
+      }
+        
         const state = generateRandomString(16);
         res.cookie(stateKey, state);
 
