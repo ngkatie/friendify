@@ -530,12 +530,12 @@ router.get('/friends/:id', async (req, res) => {
     // return res.status(200).json(result[0])
 
     
-    return res.status(200).render('pages/friendProfile', { title: "Friend", users: friend , userId:friend._id, likeCount: friend.likeCount, profileLiked:profileLiked, topArtist:topArtist, topSong:topSong , musicCompatibility:musicCompatibility});
+    return res.status(200).render('pages/friendProfile', { title: "Friend", users: friend , userId:friend._id, likeCount: friend.likeCount, profileLiked:profileLiked, topArtist:topArtist, topSong:topSong , musicCompatibility:musicCompatibility, username: friend.username});
 
   } catch (e) {
     let status = e[0] ? e[0] : 500;
     let message = e[1] ? e[1] : 'Internal Server Error';
-    return res.status(status).json(message)
+    return res.status(status).render("pages/friendProfile", { title: "Friend", error:true, errorMessage:message})
   }
 }
 else{

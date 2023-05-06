@@ -50,6 +50,7 @@ router
   if(req.session.user){
     
     let id = req.session.user.id
+    id=id.toString()
 
     let commentInfo = req.body
     // commentInfo = xss(commentInfo);
@@ -58,9 +59,9 @@ router
         return res.status(400).json("Comment text is empty");
     }
 
-    const comment = undefined;
+    let comment = undefined;
     try {
-      comment = helpers.checkString(commentInfo);
+      comment = helpers.checkString(commentInfo.comment);
     } catch (e) {
       return res.status(400).json("Comment Text Invalid");
     }
@@ -70,12 +71,12 @@ router
         // commentInfo.userId = validId(req.session.user);
         //var id= commentInfo.id
         commentInfo.comment = xss(
-          validString(commentInfo.comment)
+          helpers.checkString(commentInfo.comment)
         );
 
-        checkValidId(id);
+        id = helpers.checkValidId(id);
         var userId = req.params.userId
-        checkValidId(req.params.userId);
+        userId= helpers.checkValidId(req.params.userId);
         
         const userData = await get(id.toString());
         var userName = userData.username
@@ -86,8 +87,8 @@ router
     
     try {
       const user = await commentData.createComment(
-        userId,
-        id,
+        userId.toString(),
+        id.toString(),
         userName,
         commentInfo.comment.trim()
       );
@@ -105,7 +106,7 @@ router
     } catch (e) {
       return res
         .status(500)
-        .render("error", { errors: e});   
+        .render("pages/error", { error: e});   
     }
   }
   else{
