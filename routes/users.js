@@ -197,7 +197,9 @@ router.get('/userprofile', async(req, res) => {
     };
 
     try {
-      const { data : body } = await axios.get(authOptions.url, { headers: authOptions.headers });
+      const { data : body } = await axios.get(authOptions.url, { 
+        headers: authOptions.headers 
+      });
      // res.render('profile', { user: body });
     //  console.log({body})
     } catch (error) {
@@ -304,8 +306,6 @@ router.get('/dashboard', async (req, res) => {
       },
     };
 
-
-    console.log("here should print")
     try {
        checkValidId(req.session.user.id) 
        
@@ -330,13 +330,14 @@ router.get('/dashboard', async (req, res) => {
       })
     } catch (error) {
       // Handle error
-      return res.render("pages/dashboard",{        title: 'Dashboard',
-      // username: user.username,
-      likeCount: userData.likeCount,
-      user : body,
-      users : userData,
-      errorMessage : error
-    })
+      return res.render("pages/dashboard",{        
+        title: 'Dashboard',
+        // username: user.username,
+        likeCount: userData.likeCount,
+        user : body,
+        users : userData,
+        errorMessage : error
+      })
       // console.log(error);
       // res.redirect('/');
     }
@@ -688,5 +689,17 @@ router.get('/pendingRequests', async (req, res) => {
     })
   }
 })
+
+router.route('/logout').get(async (req, res) => {
+  //code here for GET
+  try {
+    req.session.destroy();
+    return res.render('logout', {title: 'Logout'});
+    // return res.redirect('/');
+  } catch (e) {
+    return res.status(404).json({message: e});
+  }
+});
+
 
 export default router

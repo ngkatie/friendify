@@ -1,16 +1,17 @@
 <div class="Dashboard">    
 
+    <nav id="navbar" class="spotify-data">
+        <a href="/users/dashboard" class="nav-option nav-active">Profile</a>
+        <a href="/users/toptracks" class="nav-option">Top 50 Tracks</a>
+        <a href="/users/topartists" class="nav-option">Top 50 Artists</a>
+        <a href="/users/dailyplaylist" class="nav-option">Daily Playlist</a>
+    </nav>
+
     <div class="user-info">
         <img src="{{user.images.[0].url}}" alt="Profile Picture" class="img-thumbnail" width="200" height="200">
         <h2>{{user.display_name}}</h2>
         <p>Likes: {{likeCount}}</p>
         <a href="friends">Friends</a>
-    </div>
-
-    <div class="spotify-data">
-        <a href="toptracks">Top 50 Tracks</a>
-        <a href="topartists">Top 50 Artists</a>
-        <a href="dailyplaylist">Daily Playlist</a>
     </div>
 
     <div class="card postcomments px-2">
