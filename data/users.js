@@ -591,6 +591,7 @@ async function topArtistTogether(iD1,iD2){
  }
  else{
   t1 = topArtist1.length;
+  t1 = topArtist1.length;
   t2 = topArtist2.length
   
   topArtist1.forEach(element => {
@@ -604,6 +605,7 @@ async function topArtistTogether(iD1,iD2){
 }
 
 
+ return [topArtist, commArtistCount, (t1+t2)];
  return [topArtist, commArtistCount, (t1+t2)];
 
 }
