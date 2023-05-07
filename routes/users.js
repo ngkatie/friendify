@@ -5,7 +5,7 @@ import { userData } from '../data/index.js';
 import querystring from 'querystring';
 import { users } from "../config/mongoCollections.js";
 import { checkValidId } from '../helpers.js';
-import { acceptFriend, sendFriendRequest,rejectFriendRequest,getAll,get, likeProfile } from '../data/users.js';
+import { acceptFriend, sendFriendRequest,rejectFriendRequest,getAll,get, likeProfile, unlikeProfile } from '../data/users.js';
 import * as helpers from '../helpers.js';
 import axios from 'axios'; // Axios library
 import dotenv from 'dotenv';
@@ -580,7 +580,9 @@ else{
 }
 });
 
-router.put('/likeProfile/:id', async(req,res)=>{
+router
+ .route('/likeProfile/:id')
+ .put( async(req,res)=>{
   if(req.session.user){
     let id1 = req.session.user.id
     //let id1= '643cb4bf7f4290f4eb398d26'
@@ -596,6 +598,35 @@ router.put('/likeProfile/:id', async(req,res)=>{
    
     try {
       let result = await likeProfile(id1,id2);
+
+      return res.status(200).json(result)
+    } catch (e) {
+     let status = e[0] ? e[0] : 500;
+     let message = e[1] ? e[1] : 'Internal Server Error';
+     return res.status(status).json(message)
+    }
+
+  }
+  else{
+    res.redirect("/")
+  }
+})
+.delete( async(req,res)=>{
+  if(req.session.user){
+    let id1 = req.session.user.id
+    //let id1= '643cb4bf7f4290f4eb398d26'
+    let id2 = req.params.id
+
+    try {
+      helpers.checkValidId(id1)
+      helpers.checkValidId(id2)
+    } catch (error) {
+      return res.status(400).json(error);
+      return
+    }
+   
+    try {
+      let result = await unlikeProfile(id1,id2);
 
       return res.status(200).json(result)
     } catch (e) {
