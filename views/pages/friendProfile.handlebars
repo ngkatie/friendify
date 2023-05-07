@@ -13,15 +13,17 @@
     </div>
     <div>
     <form action="/users/likeProfile/{{userId}}" method="PUT">
-        <button type="button" id="like-profile" data-user-id="{{userId}}">Like</button>
+        {{!-- <button type="button" id="like-profile" data-user-id="{{userId}}">Like</button> --}}
+        <button type="button" id="like-profile" data-user-id="{{userId}}" style="background-color: {{#if profileLiked}}green{{else}}#fff{{/if}}">Like</button>
+
     </form>
-    <script>
+    {{!-- <script>
         {{#if profileLiked}}
         $("#like-profile").css("background-color", "green");
         {{else}}
         $("#like-profile").css("background-color", "");  
         {{/if}}
-    </script>
+    </script> --}}
     </div>
     <div class="card postcomments px-2">
         <input type="hidden" name="users_id" id="users" value="{{users._id}}" />
@@ -55,9 +57,9 @@
     </div>
     <div id="error-message"></div>
     <div>  
-        {{#if errorMessage}}
-        <p>{{errorMessage}}</p>
-        {{/if}}
+   {{#if error}}
+    <div class="error">{{error}}</div>
+   {{/if}}
     </div>
 </div>
 

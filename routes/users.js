@@ -45,14 +45,15 @@ router
       if (missingFields.length > 0) {
         return res.status(400).render('pages/login', { title: 'Login', missingFields: missingFields.join(', '), missing: true });
       }
-
-      if(!helpers.checkName(req.body.usernameInput)) error = true;
-      if(!helpers.checkPassword(req.body.passwordInput)) error = true;
-      if (error) {
+      try{
+        helpers.checkName(req.body.usernameInput)
+        helpers.checkPassword(req.body.passwordInput)
+      } catch(e){
+        error = true;
         return res.status(400).render('pages/login', { title: 'Login', error: error });
       }
       try{
-        let authenticatedUser = await userData.checkUser(xss(req.body.usernameInput), xss(req.body.passwordInput));
+        let authenticatedUser = await userData.checkUser(xss(req.body.usernameInput.trim().toLowerCase()), xss(req.body.passwordInput.trim()));
       if (authenticatedUser) {
         req.session.user = {
           id: authenticatedUser._id,
@@ -116,6 +117,10 @@ router
       const dupe = await userCollection.findOne({ email: emailInput })
       if(dupe){
         error.push(`Email already exists`);
+      }
+      let dupeName = await userCollection.findOne({ username: usernameInput })
+      if(dupeName){
+        error.push(`Username already exists`);
       }
       if (error.length > 0){
       return res.status(400).render('pages/register', { title: 'Register', errorMessage: error.join(', '), error: true });
@@ -264,17 +269,34 @@ router.post("/acceptFriend/:id",async(req,res)=>{
 })
 
 router.post("/sendFriendRequest",async(req,res)=>{
+  let friendObjects = [];
+  let error = [];
   try {
-   let friendEmail = req.body.email
+  let friendEmail = req.body.email
    let id = req.session.user.id
+    const user = await userData.get(id);
+    const friends = user.friends;
+    for (const friendId of friends) {
+      const friendObject = await get(friendId);
+      friendObjects.push(friendObject);
+    }
+
+   
 
     friendEmail = xss(friendEmail);
+    friendEmail = friendEmail.trim().toLowerCase();
 
    if (!friendEmail || Object.keys(friendEmail).length === 0) {
-    return res
-      .status(400)
-      .json({error: 'There are no fields in the request body'});
-  }
+    error.push('Email cannot be empty')
+   }
+
+  if(!helpers.checkEmail(friendEmail)) error.push('Invalid email');
+
+  const userCollection = await users();
+    const unknownUser = await userCollection.findOne({ email: friendEmail });
+    if (!unknownUser) {
+      error.push(`No user with email ${friendEmail}`);
+    }
 
     let idFriend = await userData.getByEmail(friendEmail);
 
@@ -288,13 +310,29 @@ router.post("/sendFriendRequest",async(req,res)=>{
     return res.status(404).json({ error: error });
   }
  
-   
- 
+    const user2 = await userData.get(idFriend);
+
+  if(friendEmail === user.email) error.push('Cannot send friend request to yourself')
+
+  if (friends.includes(idFriend)) {
+    error.push(`This user is already a friend`)
+  }
+
+  const user2PendingRequest = user2.pendingRequests;
+  if(user2PendingRequest.includes(id)) {
+    error.push('Friend Request already sent')
+  }
+
+  
+
+  if(error.length > 0) {
+    return res.status(400).render("pages/friendsDashboard",{title:"Friends",friends: friendObjects, error: true, errorMsg: error.join(', ')})
+  }
    const result = await userData.sendFriendRequest(id,idFriend)
  
-   return res.status(200).redirect("/users/friends?success=true")
+   return res.status(200).render("pages/friendsDashboard",{title:"Friends",friends: friendObjects, success:true})
    } catch (e) {
-     return res.status(500).redirect("/users/friends?error=true")
+     return res.status(500).render("pages/friendsDashboard",{title:"Friends",friends: friendObjects, error: true, errorMsg: error.join(', ')})
    }
 })
 
@@ -487,14 +525,7 @@ router.get('/friends', async (req, res) => {
       friendObjects.push(friendObject);
     }
 
-    if(req.query.success){
-      return res.status(200).render('pages/friendsDashboard', { title: "Friends", friends: friendObjects, success: true, _id:id });
-    }
-    if(req.query.error){
-      return res.status(200).render('pages/friendsDashboard', { title: "Friends", friends: friendObjects, error: true });
-    }
-
-    return res.status(200).render('pages/friendsDashboard', { title: "Friends", friends: friendObjects ,_id:id});
+    return res.status(200).render('pages/friendsDashboard', { title: "Friends", friends: friendObjects});
 
   } catch (e) {
     console.error(e)
@@ -536,12 +567,12 @@ router.get('/friends/:id', async (req, res) => {
     // return res.status(200).json(result[0])
 
     
-    return res.status(200).render('pages/friendProfile', { title: "Friend", users: friend , userId:friend._id, likeCount: friend.likeCount, profileLiked:profileLiked, topArtist:topArtist, topSong:topSong , musicCompatibility:musicCompatibility});
+    return res.status(200).render('pages/friendProfile', { title: "Friend", users: friend , userId:friend._id, likeCount: friend.likeCount, profileLiked:profileLiked, topArtist:topArtist, topSong:topSong , musicCompatibility:musicCompatibility, username: friend.username});
 
   } catch (e) {
     let status = e[0] ? e[0] : 500;
     let message = e[1] ? e[1] : 'Internal Server Error';
-    return res.status(status).json(message)
+    return res.status(status).render("pages/friendProfile", { title: "Friend", error:true, errorMessage:message})
   }
 }
 else{

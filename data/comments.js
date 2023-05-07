@@ -13,8 +13,10 @@ import { get } from "./users.js";
 */
 const createComment = async (id, userId, username, comment) => {
   
-    let id_ = helpers.checkValidId(id);             // User receiving comment (receiver)
-    let userId_ = helpers.checkValidId(userId);     // User creating comment (writer)
+    let id_ = helpers.checkValidId(id); 
+    id_ = id_.toString()            // User receiving comment (receiver)
+    let userId_ = helpers.checkValidId(userId); 
+    userId_ = userId_.toString()    // User creating comment (writer)
     let username_ = helpers.checkName(username);    // Writer's username
     let comment_ = helpers.checkString(comment);
     // if (!helpers.checkString(comment)) {
@@ -44,21 +46,21 @@ const createComment = async (id, userId, username, comment) => {
       comment: comment_
     };
 
-    const updatedInfo = await userCollections.findOneAndUpdate(
-      { _id: id_ },
-      { $push: { comments: newComment } }
-    );
-
-    // const updatedInfo = await userCollections.updateOne(
-    //   { _id: new ObjectId(id) },
+    // const updatedInfo = await userCollections.findOneAndUpdate(
+    //   { _id: id_ },
     //   { $push: { comments: newComment } }
     // );
+
+    const updatedInfo = await userCollections.updateOne(
+      { _id: new ObjectId(id) },
+      { $push: { comments: newComment } }
+    );
 
     if (updatedInfo.modifiedCount === 0) {
       throw "Could not update user collection with comment Data!";
     }
 
-    const user = await userCollections.findOne({ _id: id_ });
+    const user = await userCollections.findOne({ _id: new ObjectId(id_)});
     if (user === null) { throw "No user found with that id" }
   
     // Returns user object with _id as string instead of ObjectId

@@ -18,10 +18,11 @@ const create = async (
     email,
     password
 ) => {
-
   const username_ = helpers.checkName(username);
-  const email_ = helpers.checkEmail(email);
-  const password_ = helpers.checkPassword(password);
+  if(!helpers.checkEmail(email)) throw "invalid email"
+  const email_ = email.trim().toLowerCase();
+  if(!helpers.checkPassword(password)) throw "invalid password"
+  const password_ = password.trim();
   const hashed_password = bcryptjs.hashSync(password_, saltRounds);
 
   let newUser = {
@@ -41,9 +42,14 @@ const create = async (
 
   const userCollection = await users();
 
-  const dupe = await userCollection.findOne({ email: email })
-  if(dupe){
+  let dupeEmail = await userCollection.findOne({ email: email })
+  if(dupeEmail){
     throw `Email already exists`;
+  }
+
+  let dupeName = await userCollection.findOne({ username: username_ })
+  if(dupeName){
+    throw `Username already exists`;
   }
 
   const insertInfo = await userCollection.insertOne(newUser);
@@ -51,6 +57,7 @@ const create = async (
   if (!insertInfo.acknowledged || !insertInfo.insertedId) {
     throw `Could not add user successfully`;
   }
+
   // const user = await get(insertInfo.insertedId.toString());
   return newUser;
 }
@@ -89,20 +96,19 @@ const get = async (id) => {
 
     const userCollection = await users();
     const user = await userCollection.findOne({ _id: user_id });
-
     return helpers.idToString(user);
 }
 
 
 const getByEmail = async (email) => {
-    const email_ = helpers.checkEmail(email);
+  if(!helpers.checkEmail(email)) throw "invalid email"
+    const email_ = email.trim().toLowerCase();
 
     const userCollection = await users();
     const user = await userCollection.findOne({ email: email_ });
 
     return helpers.idToString(user)._id;
 }
-
 
 //Friend2(id)(has pending req) accepts request of friend1(idFriend), request would be removed from pending requests of friend2
 const acceptFriend = async(id_, idFriend_) => {
@@ -129,9 +135,11 @@ const acceptFriend = async(id_, idFriend_) => {
   const user2Friends = user2.friends;
   user2Friends.push(id);
 
+
   for (let i = 0; i < user1Pending.length; i++) {
     if (user1Pending[i] === idFriend) {
       user1Pending.splice(i, 1);
+
     }
   }
 
@@ -263,9 +271,9 @@ const rejectFriendRequest = async(id_, idFriend_) => {
   const user2 = await get(idFriend);
 
   // Remove sender id from receiver's list of pending requests
-  if (user2.pendingRequests.includes(id)) {
-    let temp = user2.pendingRequests.filter(element => element != id);
-  }
+  if (!user2.pendingRequests.includes(id)) throw `Pending request does not exist for the given id`
+
+  const temp = user2.pendingRequests.filter(element => element != id);
   // let temp = [];
   // let i = 0;
   // if(user2.pendingRequests.includes(id)) {
@@ -275,9 +283,6 @@ const rejectFriendRequest = async(id_, idFriend_) => {
   //     }
   //   });
   // }
-  else {
-    throw `Pending request does not exist for the given id`;
-  }
 
   let userInfoFriend  = {
     username: user2.username,
@@ -518,10 +523,12 @@ async function topSongTogether(iD1,iD2){
   let topTracks1 = user1.topTracks
   let topTracks2 = user2.topTracks
 
- let topSong;
- let commSongCount = 0;
- let t1 = 0;
- let t2 = 0;
+
+ let topSong=""
+ let commSongCount=0
+ let t1=0
+ let t2=0;
+
  
  if(!Array.isArray(topTracks1) || !Array.isArray(topTracks2) || typeof topTracks1 === null || typeof topTracks2 === null){
   topSong = "";
@@ -531,13 +538,14 @@ async function topSongTogether(iD1,iD2){
   topSong = "";
   commSongCount = 0;
  }
- else {
-  tl = topTracks1.length;
-  t2 = topTracks2.length;
+
+ else{
+  t1 =topTracks1.length;
+  t2 = topTracks2.length
  topTracks1.forEach(element => {
   topTracks2.forEach(element2=>{
-    if(element.trim().lowercase() == element2.trim().lowercase()){
-       topSong = element 
+    if(element.trackName.trim().toLowerCase() == element2.trackName.trim().toLowerCase()){
+       topSong = element.trackName 
        commSongCount++
      }
   })
@@ -564,38 +572,45 @@ async function topArtistTogether(iD1,iD2){
   } catch (error) {
     throw [400, error];
   }
-  let topArtist1 = user1.topArtists;
-  let topArtist2 = user2.topArtists;
+
+ let topArtist1 = user1.topArtists
+ let topArtist2 = user2.topArtists
+ let topArtist=""
 
 
-  let topArtist;
+
+  
   let t1 = 0;
   let t2 = 0;
   let commArtistCount = 0;
 
+
   if (!Array.isArray(topArtist1) || !Array.isArray(topArtist2) || typeof topArtist1 === null || typeof topArtist2 === null){
     topArtist = "",
     commArtistCount = 0;
-  }
-  else if (topArtist1.length === 0 || topArtist2.length === 0){
-    topArtist = "",
-    commArtistCount = 0
-  }
-  else {
-    tl = topArtist1.length;
-    t2 = topArtist2.length;
-    
-    topArtist1.forEach(element => {
-      topArtist2.forEach(element2=>{
-        if(element.trim().lowercase() == element2.trim().lowercase()){
-          topArtist = element ,
-          commArtistCount++
-        }
-      })
-    });
-  }
+ }
+ else if(topArtist1.length === 0 || topArtist2.length ===0){
+  topArtist ="",
+  commArtistCount=0
+ }
+ else{
+  t1 = topArtist1.length;
+  t1 = topArtist1.length;
+  t2 = topArtist2.length
+  
+  topArtist1.forEach(element => {
+  topArtist2.forEach(element2=>{
+    if(element.artistName.trim().toLowerCase() == element2.artistName.trim().toLowerCase()){
+      topArtist = element.artistName ,
+      commArtistCount++
+     }
+  })
+ });
+}
 
- return [topArtist, commArtistCount, (tl+t2)];
+
+ return [topArtist, commArtistCount, (t1+t2)];
+ return [topArtist, commArtistCount, (t1+t2)];
 
 }
 
@@ -624,19 +639,18 @@ async function musicCompatibility(iD1, iD2){
     let commSong = arr1[1];
     let commArtist = arr2[1];
   
-    let perComp;
-    if(commSong == 0 || commArtist == 0) {
-      perComp = 0;
-    }
-    else {
-      perComp = ((commSong + commArtist)/(totArtist+ totTrack) * 100);
-    }
 
-    const compatibility = perComp + "%";
-    return compatibility;
-  } catch (e) {
-    throw [400, error];
-  }
+  let perComp;
+  // if(commSong == 0 || commArtist ==0)
+  // perComp=0
+  // else
+  perComp = ((commSong + commArtist)/(totArtist+ totTrack) * 100)
+
+  let comp = perComp.toFixed(2) + "%"
+  return comp
+} catch (e) {
+  throw [400, error]
+}
    
 }
 async function seedTracks(user_id, access_token) {
