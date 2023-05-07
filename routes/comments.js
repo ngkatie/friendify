@@ -82,7 +82,9 @@ router
         var userName = userData.username
         
     } catch (e) {
-      return res.status(404).json({ error: "No user for the given id" });  
+      // return res.status(404).json({ error: "No user for the given id" });  
+      console.log(e)
+      return res.status(404).json({ error: e });  
     }
     
     try {
@@ -106,7 +108,7 @@ router
     } catch (e) {
       return res
         .status(500)
-        .render("pages/error", { error: e});   
+        .json({ error: e});   
     }
   }
   else{
