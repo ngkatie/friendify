@@ -18,10 +18,11 @@ const create = async (
     email,
     password
 ) => {
-
   const username_ = helpers.checkName(username);
-  const email_ = helpers.checkEmail(email);
-  const password_ = helpers.checkPassword(password);
+  if(!helpers.checkEmail(email)) throw "invalid email"
+  const email_ = email.trim().toLowerCase();
+  if(!helpers.checkPassword(password)) throw "invalid password"
+  const password_ = password.trim();
   const hashed_password = bcryptjs.hashSync(password_, saltRounds);
 
   let newUser = {
@@ -31,6 +32,7 @@ const create = async (
     topTracks: [],
     topArtists: [],
     dailyPlaylist: [],
+    lastUpdated: undefined,
     likeCount: 0,
     comments: [],
     likedProfiles: [],
@@ -40,9 +42,14 @@ const create = async (
 
   const userCollection = await users();
 
-  const dupe = await userCollection.findOne({ email: email })
-  if(dupe){
+  let dupeEmail = await userCollection.findOne({ email: email })
+  if(dupeEmail){
     throw `Email already exists`;
+  }
+
+  let dupeName = await userCollection.findOne({ username: username_ })
+  if(dupeName){
+    throw `Username already exists`;
   }
 
   const insertInfo = await userCollection.insertOne(newUser);
@@ -50,6 +57,7 @@ const create = async (
   if (!insertInfo.acknowledged || !insertInfo.insertedId) {
     throw `Could not add user successfully`;
   }
+
   // const user = await get(insertInfo.insertedId.toString());
   return newUser;
 }
@@ -88,20 +96,19 @@ const get = async (id) => {
 
     const userCollection = await users();
     const user = await userCollection.findOne({ _id: user_id });
-
     return helpers.idToString(user);
 }
 
 
 const getByEmail = async (email) => {
-    const email_ = helpers.checkEmail(email);
+  if(!helpers.checkEmail(email)) throw "invalid email"
+    const email_ = email.trim().toLowerCase();
 
     const userCollection = await users();
     const user = await userCollection.findOne({ email: email_ });
 
     return helpers.idToString(user)._id;
 }
-
 
 //Friend2(id)(has pending req) accepts request of friend1(idFriend), request would be removed from pending requests of friend2
 const acceptFriend = async(id_, idFriend_) => {
@@ -264,9 +271,9 @@ const rejectFriendRequest = async(id_, idFriend_) => {
   const user2 = await get(idFriend);
 
   // Remove sender id from receiver's list of pending requests
-  if (user2.pendingRequests.includes(id)) {
-    let temp = user2.pendingRequests.filter(element => element != id);
-  }
+  if (!user2.pendingRequests.includes(id)) throw `Pending request does not exist for the given id`
+
+  const temp = user2.pendingRequests.filter(element => element != id);
   // let temp = [];
   // let i = 0;
   // if(user2.pendingRequests.includes(id)) {
@@ -276,9 +283,6 @@ const rejectFriendRequest = async(id_, idFriend_) => {
   //     }
   //   });
   // }
-  else {
-    throw `Pending request does not exist for the given id`;
-  }
 
   let userInfoFriend  = {
     username: user2.username,
@@ -916,20 +920,43 @@ async function getTopCharts(limit, access_token) {
 async function getDailyPlaylist(user_id, access_token) {
 
   const currId = helpers.checkValidId(user_id);
+  const idString = currId.toString();
   if (!access_token) {
     throw 'Error: No access token provided';
   }
 
-  const recTracks = await getRecommendations(22, user_id, access_token);
-  const recentTracks = await getRecentlyPlayed(20, access_token);
-  const chartTracks = await getTopCharts(5, access_token);
+  const userCollection = await users();
+  const user = await userCollection.findOne({_id: currId});
 
-  const longTermTracks = await getTopTracks(user_id, "short_term", access_token);
-  const jumpBackTracks = longTermTracks.slice(0,3);
+  if (user.lastUpdated == undefined || !helpers.isToday(user.lastUpdated)) {
+    user.lastUpdated = new Date();
 
-  const dailyPlaylist = recTracks.concat(recentTracks, chartTracks, jumpBackTracks);
-  
-  return dailyPlaylist;
+    const recTracks = await getRecommendations(22, idString, access_token);
+    const recentTracks = await getRecentlyPlayed(20, access_token);
+    const chartTracks = await getTopCharts(5, access_token);
+
+    const longTermTracks = await getTopTracks(user_id, "short_term", access_token);
+    const jumpBackTracks = longTermTracks.slice(0,3);
+
+    const dailyPlaylist = recTracks.concat(recentTracks, chartTracks, jumpBackTracks);
+    user.dailyPlaylist = dailyPlaylist;
+
+    const updatedUser = await userCollection.findOneAndUpdate(
+      { _id: currId },
+      { $set: user },
+      { returnDocument: 'after' }
+    )
+
+    if (updatedUser.lastErrorObject.n === 0) {
+      throw `Error: Could not store top tracks successfully`;
+    }
+
+    
+    return dailyPlaylist;
+  }
+  else {
+    return user.dailyPlaylist;
+  }
 
 }
 

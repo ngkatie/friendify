@@ -1,4 +1,4 @@
-
+<link rel="stylesheet" href="../../public/css/friendsdashboard.css">
 <form action="/users/sendFriendRequest" method="POST">
         <h2>Add Friends</h2>
         <label for="email">Enter your friend's email:</label>
@@ -9,7 +9,7 @@
         <p>Friend request sent!</p>
         {{/if}}
         {{#if error}}
-        <p>Error when sending friend request</p>
+        <p>{{errorMsg}}</p>
         {{/if}}
 </form>
 <a href="/users/pendingRequests">See All Pending Requests</a>
