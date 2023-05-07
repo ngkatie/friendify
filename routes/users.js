@@ -129,7 +129,11 @@ router
           await userData.create(usernameInput, emailInput, passwordInput)
           return res.status(200).redirect('/users/login');
         } catch(e){
-          return res.status(500).json({error: 'internal server error'})
+          return res.status(500).render('pages/register', { 
+            title: 'Register', 
+            errorMessage: 'Failed to create user. Please try again!', 
+            error: true 
+          });
         }
     });
 router.get('/callback', async (req, res) => {
@@ -717,7 +721,7 @@ router.route('/logout').get(async (req, res) => {
   //code here for GET
   try {
     req.session.destroy();
-    return res.render('logout', {title: 'Logout'});
+    return res.render('pages/logout', {title: 'Logout'});
     // return res.redirect('/');
   } catch (e) {
     return res.status(404).json({message: e});
