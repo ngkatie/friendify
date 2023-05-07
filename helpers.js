@@ -103,6 +103,11 @@ export function checkPassword(str) {
   return true;
 }
 
+export function isToday(date) {
+  const today = new Date();
+  return date.getDate() == today.getDate() && date.getMonth() == today.getMonth() && date.getFullYear() == today.getFullYear();
+}
+
 export function idToString(mongoDocument) {
   mongoDocument._id = mongoDocument._id.toString();
   return mongoDocument;

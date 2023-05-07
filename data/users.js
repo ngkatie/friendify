@@ -32,6 +32,7 @@ const create = async (
     topTracks: [],
     topArtists: [],
     dailyPlaylist: [],
+    lastUpdated: undefined,
     likeCount: 0,
     comments: [],
     likedProfiles: [],
@@ -825,20 +826,43 @@ async function getTopCharts(limit, access_token) {
 async function getDailyPlaylist(user_id, access_token) {
 
   const currId = helpers.checkValidId(user_id);
+  const idString = currId.toString();
   if (!access_token) {
     throw 'Error: No access token provided';
   }
 
-  const recTracks = await getRecommendations(22, user_id, access_token);
-  const recentTracks = await getRecentlyPlayed(20, access_token);
-  const chartTracks = await getTopCharts(5, access_token);
+  const userCollection = await users();
+  const user = await userCollection.findOne({_id: currId});
 
-  const longTermTracks = await getTopTracks(user_id, "short_term", access_token);
-  const jumpBackTracks = longTermTracks.slice(0,3);
+  if (user.lastUpdated == undefined || !helpers.isToday(user.lastUpdated)) {
+    user.lastUpdated = new Date();
 
-  const dailyPlaylist = recTracks.concat(recentTracks, chartTracks, jumpBackTracks);
-  
-  return dailyPlaylist;
+    const recTracks = await getRecommendations(22, idString, access_token);
+    const recentTracks = await getRecentlyPlayed(20, access_token);
+    const chartTracks = await getTopCharts(5, access_token);
+
+    const longTermTracks = await getTopTracks(user_id, "short_term", access_token);
+    const jumpBackTracks = longTermTracks.slice(0,3);
+
+    const dailyPlaylist = recTracks.concat(recentTracks, chartTracks, jumpBackTracks);
+    user.dailyPlaylist = dailyPlaylist;
+
+    const updatedUser = await userCollection.findOneAndUpdate(
+      { _id: currId },
+      { $set: user },
+      { returnDocument: 'after' }
+    )
+
+    if (updatedUser.lastErrorObject.n === 0) {
+      throw `Error: Could not store top tracks successfully`;
+    }
+
+    
+    return dailyPlaylist;
+  }
+  else {
+    return user.dailyPlaylist;
+  }
 
 }
 

@@ -134,7 +134,11 @@ router
           await userData.create(usernameInput, emailInput, passwordInput)
           return res.status(200).redirect('/users/login');
         } catch(e){
-          return res.status(500).json({error: 'internal server error'})
+          return res.status(500).render('pages/register', { 
+            title: 'Register', 
+            errorMessage: 'Failed to create user. Please try again!', 
+            error: true 
+          });
         }
     });
 router.get('/callback', async (req, res) => {
@@ -224,7 +228,9 @@ router.get('/userprofile', async(req, res) => {
     };
 
     try {
-      const { data : body } = await axios.get(authOptions.url, { headers: authOptions.headers });
+      const { data : body } = await axios.get(authOptions.url, { 
+        headers: authOptions.headers 
+      });
      // res.render('profile', { user: body });
     //  console.log({body})
     } catch (error) {
@@ -365,7 +371,6 @@ router.get('/dashboard', async (req, res) => {
       },
     };
 
-
     try {
        checkValidId(req.session.user.id) 
        
@@ -390,13 +395,14 @@ router.get('/dashboard', async (req, res) => {
       })
     } catch (error) {
       // Handle error
-      return res.render("pages/dashboard",{        title: 'Dashboard',
-      // username: user.username,
-      likeCount: userData.likeCount,
-      user : body,
-      users : userData,
-      errorMessage : error
-    })
+      return res.render("pages/dashboard",{        
+        title: 'Dashboard',
+        // username: user.username,
+        likeCount: userData.likeCount,
+        user : body,
+        users : userData,
+        errorMessage : error
+      })
       // console.log(error);
       // res.redirect('/');
     }
@@ -741,5 +747,17 @@ router.get('/pendingRequests', async (req, res) => {
     })
   }
 })
+
+router.route('/logout').get(async (req, res) => {
+  //code here for GET
+  try {
+    req.session.destroy();
+    return res.render('pages/logout', {title: 'Logout'});
+    // return res.redirect('/');
+  } catch (e) {
+    return res.status(404).json({message: e});
+  }
+});
+
 
 export default router
