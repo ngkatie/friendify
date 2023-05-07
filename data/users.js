@@ -426,11 +426,14 @@ async function likeProfile(iD1,iD2){
   let user2;
 
   try {
-    const id1 = helpers.checkValidId(iD1);
-    const id2 = helpers.checkValidId(iD2);
+     id1 = helpers.checkValidId(iD1);
+     id2 = helpers.checkValidId(iD2);
 
-    user1 = await get(id1.toString());
-    user2 = await get(id2.toString());
+    // id1 = id1.toString();
+    // id2 = id2.toString();
+
+    user1 = await get(iD1);
+    user2 = await get(iD2);
   } catch (error) {
     throw [400, error];
   }
@@ -455,6 +458,97 @@ async function likeProfile(iD1,iD2){
     likeCount: user1.likeCount,
     comments: user1.comments,
     likedProfiles: likedProfiles,
+    pendingRequests: user1.pendingRequests,
+    friends: user1.friends,
+  };
+
+  let user2Info = {
+    username: user2.username,
+    email: user2.email,
+    hashed_password: user2.hashed_password,
+    topTracks: user2.topTracks,
+    topArtists: user2.topArtists,
+    dailyPlaylist: user2.dailyPlaylist,
+    likeCount: likeCount,
+    comments: user2.comments,
+    likedProfiles: user2.likedProfiles,
+    pendingRequests: user2.pendingRequests,
+    friends: user2.friends,
+  }
+
+  const userCollection = await users();
+  const updateInfo1 = await userCollection.findOneAndReplace(
+    { _id: id1},
+    user1Info,
+    { returnDocument: 'after' }
+  );
+
+  const updateInfo2 = await userCollection.findOneAndReplace(
+    { _id:  id2 },
+    user2Info,
+    { returnDocument: 'after' }
+  );
+
+  if (updateInfo1.lastErrorObject.n === 0)
+  throw [
+    404,
+    `Error: Update failed, could not update a user with id of ${id}`
+  ];
+
+  if (updateInfo2.lastErrorObject.n === 0)
+  throw [
+    404,
+    `Error: Update failed, could not update a user with id of ${id2}`
+  ];
+
+  return [updateInfo1.value, updateInfo2.value];
+
+};
+
+// user with id1 likes profile of user with id2, add id2 to likeProfile object of id1, increase likedcount of id2
+async function unlikeProfile(iD1,iD2){
+
+  let id1;
+  let id2;
+  let user1;
+  let user2;
+
+  try {
+     id1 = helpers.checkValidId(iD1);
+     id2 = helpers.checkValidId(iD2);
+
+    user1 = await get(iD1);
+    user2 = await get(iD2);
+  } catch (error) {
+    throw [400, error];
+  }
+  
+  const likedProfiles = user1.likedProfiles;
+  let likeCount = user2.likeCount;
+
+  if (!likedProfiles.includes(user2._id)) {
+    throw [400,"Profile needs to be liked to unlike"]
+  }
+
+  likeCount = likeCount- 1;
+  let temp=[]
+  let i=0;
+  likedProfiles.forEach(element => {
+    if(element != user2._id)
+    temp[i++] = element
+  });
+  
+
+  let user1Info = {
+    username: user1.username,
+    email: user1.email,
+    hashed_password: user1.hashed_password,
+    topTracks: user1.topTracks,
+    topArtists: user1.topArtists,
+    dailyPlaylist: user1.dailyPlaylist,
+    likeCount: user1.likeCount,
+    comments: user1.comments,
+    likedProfiles: temp,
     pendingRequests: user1.pendingRequests,
     friends: user1.friends,
   };
@@ -880,6 +974,7 @@ export {
   // music information
   getTopTracks,
   likeProfile,
+  unlikeProfile,
   topSongTogether,
   topArtistTogether,
   musicCompatibility,

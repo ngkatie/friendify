@@ -1,8 +1,10 @@
-<div class="container">    
+{{!-- <link rel="stylesheet" href="../../public/css/comments.css"> --}}
+<div class="container"> 
+
     <div class="user-info">
         <img src="{{profilePicture}}" alt="Profile Picture" class="img-thumbnail" width="200" height="200">
         <h2>{{username}}</h2>
-        <p>Likes: {{likeCount}}</p>
+        <p>Likes: <span id="like-count">{{likeCount}}</span></p>
         <p>Top Artist Together : {{topArtist}}</p>
         <p>Top Song Together : {{topSong}}</p>
        
@@ -12,18 +14,18 @@
         <span class="score">{{musicCompatibility}}</span>
     </div>
     <div>
-    <form action="/users/likeProfile/{{userId}}" method="PUT">
-        {{!-- <button type="button" id="like-profile" data-user-id="{{userId}}">Like</button> --}}
-        <button type="button" id="like-profile" data-user-id="{{userId}}" style="background-color: {{#if profileLiked}}green{{else}}#fff{{/if}}">Like</button>
 
-    </form>
-    {{!-- <script>
-        {{#if profileLiked}}
-        $("#like-profile").css("background-color", "green");
+    <form>
+        <button type="button" id="like-button" data-user-id="{{userId}}" action = "/users/likeProfile/{{userId}}" style="background-color:
+         {{#if profileLiked}}
+           green
         {{else}}
-        $("#like-profile").css("background-color", "");  
-        {{/if}}
-    </script> --}}
+           #fff
+        {{/if}}">
+        Like
+        </button>
+    </form>
+
     </div>
     <div class="card postcomments px-2">
         <input type="hidden" name="users_id" id="users" value="{{users._id}}" />
@@ -45,7 +47,7 @@
             {{#each users.comments}}
             <div class="chat">
                 <div class="yours messages">
-                    <div class="message last">
+                    <div class="message last" >
                         {{this.comment}}
                     </div>
                     <div class="bold"> - {{this.username}}</div>
@@ -58,7 +60,7 @@
     <div id="error-message"></div>
     <div>  
    {{#if error}}
-    <div class="error">{{error}}</div>
+    <div class="error">{{errorMessage}}</div>
    {{/if}}
     </div>
 </div>
