@@ -9,7 +9,7 @@
         <p>Friend request sent!</p>
         {{/if}}
         {{#if error}}
-        <p>Error when sending friend request</p>
+        <p>{{errorMsg}}</p>
         {{/if}}
 </form>
 <a href="/users/pendingRequests">See All Pending Requests</a>
