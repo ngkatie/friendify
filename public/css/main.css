@@ -35,3 +35,8 @@
 .nav-active {
   background-color: #1ED760;
 }
+
+.error-message {
+  color: red;
+}
+
