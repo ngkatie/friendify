@@ -32,7 +32,10 @@
       },
       error: function(xhr, status, error) {
         // Handle the error
-        $("#error-message").text(error.responseText);
+        if(xhr.responseJSON){
+          errorMessage = xhr.responseJSON.errorMessage;
+      }
+      $("#error-message").text(errorMessage);
       }
     });
   });
@@ -64,7 +67,10 @@
                 $('#commentText').val('');
             },
             error: function (xhr, status, error) {
-              var errorMessage = error ? error : 'An error occurred';
+              var errorMessage = error;
+              if(xhr.responseJSON){
+                  errorMessage = xhr.responseJSON.errorMessage;
+              }
               $("#error-message").text(errorMessage);
             }
         });

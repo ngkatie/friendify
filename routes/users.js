@@ -335,7 +335,7 @@ router.post("/sendFriendRequest",async(req,res)=>{
   }
    const result = await userData.sendFriendRequest(id,idFriend)
  
-   return res.status(200).render("pages/friendsDashboard",{title:"Friends",friends: friendObjects, success:true})
+   return res.status(200).render("pages/friendsDashboard",{title:"Friends",friends: friendObjects, _id:idFriend, success:true})
    } catch (e) {
      return res.status(500).render("pages/friendsDashboard",{title:"Friends",friends: friendObjects, error: true, errorMsg: error.join(', ')})
    }
