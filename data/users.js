@@ -190,6 +190,8 @@ const acceptFriend = async(id_, idFriend_) => {
     likedProfiles: user1.likedProfiles,
     pendingRequests: user1Pending,
     friends: user1Friends,
+    profilePhoto: user1.profilePhoto,
+    lastUpdated: user1.lastUpdated,
   };
 
   let user2Info = {
@@ -204,6 +206,8 @@ const acceptFriend = async(id_, idFriend_) => {
     likedProfiles: user2.likedProfiles,
     pendingRequests: user2.pendingRequests,
     friends: user2Friends,
+    profilePhoto: user2.profilePhoto,
+    lastUpdated: user2.lastUpdated,
   }
 
   const updateInfo1 = await userCollection.findOneAndReplace(
@@ -273,6 +277,8 @@ const sendFriendRequest = async(id_, idFriend_) => {
     likedProfiles: user2.likedProfiles,
     pendingRequests: user2PendingRequest,
     friends: user2.friends,
+    profilePhoto: user2.profilePhoto,
+    lastUpdated: user2.lastUpdated,
   }
 
 
@@ -331,6 +337,8 @@ const rejectFriendRequest = async(id_, idFriend_) => {
     likedProfiles: user2.likedProfiles,
     pendingRequests: temp,
     friends: user2.friends,
+    profilePhoto: user2.profilePhoto,
+    lastUpdated: user2.lastUpdated,
   }
 ;
 
@@ -495,6 +503,8 @@ async function likeProfile(iD1,iD2){
     likedProfiles: likedProfiles,
     pendingRequests: user1.pendingRequests,
     friends: user1.friends,
+    profilePhoto: user1.profilePhoto,
+    lastUpdated: user1.lastUpdated,
   };
 
   let user2Info = {
@@ -509,6 +519,8 @@ async function likeProfile(iD1,iD2){
     likedProfiles: user2.likedProfiles,
     pendingRequests: user2.pendingRequests,
     friends: user2.friends,
+    profilePhoto: user2.profilePhoto,
+    lastUpdated: user2.lastUpdated,
   }
 
   const userCollection = await users();
@@ -586,6 +598,8 @@ async function unlikeProfile(iD1,iD2){
     likedProfiles: temp,
     pendingRequests: user1.pendingRequests,
     friends: user1.friends,
+    profilePhoto: user1.profilePhoto,
+    lastUpdated: user1.lastUpdated,
   };
 
   let user2Info = {
@@ -600,6 +614,8 @@ async function unlikeProfile(iD1,iD2){
     likedProfiles: user2.likedProfiles,
     pendingRequests: user2.pendingRequests,
     friends: user2.friends,
+    profilePhoto: user2.profilePhoto,
+    lastUpdated: user2.lastUpdated,
   }
 
   const userCollection = await users();
