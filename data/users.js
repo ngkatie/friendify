@@ -775,8 +775,8 @@ async function musicCompatibility(iD1, iD2){
   // else
   perComp = ((commSong + commArtist)/(totArtist+ totTrack) * 100)
 
-  let comp = perComp.toFixed(2) + "%"
-  return comp
+  let comp = (perComp * 2).toFixed(2) + "%"
+  return comp;
 } catch (e) {
   throw [400, error]
 }
