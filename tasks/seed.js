@@ -1,35 +1,47 @@
-import { dbConnection, closeConnection } from "../config/mongoConnection.js";
-import * as users from "../data/users.js";
-//import { comments } from "../data/comments.js";
+import fs from 'fs';
+import JSONStream from 'JSONStream';
+import { MongoClient, ObjectId } from 'mongodb';
+import { dbConnection, closeConnection } from '../config/mongoConnection.js';
 
-const db = await dbConnection();
-//await db.dropDatabase();
+// Set up MongoDB connection URL and options
+const url = 'mongodb://127.0.0.1:27017';
+const dbName = 'friendify';
+const collectionName = 'users';
+const options = { useNewUrlParser: true, useUnifiedTopology: true };
 
-// await users.create('johndoe', 'johndoe@example.com', 'password123')
-// await users.create('janedoe', 'janedoe@example.com', 'password123')
-// await users.create('bobsmith', 'bobsmith@example.com', 'password123')
-// await users.create('alicejones', 'alicejones@example.com', 'password123')
-// await users.create('tomwilson', 'tomwilson@example.com', 'password123')
+const seedData = async () => {
+  try {
+    // Connect to MongoDB and drop the database
+    const db = await dbConnection();
+    await db.dropDatabase();
 
-let id_user = await users.getByEmail('ksato@stevens.edu');
-let id_1 = await users.getByEmail('johndoe@example.com');
-let id_2 = await users.getByEmail('janedoe@example.com');
-let id_3 = await users.getByEmail('bobsmith@example.com');
-let id_4 = await users.getByEmail('alicejones@example.com');
+    // Read the JSON file using the 'JSONStream' library
+    const results = [];
+    fs.createReadStream('tasks/seedJSON.json')
+      .pipe(JSONStream.parse('*'))
+      .on('data', (data) => {
+        if (typeof data._id === 'string') {
+          data._id = new ObjectId(data._id);
+        }
+        data.lastUpdated = null; // set lastUpdated to null
+        results.push(data);
+      })
+      .on('end', async () => {
+        // Insert the JSON data into a collection
+        const client = await MongoClient.connect(url, options);
+        const db = client.db(dbName);
+        const collection = db.collection(collectionName);
+        for (const result of results) {
+          await collection.insertOne(result);
+        }
+        console.log(`${results.length} documents inserted into ${collectionName}`);
+        client.close();
+        await closeConnection();
+        console.log('DONE W SEEDING');
+      });
+  } catch (err) {
+    console.error(err);
+  }
+}
 
-
-//await users.sendFriendRequest(id_user, id_1);
-// await users.sendFriendRequest(id_user, id_2);
-// await users.sendFriendRequest(id_user, id_3);
-// await users.sendFriendRequest(id_user, id_4);
-
-//await users.sendFriendRequest(id_3, id_user);
-await users.sendFriendRequest(id_4, id_user);
-
-// await users.acceptFriend(id_1, id_user);
-// await users.acceptFriend(id_2, id_user);
-
-
-
-console.log('DONE W SEEDING')
-await closeConnection();
+seedData();

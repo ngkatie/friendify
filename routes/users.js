@@ -10,8 +10,6 @@ import * as helpers from '../helpers.js';
 import axios from 'axios'; // Axios library
 import dotenv from 'dotenv';
 import xss from 'xss';
-import qs from 'qs';
-
 
 dotenv.config();
 const CLIENT_ID = process.env.CLIENT_ID // Your client id
@@ -335,7 +333,7 @@ router.post("/sendFriendRequest",async(req,res)=>{
   }
    const result = await userData.sendFriendRequest(id,idFriend)
  
-   return res.status(200).render("pages/friendsDashboard",{title:"Friends",friends: friendObjects, _id:idFriend, success:true})
+   return res.status(200).render("pages/friendsDashboard",{title:"Friends",friends: friendObjects, success:true})
    } catch (e) {
      return res.status(500).render("pages/friendsDashboard",{title:"Friends",friends: friendObjects, error: true, errorMsg: error.join(', ')})
    }
