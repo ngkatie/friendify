@@ -10,6 +10,7 @@ import * as helpers from '../helpers.js';
 import axios from 'axios'; // Axios library
 import dotenv from 'dotenv';
 import xss from 'xss';
+import qs from 'qs';
 
 
 dotenv.config();
@@ -36,6 +37,8 @@ router
   .post(async (req, res) => {
       let missingFields = [];
       let error = false;
+      req.body.usernameInput = xss(req.body.usernameInput);
+      req.body.passwordInput = xss(req.body.passwordInput);
       if (!req.body.usernameInput.trim()) {
         missingFields.push('username');
       }
@@ -53,7 +56,7 @@ router
         return res.status(400).render('pages/login', { title: 'Login', error: error });
       }
       try{
-        let authenticatedUser = await userData.checkUser(xss(req.body.usernameInput.trim().toLowerCase()), xss(req.body.passwordInput.trim()));
+        let authenticatedUser = await userData.checkUser(req.body.usernameInput.trim().toLowerCase(), req.body.passwordInput.trim());
       if (authenticatedUser) {
         req.session.user = {
           id: authenticatedUser._id,
@@ -94,6 +97,11 @@ router
       emailInput
     } = req.body;
 
+    usernameInput = xss(usernameInput);
+    emailInput = xss(emailInput);
+    passwordInput = xss(passwordInput);
+    confirmPasswordInput = xss(confirmPasswordInput);
+
     let error = []
     let missingFields = []
 
@@ -125,10 +133,6 @@ router
       if (error.length > 0){
       return res.status(400).render('pages/register', { title: 'Register', errorMessage: error.join(', '), error: true });
       }
-      usernameInput = xss(usernameInput);
-      emailInput = xss(emailInput);
-      passwordInput = xss(passwordInput);
-      confirmPasswordInput = xss(confirmPasswordInput);
 
         try {
           await userData.create(usernameInput, emailInput, passwordInput)
@@ -215,36 +219,6 @@ router.get('/refresh_token', async (req, res) => {
   }
 });
 
-// This function will be used to get data about the user from spotify
-router.get('/userprofile', async(req, res) => {
-  // Check if user is authenticated
-  if (req.session.user && req.session.user.access_token) {
-    // Use access token to make API requests
-    const authOptions = {
-      url: 'https://api.spotify.com/v1/me',
-      headers: {
-        Authorization: `Bearer ${req.session.user.access_token}`,
-      },
-    };
-
-    try {
-      const { data : body } = await axios.get(authOptions.url, { 
-        headers: authOptions.headers 
-      });
-     // res.render('profile', { user: body });
-    //  console.log({body})
-    } catch (error) {
-      // Handle error
-      console.log(error);
-      res.redirect('/');
-    }
-    
-  } else {
-    // Redirect user to login page
-    res.redirect('/login');
-  }
-});
-
 router.post("/acceptFriend/:id",async(req,res)=>{
  try {
     
@@ -273,6 +247,7 @@ router.post("/sendFriendRequest",async(req,res)=>{
   let error = [];
   try {
   let friendEmail = req.body.email
+  friendEmail = xss(friendEmail);
    let id = req.session.user.id
     const user = await userData.get(id);
     const friends = user.friends;
@@ -281,9 +256,6 @@ router.post("/sendFriendRequest",async(req,res)=>{
       friendObjects.push(friendObject);
     }
 
-   
-
-    friendEmail = xss(friendEmail);
     friendEmail = friendEmail.trim().toLowerCase();
 
    if (!friendEmail || Object.keys(friendEmail).length === 0) {
@@ -360,7 +332,6 @@ router.post("/rejectFriendRequest/:id",async(req,res)=>{
   })
 
 router.get('/dashboard', async (req, res) => {
-
   // const {id} = req.session.user.id;
   if (req.session.user && req.session.user.access_token) {
     // Use access token to make API requests
@@ -782,11 +753,14 @@ router.get('/pendingRequests', async (req, res) => {
 router.route('/logout').get(async (req, res) => {
   //code here for GET
   try {
+    // Destroy session
     req.session.destroy();
-    return res.render('pages/logout', {title: 'Logout'});
-    // return res.redirect('/');
+
+    // Render logout page
+    return res.render('pages/logout', { title: 'Logout' });
+
   } catch (e) {
-    return res.status(404).json({message: e});
+    return res.status(404).json({ message: e });
   }
 });
 
