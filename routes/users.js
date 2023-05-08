@@ -561,21 +561,35 @@ router.get('/friends/:id', async (req, res) => {
     let musicCompatibility = await userData.musicCompatibility(id,userId);
     let topArtist;
     let topSong;
-    if(result[0] === "")
-    topArtist = " No Top Artist together"
-    else
-    topArtist = result[0]
+    if(result[0] === "") {
+      topArtist = " No Top Artist together"
+    }
+    else {
+      topArtist = result[0]
+    }
 
-    if(result2[0] === "")
-    topSong = " No Top Song together"
-    else
-    topSong = result2[0]
+    if(result2[0] === "") {
+      topSong = " No Top Song together"
+    }
+    else{
+      topSong = result2[0]
+    }
     // return res.status(200).json({ message: " No Top Artist together" })
 
     // return res.status(200).json(result[0])
 
     
-    return res.status(200).render('pages/friendProfile', { title: "Friend", users: friend , userId:friend._id, likeCount: friend.likeCount, profileLiked:profileLiked, topArtist:topArtist, topSong:topSong , musicCompatibility:musicCompatibility, username: friend.username});
+    return res.status(200).render('pages/friendProfile', { 
+      title: "Friend", 
+      users: friend , 
+      userId:friend._id, 
+      profilePhoto: friend.profilePhoto,
+      likeCount: friend.likeCount, 
+      profileLiked:profileLiked, 
+      topArtist:topArtist, 
+      topSong:topSong , 
+      musicCompatibility:musicCompatibility, 
+      username: friend.username});
 
   } catch (e) {
     let status = e[0] ? e[0] : 500;

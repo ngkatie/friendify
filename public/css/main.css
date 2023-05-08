@@ -38,6 +38,14 @@
   border-radius: 20%;
 }
 
+body {
+  height: 100%;
+  background-color: #E3EEE2;
+  padding: 30px;
+  font-family: -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI", Roboto, Ubuntu;
+  text-align: center;
+}
+
 .profile-photo {
   border-radius: 50%;
 }
