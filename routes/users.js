@@ -116,6 +116,7 @@ router
     let error = []
     let missingFields = []
 
+    // Clean inputs
     let username = usernameInput.trim().toLowerCase();
     let password = passwordInput.trim();
     let confirmPassword = confirmPasswordInput.trim();
@@ -132,7 +133,7 @@ router
         missingFields: missingFields.join(', '), 
         missing: true 
       });
-    }
+    }6
       
     const userCollection = await users();
     // Validate registration inputs
@@ -165,7 +166,6 @@ router
     email = xss(email);
     password = xss(password);
     confirmPassword = xss(confirmPassword);
-    console.log(password);
 ;
     try {
       await userData.create(username, email, password);
@@ -183,7 +183,7 @@ router.get('/callback', async (req, res) => {
   // after checking the state parameter
   const code = req.query.code || null;
   const state = req.query.state || null;
-  console.log(state);
+  // console.log(state);
   // const storedState = req.cookies ? req.cookies[stateKey] : null;
   // console.log(storedState)
 
@@ -252,22 +252,23 @@ router.get('/refresh_token', async (req, res) => {
   }
 });
 
-router.post("/acceptFriend/:id",async(req,res)=>{
+router.post("/acceptFriend/:id", async(req,res)=>{
  try {
     
-  let idFriend = req.params.id
-  let id = req.session.user.id
+  let idFriend_ = req.params.id;
+  let id_ = req.session.user.id;
 
   try {
-    helpers.checkValidId(id)
-    helpers.checkValidId(idFriend)  
+    const validId = helpers.checkValidId(id_);
+    const validFriendId = helpers.checkValidId(idFriend_);  
   } catch (error) {
     return res.status(404).json({ error: error });
   }
-  id = id.trim();
-  idFriend = idFriend.trim();
 
-  const result = await userData.acceptFriend(id,idFriend)
+  const id = id_.trim();
+  const idFriend = idFriend_.trim();
+
+  const result = await userData.acceptFriend(id, idFriend);
 
   return res.status(200).redirect('/users/pendingRequests')
   } catch (e) {
@@ -278,12 +279,16 @@ router.post("/acceptFriend/:id",async(req,res)=>{
 router.post("/sendFriendRequest",async(req,res)=>{
   let friendObjects = [];
   let error = [];
+
   try {
-  let friendEmail = req.body.email
-  friendEmail = xss(friendEmail);
-   let id = req.session.user.id
+    let friendEmail = req.body.email;
+    friendEmail = xss(friendEmail);
+    // User ID
+    let id = req.session.user.id;
+
     const user = await userData.get(id);
     const friends = user.friends;
+
     for (const friendId of friends) {
       const friendObject = await get(friendId);
       friendObjects.push(friendObject);
@@ -295,7 +300,9 @@ router.post("/sendFriendRequest",async(req,res)=>{
     error.push('Email cannot be empty')
    }
 
-  if(!helpers.checkEmail(friendEmail)) error.push('Invalid email');
+  if(!helpers.checkEmail(friendEmail)) { 
+    error.push('Invalid email')
+  }
 
   const userCollection = await users();
     const unknownUser = await userCollection.findOne({ email: friendEmail });
@@ -303,21 +310,23 @@ router.post("/sendFriendRequest",async(req,res)=>{
       error.push(`No user with email ${friendEmail}`);
     }
 
+    // Get friend ID
     let idFriend = await userData.getByEmail(friendEmail);
 
     id = id.trim();
     idFriend = idFriend.trim();
 
    try {
-    helpers.checkValidId(id)
-    helpers.checkValidId(idFriend)  
+    const validId = helpers.checkValidId(id);
+    const validFriendId = helpers.checkValidId(idFriend);
   } catch (error) {
     return res.status(404).json({ error: error });
   }
  
-    const user2 = await userData.get(idFriend);
+  // Return friend user object
+  const user2 = await userData.get(idFriend);
 
-  if(friendEmail === user.email) error.push('Cannot send friend request to yourself')
+  if(friendEmail === user.email) { error.push('Cannot send friend request to yourself') }
 
   if (friends.includes(idFriend)) {
     error.push(`This user is already a friend`)
@@ -325,38 +334,50 @@ router.post("/sendFriendRequest",async(req,res)=>{
 
   const user2PendingRequest = user2.pendingRequests;
   if(user2PendingRequest.includes(id)) {
-    error.push('Friend Request already sent')
+    error.push('Friend request already sent')
   }
-
-  
 
   if(error.length > 0) {
-    return res.status(400).render("pages/friendsDashboard",{title:"Friends",friends: friendObjects, error: true, errorMsg: error.join(', ')})
+    return res.status(400).render("pages/friendsDashboard",{
+      title:"Friends",
+      friends: friendObjects, 
+      error: true, 
+      errorMsg: error.join(', ')})
   }
-   const result = await userData.sendFriendRequest(id,idFriend)
+   const result = await userData.sendFriendRequest(id,idFriend);
  
-   return res.status(200).render("pages/friendsDashboard",{title:"Friends",friends: friendObjects, _id:idFriend, success:true})
+   return res.status(200).render("pages/friendsDashboard",{
+    title:"Friends",
+    friends: friendObjects, 
+    _id: idFriend, 
+    success: true})
    } catch (e) {
-     return res.status(500).render("pages/friendsDashboard",{title:"Friends",friends: friendObjects, error: true, errorMsg: error.join(', ')})
+     return res.status(500).render("pages/friendsDashboard",{
+      title:"Friends",
+      friends: friendObjects, 
+      error: true, 
+      errorMsg: error.join(', ')
+    })
    }
 })
 
 router.post("/rejectFriendRequest/:id",async(req,res)=>{
   try {
     
-    let idFriend = req.params.id
-    let id = req.session.user.id
+    let idFriend_ = req.params.id;
+    let id_ = req.session.user.id;
   
     try {
-      helpers.checkValidId(id)
-      helpers.checkValidId(idFriend)  
+      const validId = helpers.checkValidId(id_);
+      const validFriendId = helpers.checkValidId(idFriend_);
     } catch (error) {
       return res.status(404).json({ error: error });
     }
-    id = id.trim();
-    idFriend = idFriend.trim();
+    
+    const id = id_.trim();
+    const idFriend = idFriend_.trim();
   
-    const result = await userData.rejectFriendRequest(idFriend,id)
+    const result = await userData.rejectFriendRequest(idFriend,id);
   
     return res.status(200).redirect('/users/pendingRequests')
     } catch (e) {
@@ -390,10 +411,10 @@ router.get('/dashboard', async (req, res) => {
 
     try {
       const { data: body } = await axios.get(authOptions.url, { headers: authOptions.headers });
-      const userInfo = await get(req.session.user.id);
+      userInfo = await get(user_id.toString());
 
       if (body.images.length > 0 && body.images[0] !== userInfo.profilePhoto) {
-        const profilePhoto = await userData.updatePhoto(req.session.user.id, body.images[0].url);
+        const profilePhoto = await userData.updatePhoto(user_id.toString(), body.images[0].url);
       }
 
       return res.status(200).render('pages/dashboard', {
@@ -562,6 +583,10 @@ router.get('/friends/:id', async (req, res) => {
     let result = await userData.topArtistTogether(id,userId);
     let result2 = await userData.topSongTogether(id,userId);
     let musicCompatibility = await userData.musicCompatibility(id,userId);
+    if (musicCompatibility.isNan()) {
+      musicCompatibility = 0;
+    }
+
     let topArtist;
     let topSong;
     if(result[0] === "") {
@@ -585,13 +610,13 @@ router.get('/friends/:id', async (req, res) => {
     return res.status(200).render('pages/friendProfile', { 
       title: "Friend", 
       users: friend , 
-      userId:friend._id, 
+      userId: friend._id, 
       profilePhoto: friend.profilePhoto,
       likeCount: friend.likeCount, 
-      profileLiked:profileLiked, 
-      topArtist:topArtist, 
-      topSong:topSong , 
-      musicCompatibility:musicCompatibility, 
+      profileLiked: profileLiked, 
+      topArtist: topArtist, 
+      topSong: topSong , 
+      musicCompatibility: musicCompatibility, 
       username: friend.username});
 
   } catch (e) {
@@ -609,26 +634,25 @@ router
  .route('/likeProfile/:id')
  .put( async(req,res)=>{
   if(req.session.user){
-    let id1 = req.session.user.id
-    //let id1= '643cb4bf7f4290f4eb398d26'
-    let id2 = req.params.id
+    let id1 = req.session.user.id;
+    let id2 = req.params.id;
 
+    let validId;
+    let validFriendId;
     try {
-      helpers.checkValidId(id1)
-      helpers.checkValidId(id2)
+      validId = helpers.checkValidId(id1);
+      validFriendId = helpers.checkValidId(id2);
     } catch (error) {
       return res.status(400).json(error);
-      return
     }
    
     try {
-      let result = await likeProfile(id1,id2);
-
-      return res.status(200).json(result)
+      let result = await likeProfile(validId.toString(),validFriendId.toString());
+      return res.status(200).json(result);
     } catch (e) {
      let status = e[0] ? e[0] : 500;
      let message = e[1] ? e[1] : 'Internal Server Error';
-     return res.status(status).json(message)
+     return res.status(status).json(message);
     }
 
   }
@@ -638,91 +662,98 @@ router
 })
 .delete( async(req,res)=>{
   if(req.session.user){
-    let id1 = req.session.user.id
-    //let id1= '643cb4bf7f4290f4eb398d26'
-    let id2 = req.params.id
+    let id1 = req.session.user.id;
+    let id2 = req.params.id;
 
+    let validId;
+    let validFriendId;
     try {
-      helpers.checkValidId(id1)
-      helpers.checkValidId(id2)
+      validId = helpers.checkValidId(id1);
+      validFriendId = helpers.checkValidId(id2);
     } catch (error) {
       return res.status(400).json(error);
       return
     }
    
     try {
-      let result = await unlikeProfile(id1,id2);
+      let result = await unlikeProfile(validId.toString(),validFriendId.toString());
 
-      return res.status(200).json(result)
+      return res.status(200).json(result);
     } catch (e) {
      let status = e[0] ? e[0] : 500;
      let message = e[1] ? e[1] : 'Internal Server Error';
-     return res.status(status).json(message)
+     return res.status(status).json(message);
     }
 
   }
   else{
-    res.redirect("/")
+    res.redirect("/");
   }
 })
 
 router.get('/topSong/:id', async(req, res)=>{
   if(req.session.user){
 
-    let id1 = req.session.user.id
-    let id2 = req.params.id
+    let id1 = req.session.user.id;
+    let id2 = req.params.id;
 
+    let validId;
+    let validFriendId;
     try {
-      helpers.checkValidId(id1)
-      helpers.checkValidId(id2)
+      validId = helpers.checkValidId(id1);
+      validFriendId = helpers.checkValidId(id2);
     } catch (error) {
       return res.status(400).json(error);
     }
 
     try {
-      let result = await userData.topSongTogether(id1,id2);
-      if(result[0] === "")
-      return res.status(200).json({ message: " No Top song together" })
+      let result = await userData.topSongTogether(validId.toString(), validFriendId.toString());
+      if(result[0] === "") {
+        return res.status(200).json({ message: " No top song together" })
+      }
       
       return res.status(200).json(result[0])
     } catch (e) {
      let status = e[0] ? e[0] : 500;
      let message = e[1] ? e[1] : 'Internal Server Error';
-     return res.status(status).json(message)
+     return res.status(status).json(message);
     }
   }
   else{
-    res.redirect("/")
+    res.redirect("/");
   }
 })
 
 router.get('/topArtist/:id', async(req, res)=>{
   if(req.session.user){
 
-    let id1 = req.session.user.id
-    let id2 = req.params.id
+    let id1 = req.session.user.id;
+    let id2 = req.params.id;
 
+    let validId;
+    let validFriendId;
     try {
-      helpers.checkValidId(id1)
-      helpers.checkValidId(id2)
+      validId = helpers.checkValidId(id1);
+      validFriendId = helpers.checkValidId(id2);
     } catch (error) {
       return res.status(400).json(error);
     }
 
     try {
-      let result = await userData.topArtistTogether(id1,id2);
-      if(result[0] === "")
-      return res.status(200).json({ message: " No Top Artist together" })
+      let result = await userData.topArtistTogether(validId.toString(), validFriendId.toString());
+      if(result[0] === "") {
+        return res.status(200).json({ message: " No Top artist together" })
+      }
 
-      return res.status(200).json(result[0])
+      return res.status(200).json(result[0]);
     } catch (e) {
      let status = e[0] ? e[0] : 500;
      let message = e[1] ? e[1] : 'Internal Server Error';
-     return res.status(status).json(message)
+     return res.status(status).json(message);
     }
   }
   else{
-    res.redirect("/")
+    res.redirect("/");
   }
 })
 
@@ -732,24 +763,26 @@ router.get('/musicCompatibility/:id', async(req, res)=>{
     let id1 = req.session.user.id
     let id2 = req.params.id
 
+    let validId;
+    let validFriendId;
     try {
-      helpers.checkValidId(id1)
-      helpers.checkValidId(id2)
+      validId = helpers.checkValidId(id1);
+      validFriendId = helpers.checkValidId(id2);
     } catch (error) {
       return res.status(400).json(error);
     }
 
     try {
-      let result = await userData.musicCompatibility(id1,id2);
-      return res.status(200).json(result)
+      let result = await userData.musicCompatibility(validId.goString(),validFriendId.toString());
+      return res.status(200).json(result);
     } catch (e) {
      let status = e[0] ? e[0] : 500;
      let message = e[1] ? e[1] : 'Internal Server Error';
-     return res.status(status).json(message)
+     return res.status(status).json(message);
     }
   }
   else{
-    res.redirect("/")
+    res.redirect("/");
   }
 })
 
@@ -788,14 +821,14 @@ router.get('/pendingRequests', async (req, res) => {
       const pendingObject = await get(pendingId);
       pendingObjects.push(pendingObject);
     }
-    console.log(pendingObjects)
-      return res.status(200).render('pages/pendingRequests', {
-        title: 'Pending Requests',
-        pendingRequests: pendingObjects
-      })
+
+    return res.status(200).render('pages/pendingRequests', {
+      title: 'Pending Requests',
+      pendingRequests: pendingObjects
+    })
     }
   } catch (e) {
-    console.log(e);
+    // console.log(e);
     return res.status(400).render('pages/pendingRequests', {
       title: 'Error',
       err: true,
@@ -819,4 +852,4 @@ router.route('/logout').get(async (req, res) => {
 });
 
 
-export default router
+export default router;
