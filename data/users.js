@@ -124,6 +124,27 @@ const getByEmail = async (email) => {
     return helpers.idToString(user)._id;
 }
 
+async function updatePhoto(user_id, photoURL) {
+
+  const currId = helpers.checkValidId(user_id);
+
+  const userCollection = await users();
+  const user = await userCollection.findOne({_id: currId});
+  user.profilePhoto = photoURL;
+    
+  const updatedUser = await userCollection.findOneAndUpdate(
+    { _id: currId },
+    { $set: user },
+    { returnDocument: 'after' }
+  )
+
+  if (updatedUser.lastErrorObject.n === 0) {
+    throw `Error: Could not update photo successfully`;
+  }
+
+  return user.profilePhoto;
+} 
+
 //Friend2(id)(has pending req) accepts request of friend1(idFriend), request would be removed from pending requests of friend2
 const acceptFriend = async(id_, idFriend_) => {
 
@@ -981,6 +1002,7 @@ export {
   getAll, 
   get, 
   getByEmail,
+  updatePhoto,
   // friend requests
   acceptFriend, 
   sendFriendRequest, 

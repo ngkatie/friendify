@@ -375,36 +375,40 @@ router.get('/dashboard', async (req, res) => {
       },
     };
 
+    let user_id;
     try {
-       checkValidId(req.session.user.id) 
-       
+      user_id = checkValidId(req.session.user.id);
     } catch (error) {
       return res.status(400).render('pages/dashboard', {
         title: 'Dashboard',
-        error:true,
+        error: true,
         errorMessage: error
       })
     }
 
-    const userData  = await get(req.session.user.id);
+    let userInfo;
 
     try {
       const { data : body } = await axios.get(authOptions.url, { headers: authOptions.headers });
+      const profilePhoto = userData.updatePhoto(req.session.user.id, body.images[0].url);
+      userInfo = await get(req.session.user.id);
+
       return res.status(200).render('pages/dashboard', {
         title: 'Dashboard',
         // username: user.username,
-        likeCount: userData.likeCount,
+        likeCount: userInfo.likeCount,
         user : body,
-        users : userData
+        userInfo : userInfo
       })
     } catch (error) {
       // Handle error
+      console.log(error);
       return res.render("pages/dashboard",{        
         title: 'Dashboard',
         // username: user.username,
-        likeCount: userData.likeCount,
-        user : body,
-        users : userData,
+        // likeCount: userInfo.likeCount,
+        // user : body,
+        userInfo : userInfo,
         errorMessage : error
       })
       // console.log(error);

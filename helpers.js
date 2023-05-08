@@ -33,6 +33,13 @@ function includesUpper(str) {
   return false;
 }
 
+function includesLower(str) {
+  if (/[a-z]+/g.test(str)) {
+      return true;
+  }
+  return false;
+}
+
 function includesNum(str) {
   if (/\d+/g.test(str)) {
       return true;
