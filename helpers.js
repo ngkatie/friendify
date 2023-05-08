@@ -83,6 +83,9 @@ export function checkName(str) {
       if (!checkLetter(name[i]) && !isNum(name[i])) {
           throw `Error: ${name} must only contain letters and numbers`;
       }
+      if(name[i] === ' ') {
+          throw `Error: ${name} cannot contain spaces`;
+      }
   }
   return name;
 }
@@ -97,7 +100,7 @@ export function checkEmail(str) {
 
 export function checkPassword(str) {
   const password = checkString(str);
-  if (password.length < 8 || password.includes(' ') || !includesNum(password) || !includesUpper(password) || !includesSpecial(password)) {
+  if (password.length < 8 || password.includes(' ') || !includesNum(password) || !includesUpper(password) || !includesSpecial(password) || !includesLower(password)) {
       return false;
   }
   return true;
