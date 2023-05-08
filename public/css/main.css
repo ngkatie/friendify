@@ -38,6 +38,14 @@
   border-radius: 20%;
 }
 
+body {
+  height: 100%;
+  background-color: #E3EEE2;
+  padding: 30px;
+  font-family: -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI", Roboto, Ubuntu;
+  text-align: center;
+}
+
 .profile-photo {
   border-radius: 50%;
 }
@@ -47,11 +55,10 @@
 }
 
 .footer {
-  position: fixed;
-  left: 0;
-  bottom: 0;
+  /* position: fixed; */
   padding: 20px 15px;
-  width: 100%;
+  margin: 30px 0px;
+  /* width: 100%; */
   background-color: #008000;
   color: white;
   text-align: center;
