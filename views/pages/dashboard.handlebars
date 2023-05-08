@@ -5,14 +5,18 @@
         <a href="/users/toptracks" class="nav-option">Top 50 Tracks</a>
         <a href="/users/topartists" class="nav-option">Top 50 Artists</a>
         <a href="/users/dailyplaylist" class="nav-option">Daily Playlist</a>
-        <a href="/users/logout" class="nav-option">Logout</a>
+        <a href="friends" class="nav-option">Friends</a>
+        <a href="/users/logout" class="nav-option logout">Logout</a>
     </nav>
 
     <div class="user-info">
-        <img src="{{user.images.[0].url}}" alt="Profile Picture" class="img-thumbnail" width="200" height="200">
+        {{#if userInfo.profilePhoto}}
+            <img src="{{userInfo.profilePhoto}}" alt="Profile Picture" class="profile-photo" width="200" height="200">
+        {{else}}
+            <img src="../../public/images/default_photo.jpg" alt="Default Profile Picture" class="profile-photo" width="200" height="200">
+        {{/if}}
         <h2>{{user.display_name}}</h2>
         <p>Likes: {{likeCount}}</p>
-        <a href="friends">Friends</a>
     </div>
 
     <div class="card postcomments px-2">

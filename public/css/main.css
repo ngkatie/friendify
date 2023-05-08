@@ -3,7 +3,7 @@
   padding: 40px 15px;
   margin: 20px 0px;
   font-family: 'Gotham Rounded', sans-serif;
-  background-color: #1DB954;
+  background-color: #008000;
   color: #fff;
 }
 
@@ -14,7 +14,7 @@
   padding: 15px;
   margin: 20px 0px;
   font-family: 'Gotham Rounded', sans-serif;
-  background-color: #1DB954;
+  background-color: #008000;
   color: #fff;
   list-style-type: none;
   overflow: hidden;
@@ -29,14 +29,30 @@
 }
 
 .nav-option:hover {
-  color: #2E6A33;
+  color: #355E3B;
 }
 
 .nav-active {
-  background-color: #1ED760;
+  background-color: white;
+  color: #008000;
+  border-radius: 20%;
+}
+
+.profile-photo {
+  border-radius: 50%;
 }
 
 .error-message {
   color: red;
 }
 
+.footer {
+  position: fixed;
+  left: 0;
+  bottom: 0;
+  padding: 20px 15px;
+  width: 100%;
+  background-color: #008000;
+  color: white;
+  text-align: center;
+}

@@ -10,6 +10,7 @@ import * as helpers from '../helpers.js';
 import axios from 'axios'; // Axios library
 import dotenv from 'dotenv';
 import xss from 'xss';
+import qs from 'qs';
 
 
 dotenv.config();
@@ -34,52 +35,65 @@ router
     res.status(200).render('pages/login', { title: "Login" })
   })
   .post(async (req, res) => {
-      let missingFields = [];
-      let error = false;
-      if (!req.body.usernameInput.trim()) {
-        missingFields.push('username');
+
+    let error = false;
+
+    // Check missing fields
+    let missingFields = [];
+    if (!req.body.usernameInput.trim()) {
+      missingFields.push('username');
+    }
+    if (!req.body.passwordInput.trim()) {
+      missingFields.push('password');
+    }
+    if (missingFields.length > 0) {
+      return res.status(400).render('pages/login', { 
+        title: 'Login', 
+        missingFields: missingFields.join(', '), 
+        missing: true 
+      });
+    }
+
+    // Check valid username and password input
+    const username = (req.body.usernameInput).trim().toLowerCase();
+    const password = (req.body.passwordInput).trim();
+
+    try{
+      const validUsername = helpers.checkName(username);
+      const validPassword = helpers.checkPassword(password);
+
+      if (!(validUsername && validPassword)) {
+        throw 'Either the username or password is invalid';
       }
-      if (!req.body.passwordInput.trim()) {
-        missingFields.push('password');
-      }
-      if (missingFields.length > 0) {
-        return res.status(400).render('pages/login', { title: 'Login', missingFields: missingFields.join(', '), missing: true });
-      }
-      try{
-        helpers.checkName(req.body.usernameInput)
-        helpers.checkPassword(req.body.passwordInput)
-      } catch(e){
-        error = true;
-        return res.status(400).render('pages/login', { title: 'Login', error: error });
-      }
-      try{
-        let authenticatedUser = await userData.checkUser(xss(req.body.usernameInput.trim().toLowerCase()), xss(req.body.passwordInput.trim()));
+
+      let authenticatedUser = await userData.checkUser(xss(username), xss(password));
       if (authenticatedUser) {
         req.session.user = {
           id: authenticatedUser._id,
-          username: req.body.usernameInput,
-        } }
-      } catch(e){
-        return res.status(400).render('pages/login', { title: 'Login', error: true });
+          username: username,
+        }
       }
+    } catch(e){
+      return res.status(400).render('pages/login', { 
+        title: 'Login', 
+        error: true });
+    }
         
-        const state = generateRandomString(16);
-        res.cookie(stateKey, state);
+    const state = generateRandomString(16);
+    res.cookie(stateKey, state);
 
-        // your application requests authorization
-        const scope = 'user-read-private user-read-email user-top-read user-read-recently-played';
-        res.redirect(
-          'https://accounts.spotify.com/authorize?' +
-            querystring.stringify({
-              response_type: 'code',
-              client_id: CLIENT_ID,
-              scope,
-              redirect_uri,
-              state,
-            })
-        );
-      } 
-    )
+    // your application requests authorization
+    const scope = 'user-read-private user-read-email user-top-read user-read-recently-played';
+    res.redirect(
+      'https://accounts.spotify.com/authorize?' + querystring.stringify({
+        response_type: 'code',
+        client_id: CLIENT_ID,
+        scope,
+        redirect_uri,
+        state,
+      })
+    );
+  })
 
 router
   .route('/register')
@@ -94,53 +108,76 @@ router
       emailInput
     } = req.body;
 
+    usernameInput = xss(usernameInput);
+    emailInput = xss(emailInput);
+    passwordInput = xss(passwordInput);
+    confirmPasswordInput = xss(confirmPasswordInput);
+
     let error = []
     let missingFields = []
 
-      if(!usernameInput.trim()) missingFields.push('username')
-      if(!passwordInput.trim()) missingFields.push('password')
-      if(!confirmPasswordInput.trim()) missingFields.push('confirm password')
-      if(!emailInput.trim()) missingFields.push('email')
-      if(missingFields.length > 0){
-        return res.status(400).render('pages/register', { title: 'Register', missingFields: missingFields.join(', '), missing: true });
-      }
-      
-      const userCollection = await users();
-      
-      if(!helpers.checkName(usernameInput)) error.push('Invalid username')
-      if(!helpers.checkEmail(emailInput)) error.push('Invalid email')
-      if(!helpers.checkPassword(passwordInput)) error.push('Invalid password')
-      if(!helpers.checkPassword(confirmPasswordInput)) error.push('Invalid confirm password')
-      if (confirmPasswordInput.trim() !== passwordInput.trim()) {
-        error.push('Passwords do not match')
-      }
-      const dupe = await userCollection.findOne({ email: emailInput })
-      if(dupe){
-        error.push(`Email already exists`);
-      }
-      let dupeName = await userCollection.findOne({ username: usernameInput })
-      if(dupeName){
-        error.push(`Username already exists`);
-      }
-      if (error.length > 0){
-      return res.status(400).render('pages/register', { title: 'Register', errorMessage: error.join(', '), error: true });
-      }
-      usernameInput = xss(usernameInput);
-      emailInput = xss(emailInput);
-      passwordInput = xss(passwordInput);
-      confirmPasswordInput = xss(confirmPasswordInput);
+    let username = usernameInput.trim().toLowerCase();
+    let password = passwordInput.trim();
+    let confirmPassword = confirmPasswordInput.trim();
+    let email = emailInput.trim().toLowerCase();
 
-        try {
-          await userData.create(usernameInput, emailInput, passwordInput)
-          return res.status(200).redirect('/users/login');
-        } catch(e){
-          return res.status(500).render('pages/register', { 
-            title: 'Register', 
-            errorMessage: 'Failed to create user. Please try again!', 
-            error: true 
-          });
-        }
-    });
+    // Check missing fields
+    if(!username || username === '') { missingFields.push('username') }
+    if(!password || password === '') { missingFields.push('password') }
+    if(!confirmPassword || confirmPassword === '') { missingFields.push('confirm password') }
+    if(!email || email === '') { missingFields.push('email') }
+    if(missingFields.length > 0) {
+      return res.status(400).render('pages/register', { 
+        title: 'Register', 
+        missingFields: missingFields.join(', '), 
+        missing: true 
+      });
+    }
+      
+    const userCollection = await users();
+    // Validate registration inputs
+    if(!helpers.checkName(username)) { error.push('Invalid username') }
+    if(!helpers.checkEmail(email)) { error.push('Invalid email') }
+    if(!helpers.checkPassword(password)) { error.push('Invalid password') }
+    if(!helpers.checkPassword(confirmPassword)) { error.push('Invalid confirm password') }
+    if (confirmPassword !== password) {
+      error.push('Passwords do not match')
+    }
+    
+    // Do not allow duplicate users
+    const dupeEmail = await userCollection.findOne({ email: email })
+    if(dupeEmail){
+      error.push(`Email already exists`);
+    }
+    const dupeName = await userCollection.findOne({ username: username })
+    if(dupeName){
+      error.push(`Username already exists`);
+    }
+    
+    if (error.length > 0){
+    return res.status(400).render('pages/register', { 
+      title: 'Register', 
+      errorMessage: error.join(`, `), 
+      error: true });
+    }
+
+    username = xss(username);
+    email = xss(email);
+    password = xss(password);
+    confirmPassword = xss(confirmPassword);
+    console.log(password);
+;
+    try {
+      await userData.create(username, email, password);
+      return res.status(200).redirect('/users/login');
+    } catch(e){
+      return res.status(500).render('pages/register', { 
+        title: 'Register', 
+        errorMessage: 'Failed to create user. Please try again!', 
+        error: true 
+      });
+    }
+  });
 router.get('/callback', async (req, res) => {
   // your application requests refresh and access tokens
   // after checking the state parameter
@@ -215,36 +252,6 @@ router.get('/refresh_token', async (req, res) => {
   }
 });
 
-// This function will be used to get data about the user from spotify
-router.get('/userprofile', async(req, res) => {
-  // Check if user is authenticated
-  if (req.session.user && req.session.user.access_token) {
-    // Use access token to make API requests
-    const authOptions = {
-      url: 'https://api.spotify.com/v1/me',
-      headers: {
-        Authorization: `Bearer ${req.session.user.access_token}`,
-      },
-    };
-
-    try {
-      const { data : body } = await axios.get(authOptions.url, { 
-        headers: authOptions.headers 
-      });
-     // res.render('profile', { user: body });
-    //  console.log({body})
-    } catch (error) {
-      // Handle error
-      console.log(error);
-      res.redirect('/');
-    }
-    
-  } else {
-    // Redirect user to login page
-    res.redirect('/login');
-  }
-});
-
 router.post("/acceptFriend/:id",async(req,res)=>{
  try {
     
@@ -273,6 +280,7 @@ router.post("/sendFriendRequest",async(req,res)=>{
   let error = [];
   try {
   let friendEmail = req.body.email
+  friendEmail = xss(friendEmail);
    let id = req.session.user.id
     const user = await userData.get(id);
     const friends = user.friends;
@@ -281,9 +289,6 @@ router.post("/sendFriendRequest",async(req,res)=>{
       friendObjects.push(friendObject);
     }
 
-   
-
-    friendEmail = xss(friendEmail);
     friendEmail = friendEmail.trim().toLowerCase();
 
    if (!friendEmail || Object.keys(friendEmail).length === 0) {
@@ -360,7 +365,6 @@ router.post("/rejectFriendRequest/:id",async(req,res)=>{
   })
 
 router.get('/dashboard', async (req, res) => {
-
   // const {id} = req.session.user.id;
   if (req.session.user && req.session.user.access_token) {
     // Use access token to make API requests
@@ -371,36 +375,40 @@ router.get('/dashboard', async (req, res) => {
       },
     };
 
+    let user_id;
     try {
-       checkValidId(req.session.user.id) 
-       
+      user_id = checkValidId(req.session.user.id);
     } catch (error) {
       return res.status(400).render('pages/dashboard', {
         title: 'Dashboard',
-        error:true,
+        error: true,
         errorMessage: error
       })
     }
 
-    const userData  = await get(req.session.user.id);
+    let userInfo;
 
     try {
       const { data : body } = await axios.get(authOptions.url, { headers: authOptions.headers });
+      const profilePhoto = userData.updatePhoto(req.session.user.id, body.images[0].url);
+      userInfo = await get(req.session.user.id);
+
       return res.status(200).render('pages/dashboard', {
         title: 'Dashboard',
         // username: user.username,
-        likeCount: userData.likeCount,
+        likeCount: userInfo.likeCount,
         user : body,
-        users : userData
+        userInfo : userInfo
       })
     } catch (error) {
       // Handle error
+      console.log(error);
       return res.render("pages/dashboard",{        
         title: 'Dashboard',
         // username: user.username,
-        likeCount: userData.likeCount,
-        user : body,
-        users : userData,
+        // likeCount: userInfo.likeCount,
+        // user : body,
+        userInfo : userInfo,
         errorMessage : error
       })
       // console.log(error);
@@ -782,11 +790,14 @@ router.get('/pendingRequests', async (req, res) => {
 router.route('/logout').get(async (req, res) => {
   //code here for GET
   try {
+    // Destroy session
     req.session.destroy();
-    return res.render('pages/logout', {title: 'Logout'});
-    // return res.redirect('/');
+
+    // Render logout page
+    return res.render('pages/logout', { title: 'Logout' });
+
   } catch (e) {
-    return res.status(404).json({message: e});
+    return res.status(404).json({ message: e });
   }
 });
 
