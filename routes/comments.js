@@ -104,10 +104,10 @@ router
         userLoggedIn: true,
       })
         
-    } catch (e) {
-      return res
-        .status(500)
-        .json({ error: e});   
+    } catch (e) {   
+      let status = e[0] ? e[0] : 500;
+      let message = e[1] ? e[1] : ' Error occurred while creating the comment';
+      return res.status(status).json({ errorMessage:message})
     }
   }
   else{
