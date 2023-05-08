@@ -30,19 +30,19 @@ const createComment = async (id, userId, username, comment) => {
     const writer_username = writer.username;
 
     // Verify that id and username provided match
-    if (username_ !== writer_username) {
-      throw 'UserId and Username do not match';
+    if (username !== writer_username) {
+      throw [400,'UserId and Username do not match'];
     }
 
     // Check that user exists 
     if (receiver === null) { 
-      throw "Error: The user receiving the comment cannot be found";
+      throw [400,"Error: The user receiving the comment cannot be found"];
     };
     
     let newComment = {
       _id: new ObjectId(),
       userId: userId_,
-      username: username_,
+      username: username,
       comment: comment_
     };
 
@@ -57,11 +57,11 @@ const createComment = async (id, userId, username, comment) => {
     );
 
     if (updatedInfo.modifiedCount === 0) {
-      throw "Could not update user collection with comment Data!";
+      throw [400,"Could not update user collection with comment Data!"];
     }
 
     const user = await userCollections.findOne({ _id: new ObjectId(id_)});
-    if (user === null) { throw "No user found with that id" }
+    if (user === null) { throw [400,"No user found with that id"]}
   
     // Returns user object with _id as string instead of ObjectId
     return helpers.idToString(user);
