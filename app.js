@@ -49,6 +49,7 @@ app.set('view engine', 'handlebars');
 app.get('/', middleware.hasCookie);
 app.get('/users/login', middleware.hasCookie);
 app.get('/users/register', middleware.hasCookie);
+app.get('/users/logout', middleware.noCookie);
 
 app.get('/users/dashboard', middleware.noCookie);
 app.get('/users/friends', middleware.noCookie);
@@ -59,6 +60,7 @@ app.get('/users/friends', middleware.noCookie);
 app.get('/users/pendingRequests', middleware.noCookie);
 app.get('/users/sendFriendRequest', middleware.noCookie);
 app.get('/users/friendsProfile/:id', middleware.noCookie);
+
 
 
 configRoutes(app);
