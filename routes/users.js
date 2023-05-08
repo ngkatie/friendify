@@ -37,6 +37,8 @@ router
   .post(async (req, res) => {
       let missingFields = [];
       let error = false;
+      req.body.usernameInput = xss(req.body.usernameInput);
+      req.body.passwordInput = xss(req.body.passwordInput);
       if (!req.body.usernameInput.trim()) {
         missingFields.push('username');
       }
@@ -54,7 +56,7 @@ router
         return res.status(400).render('pages/login', { title: 'Login', error: error });
       }
       try{
-        let authenticatedUser = await userData.checkUser(xss(req.body.usernameInput.trim().toLowerCase()), xss(req.body.passwordInput.trim()));
+        let authenticatedUser = await userData.checkUser(req.body.usernameInput.trim().toLowerCase(), req.body.passwordInput.trim());
       if (authenticatedUser) {
         req.session.user = {
           id: authenticatedUser._id,
@@ -95,6 +97,11 @@ router
       emailInput
     } = req.body;
 
+    usernameInput = xss(usernameInput);
+    emailInput = xss(emailInput);
+    passwordInput = xss(passwordInput);
+    confirmPasswordInput = xss(confirmPasswordInput);
+
     let error = []
     let missingFields = []
 
@@ -126,10 +133,6 @@ router
       if (error.length > 0){
       return res.status(400).render('pages/register', { title: 'Register', errorMessage: error.join(', '), error: true });
       }
-      usernameInput = xss(usernameInput);
-      emailInput = xss(emailInput);
-      passwordInput = xss(passwordInput);
-      confirmPasswordInput = xss(confirmPasswordInput);
 
         try {
           await userData.create(usernameInput, emailInput, passwordInput)
@@ -244,6 +247,7 @@ router.post("/sendFriendRequest",async(req,res)=>{
   let error = [];
   try {
   let friendEmail = req.body.email
+  friendEmail = xss(friendEmail);
    let id = req.session.user.id
     const user = await userData.get(id);
     const friends = user.friends;
@@ -252,9 +256,6 @@ router.post("/sendFriendRequest",async(req,res)=>{
       friendObjects.push(friendObject);
     }
 
-   
-
-    friendEmail = xss(friendEmail);
     friendEmail = friendEmail.trim().toLowerCase();
 
    if (!friendEmail || Object.keys(friendEmail).length === 0) {
