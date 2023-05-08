@@ -57,6 +57,7 @@ app.get('/users/topartists', middleware.noCookie);
 app.get('/users/topdailyplaylist', middleware.noCookie);
 app.get('/users/friends', middleware.noCookie);
 app.get('/users/pendingRequests', middleware.noCookie);
+app.get('/users/sendFriendRequest', middleware.noCookie);
 app.get('/users/friendsProfile/:id', middleware.noCookie);
 
 
