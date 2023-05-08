@@ -11,9 +11,11 @@
 
     <input type="submit" value="Login">
   </form>
+  
   {{#if error}}
   <p>Username or Password is invalid</p>
   {{/if}}
+
   {{#if missing}}
   <p>{{missingFields}} cannot be empty</p>
   {{/if}}

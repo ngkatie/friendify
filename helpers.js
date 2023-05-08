@@ -53,6 +53,7 @@ export function checkValidId(str) {
   if (!ObjectId.isValid(id)) {
     throw `Error: Invalid object ID`
   };
+  // Returns id as ObjectId
   return id;
 }
 
@@ -77,14 +78,16 @@ export function checkStrArray(arr) {
 export function checkName(str) {
   let name = checkString(str);
   if (name.length < 3 || name.length > 25) {
-      throw `Error: ${name} must be between 3 to 25 characters`;
+    return false;
+      // throw `Error: ${name} must be between 3 to 25 characters`;
   }
   for (let i = 0; i < name.length; i++) {
-      if (!checkLetter(name[i]) && !isNum(name[i])) {
-          throw `Error: ${name} must only contain letters and numbers`;
-      }
+    if (!checkLetter(name[i]) && !isNum(name[i])) {
+      return false;
+      // throw `Error: ${name} must only contain letters and numbers`;
+    }
   }
-  return name;
+  return true;
 }
 
 export function checkEmail(str) {

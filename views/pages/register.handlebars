@@ -17,11 +17,13 @@
 
     <input type="submit" value="Register">
   </form>
+
   {{#if error}}
   <p>{{errorMessage}}</p>
   {{/if}}
+  
   {{#if missing}}
-  <p>{{missingFields}} cannot be empty</p>
+  <p>All fields must be filled out. Missing: {{missingFields}}</p>
   {{/if}}
 </div>
 

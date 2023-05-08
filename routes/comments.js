@@ -17,18 +17,18 @@ router
       const userId = undefined;
       try {
         userId = helpers.checkValidId(userId_);
+        userIdString = userId.toString();
       } catch (e) {
         return res.status(400).json({ error: e });
       }
 
       try {
-        const user = await get(userId);
+        const user = await get(userIdString);
       } catch (e) {
         return res.status(404).json({ error: "No user with id" });
       }
       try {
-        //const userId = req.params.userId;
-        const comments = await commentData.getAllComments(userId);
+        const comments = await commentData.getAllComments(userIdString);
         res.status(200).json(comments);
       } catch (e) {
         //   res.status(404).json({ error: "No comment for the given id" });
@@ -49,10 +49,10 @@ router
 
   if(req.session.user){
     
-    let id = req.session.user.id
-    id=id.toString()
+    let id = req.session.user.id;
+    id = id.toString();
 
-    let commentInfo = req.body
+    let commentInfo = req.body;
     // commentInfo = xss(commentInfo);
 
     if (!commentInfo) {
@@ -67,20 +67,19 @@ router
     }
 
 
-     try{
-        // commentInfo.userId = validId(req.session.user);
-        //var id= commentInfo.id
-        commentInfo.comment = xss(
-          helpers.checkString(commentInfo.comment)
-        );
+    try{
+      // commentInfo.userId = validId(req.session.user);
+      //var id= commentInfo.id
+      commentInfo.comment = xss(
+        helpers.checkString(commentInfo.comment)
+      );
 
-        id = helpers.checkValidId(id);
-        var userId = req.params.userId
-        userId= helpers.checkValidId(req.params.userId);
-        
-        const userData = await get(id.toString());
-        var userName = userData.username
-        
+      id = helpers.checkValidId(id);
+      var userId = req.params.userId;
+      userId = helpers.checkValidId(req.params.userId);
+      
+      const userData = await get(id.toString());
+      var userName = userData.username;
     } catch (e) {
       // return res.status(404).json({ error: "No user for the given id" });  
       console.log(e)
