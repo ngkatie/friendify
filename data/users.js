@@ -18,17 +18,26 @@ const create = async (
     email,
     password
 ) => {
-  const username_ = helpers.checkName(username);
-  if(!helpers.checkEmail(email)) throw "invalid email"
+
+  const username_ = username.trim().toLowerCase();
   const email_ = email.trim().toLowerCase();
-  if(!helpers.checkPassword(password)) throw "invalid password"
   const password_ = password.trim();
+
+  const validUsername = helpers.checkName(username_);
+  const validEmail = helpers.checkEmail(email_);
+  const validPassword = helpers.checkPassword(password_);
+
+  if (!(validUsername && validEmail && validPassword)) {
+    throw 'Invalid inputs';
+  }
+
   const hashed_password = bcryptjs.hashSync(password_, saltRounds);
 
   let newUser = {
     username: username_,
     email: email_,
     hashed_password: hashed_password,
+    profilePhoto: undefined,
     topTracks: [],
     topArtists: [],
     dailyPlaylist: [],
@@ -42,7 +51,7 @@ const create = async (
 
   const userCollection = await users();
 
-  let dupeEmail = await userCollection.findOne({ email: email })
+  let dupeEmail = await userCollection.findOne({ email: email_ })
   if(dupeEmail){
     throw `Email already exists`;
   }
@@ -63,21 +72,26 @@ const create = async (
 }
 
 const checkUser = async (username, password) => {
-if(!helpers.checkName(username)) throw "invalid username"
-if(!helpers.checkPassword(password)) throw "invalid password"
-const username_ = username;
-const password_ = password;
+
+  const username_ = username.trim().toLowerCase();
+  const password_ = password.trim();
+
+  const validUsername = helpers.checkName(username_);
+  const validPassword = helpers.checkPassword(password_);
+  if (!(validUsername && validPassword)) {
+    throw  `Either the username or password is invalid`;
+  }
 
   const userCollection = await users();
   const user = await userCollection.findOne({ username: username_ });
 
   if (!user) {
-    throw  `Either the email address or password is invalid`;
+    throw  `Either the username or password is invalid`;
   }
 
   let compareToMatch = bcryptjs.compareSync(password_, user.hashed_password);
   if (!compareToMatch) {
-    throw `Error: Either the email address or password is invalid`;
+    throw `Error: Either the username or password is invalid`;
   }
 
   return helpers.idToString(user);
@@ -109,6 +123,27 @@ const getByEmail = async (email) => {
 
     return helpers.idToString(user)._id;
 }
+
+async function updatePhoto(user_id, photoURL) {
+
+  const currId = helpers.checkValidId(user_id);
+
+  const userCollection = await users();
+  const user = await userCollection.findOne({_id: currId});
+  user.profilePhoto = photoURL;
+    
+  const updatedUser = await userCollection.findOneAndUpdate(
+    { _id: currId },
+    { $set: user },
+    { returnDocument: 'after' }
+  )
+
+  if (updatedUser.lastErrorObject.n === 0) {
+    throw `Error: Could not update photo successfully`;
+  }
+
+  return user.profilePhoto;
+} 
 
 //Friend2(id)(has pending req) accepts request of friend1(idFriend), request would be removed from pending requests of friend2
 const acceptFriend = async(id_, idFriend_) => {
@@ -967,6 +1002,7 @@ export {
   getAll, 
   get, 
   getByEmail,
+  updatePhoto,
   // friend requests
   acceptFriend, 
   sendFriendRequest, 
