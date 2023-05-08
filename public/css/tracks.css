@@ -1,3 +1,7 @@
+.results-container {
+  text-align: left;
+}
+
 .track-item .track-image{
   display: inline-block;
 }
