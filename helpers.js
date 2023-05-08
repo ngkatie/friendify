@@ -100,7 +100,7 @@ export function checkEmail(str) {
 
 export function checkPassword(str) {
   const password = checkString(str);
-  if (password.length < 8 || password.includes(' ') || !includesNum(password) || !includesUpper(password) || !includesSpecial(password)) {
+  if (password.length < 8 || password.includes(' ') || !includesNum(password) || !includesUpper(password) || !includesSpecial(password) || !includesLower(password)) {
       return false;
   }
   return true;
