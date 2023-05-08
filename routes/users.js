@@ -10,8 +10,6 @@ import * as helpers from '../helpers.js';
 import axios from 'axios'; // Axios library
 import dotenv from 'dotenv';
 import xss from 'xss';
-import qs from 'qs';
-
 
 dotenv.config();
 const CLIENT_ID = process.env.CLIENT_ID // Your client id
