@@ -335,7 +335,7 @@ router.post("/sendFriendRequest",async(req,res)=>{
   }
    const result = await userData.sendFriendRequest(id,idFriend)
  
-   return res.status(200).render("pages/friendsDashboard",{title:"Friends",friends: friendObjects, success:true})
+   return res.status(200).render("pages/friendsDashboard",{title:"Friends",friends: friendObjects, _id:idFriend, success:true})
    } catch (e) {
      return res.status(500).render("pages/friendsDashboard",{title:"Friends",friends: friendObjects, error: true, errorMsg: error.join(', ')})
    }
@@ -389,9 +389,12 @@ router.get('/dashboard', async (req, res) => {
     let userInfo;
 
     try {
-      const { data : body } = await axios.get(authOptions.url, { headers: authOptions.headers });
-      const profilePhoto = userData.updatePhoto(req.session.user.id, body.images[0].url);
-      userInfo = await get(req.session.user.id);
+      const { data: body } = await axios.get(authOptions.url, { headers: authOptions.headers });
+      const userInfo = await get(req.session.user.id);
+
+      if (body.images.length > 0 && body.images[0] !== userInfo.profilePhoto) {
+        const profilePhoto = await userData.updatePhoto(req.session.user.id, body.images[0].url);
+      }
 
       return res.status(200).render('pages/dashboard', {
         title: 'Dashboard',

@@ -32,43 +32,60 @@
       },
       error: function(xhr, status, error) {
         // Handle the error
-        $("#error-message").text(error.responseText);
+        if(xhr.responseJSON){
+          errorMessage = xhr.responseJSON.errorMessage;
+      }
+      $("#error-message").text(errorMessage);
       }
     });
   });
  
- $('#submit-comment').click(function (e) {
+  $('#submit-comment').click(function (e) {
+    e.preventDefault();
+    submitComment();
+});
+
+$('#commentText').keypress(function (e) {
+    if (e.keyCode === 13) {
         e.preventDefault();
-        //var profileLiked = {{profileLiked}};
-        var commentText = $('#commentText').val();
-        var usersId = $('#users').val();
-        var newComments = $("#comment-area");
+        $('#submit-comment').click();
+    }
+});
 
-        if (commentText === '') {
-            $('#empty-comment').html('Please enter a comment').show();
-            return false;
+function submitComment() {
+    //var profileLiked = {{profileLiked}};
+    var commentText = $('#commentText').val();
+    var usersId = $('#users').val();
+    var newComments = $("#comment-area");
+
+    if (commentText === '') {
+        $('#empty-comment').html('Please enter a comment').show();
+        return false;
+    }
+
+    $.ajax({
+        type: 'POST',
+        url: '/comments/' + usersId,
+        data: {
+            comment: commentText
+        },
+        success: function (response) {
+            // add the new comment to the comments area
+            var comment = $('<div class="comments"><div>' + response.userData.comment + '<br></div><div class="bold"> - ' + response.userData.username + '</div></div>')
+            newComments.append(comment);
+            // reset the comment input field
+            $('#commentText').val('');
+        },
+        error: function (xhr, status, error) {
+          var errorMessage = error;
+          if(xhr.responseJSON){
+              errorMessage = xhr.responseJSON.errorMessage;
+          }
+          $("#error-message").text(errorMessage);
         }
-
-        $.ajax({
-            type: 'POST',
-            url: '/comments/' + usersId,
-            data: {
-                comment: commentText
-
-            },
-            success: function (response) {
-                // add the new comment to the comments area
-                var comment = $('<div class="comments"><div>' + response.userData.comment + '<br></div><div class="bold"> - ' + response.userData.username + '</div></div>')
-                newComments.append(comment);
-                // reset the comment input field
-                $('#commentText').val('');
-            },
-            error: function (xhr, status, error) {
-              var errorMessage = error ? error : 'An error occurred';
-              $("#error-message").text(errorMessage);
-            }
-        });
     });
+}
+
 // })
 
   // jQuery AJAX request
