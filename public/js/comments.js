@@ -39,6 +39,7 @@
       }
     });
   });
+
  
   $('#submit-comment').click(function (e) {
     e.preventDefault();
