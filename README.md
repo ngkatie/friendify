@@ -46,3 +46,10 @@ npm start
 * Friends can like and comment on each other's profiles. Comments on a user's pages, as well as their total like count, are visible to all his/her friends.
 ### Logout
 * Press _Logout_ to log out of Friendify. To fully log out, users must log out of Spotify via the link provided at logout.
+
+
+## Extra Features
+* Implemented dark mode
+
+## Spotify API
+To run the application, request a CLIENT_ID and CLIENT_SECRET from the Spotify Developer Dashboard and insert them into the appropriate variables in the .env file.
