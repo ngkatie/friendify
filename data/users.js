@@ -494,44 +494,44 @@ async function likeProfile(iD1,iD2){
   likeCount += 1;
   likedProfiles.push(user2._id);
 
-  // let user1Info = {
-  //   username: user1.username,
-  //   email: user1.email,
-  //   hashed_password: user1.hashed_password,
-  //   topTracks: user1.topTracks,
-  //   topArtists: user1.topArtists,
-  //   dailyPlaylist: user1.dailyPlaylist,
-  //   likeCount: user1.likeCount,
-  //   comments: user1.comments,
-  //   likedProfiles: likedProfiles,
-  //   pendingRequests: user1.pendingRequests,
-  //   friends: user1.friends,
-  // };
+  let user1Info = {
+    username: user1.username,
+    email: user1.email,
+    hashed_password: user1.hashed_password,
+    topTracks: user1.topTracks,
+    topArtists: user1.topArtists,
+    dailyPlaylist: user1.dailyPlaylist,
+    likeCount: user1.likeCount,
+    comments: user1.comments,
+    likedProfiles: likedProfiles,
+    pendingRequests: user1.pendingRequests,
+    friends: user1.friends,
+  };
 
-  // let user2Info = {
-  //   username: user2.username,
-  //   email: user2.email,
-  //   hashed_password: user2.hashed_password,
-  //   topTracks: user2.topTracks,
-  //   topArtists: user2.topArtists,
-  //   dailyPlaylist: user2.dailyPlaylist,
-  //   likeCount: likeCount,
-  //   comments: user2.comments,
-  //   likedProfiles: user2.likedProfiles,
-  //   pendingRequests: user2.pendingRequests,
-  //   friends: user2.friends,
-  // }
+  let user2Info = {
+    username: user2.username,
+    email: user2.email,
+    hashed_password: user2.hashed_password,
+    topTracks: user2.topTracks,
+    topArtists: user2.topArtists,
+    dailyPlaylist: user2.dailyPlaylist,
+    likeCount: likeCount,
+    comments: user2.comments,
+    likedProfiles: user2.likedProfiles,
+    pendingRequests: user2.pendingRequests,
+    friends: user2.friends,
+  }
 
   const userCollection = await users();
-  const updateInfo1 = await userCollection.findOneAndUpdate(
-    { _id: id1},
-    { $set: user1Updated },
+  const updateInfo1 = await userCollection.findOneAndReplace(
+    { _id: id1 },
+    user1Info,
     { returnDocument: 'after' }
   );
 
-  const updateInfo2 = await userCollection.findOneAndUpdate(
-    { _id:  id2 },
-    { $set: user2Updated },
+  const updateInfo2 = await userCollection.findOneAndReplace(
+    { _id: id2 },
+    user2Info,
     { returnDocument: 'after' }
   );
 

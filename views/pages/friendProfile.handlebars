@@ -19,8 +19,8 @@
     </div>
     <div>
 
-    <form>
-        <button type="button" id="like-button" data-user-id="{{userId}}" action = "/users/likeProfile/{{userId}}" style="background-color:
+    <form id="like-form" action = "/users/likeProfile/{{userId}}">
+        <button type="button" id="like-button" data-user-id="{{userId}}" value="{{users._id}}" style="background-color:
          {{#if profileLiked}}
            green
         {{else}}
