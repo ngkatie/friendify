@@ -1,18 +1,24 @@
 <link rel="stylesheet" href="../../public/css/pending.css">
 <div id="pending-list">
     <h2>Pending Friend Requestst</h2>
+
     <div class="pending-container">
+
         {{#each pendingRequests}}
         <div class="pending">
             <h3>{{username}}</h3>
+
             <form action="/users/acceptFriend/{{_id}}" method="POST">
                 <button type="submit">Accept Request</button>
             </form>
+
             <form action="/users/rejectFriendRequest/{{_id}}" method="POST">
                 <button type="submit">Reject Request</button>
             </form>
+
         </div>
         {{/each}}
+
     </div>
     <a href="/users/friends">Back to Friends Dashboard</a>
 </div>
