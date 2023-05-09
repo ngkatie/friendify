@@ -34,25 +34,48 @@
   
   .pending button {
     padding: 5px 10px;
-    background-color: #1DB954;
+    background-color: #007c00;
     color: #fff;
     border: none;
     cursor: pointer;
   }
   
   .pending button:hover {
-    background-color: #1ED760;
+    background-color: #007c00;
   }
   
   a {
     display: block;
     text-align: center;
     margin-top: 20px;
-    color: #1DB954;
+    color: #007c00;
     text-decoration: none;
   }
   
   a:hover {
     text-decoration: underline;
   }
+  
+  .dark-mode a {
+    color: #333;
+  }
+  
+  .dark-mode button {
+    background-color: #444;
+    color: #fff;
+  }
+  
+  .dark-mode button:hover {
+    background-color: #666;
+  }
+  
+  .dark-mode #pending-list {
+    border-color: #ccc;
+  }
+  
+  .dark-mode .pending button {
+    color: #fff;
+    background-color: #444;
+  }
+  
   

@@ -63,3 +63,93 @@ body {
   color: white;
   text-align: center;
 }
+
+.dark-mode-switch {
+  display: inline-block;
+  position: relative;
+  margin-right: 20px;
+}
+
+.dark-mode-switch label {
+  display: inline-block;
+  font-size: 14px;
+  font-weight: bold;
+  color: #fff;
+  background-color: #333;
+  padding: 8px 16px;
+  border-radius: 5px;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0px 3px 5px rgba(0, 0, 0, 0.2);
+  transition: all 0.2s ease-out;
+}
+
+.dark-mode-switch label:hover {
+  background-color: #555;
+}
+
+.dark-mode-switch input[type="checkbox"] {
+  display: none;
+}
+
+.dark-mode-switch input[type="checkbox"] + label:before {
+  content: "";
+  display: inline-block;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background-color: #fff;
+  box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.4);
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  transition: all 0.2s ease-out;
+}
+
+.dark-mode-switch input[type="checkbox"]:checked + label:before {
+  transform: translateX(40px) translateY(-50%);
+  box-shadow: none;
+}
+
+.dark-mode-switch input[type="checkbox"] + label:after {
+  content: "";
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background-color: #fff;
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  transition: all 0.2s ease-out;
+}
+
+.dark-mode-switch input[type="checkbox"]:checked + label:after {
+  transform: translateX(26px) translateY(-50%);
+}
+
+
+.dark-mode #friendify-title,
+.dark-mode #navbar,
+.dark-mode .nav-option,
+.dark-mode .nav-active,
+.dark-mode body {
+  background-color: #333;
+  color: #fff;
+}
+
+.dark-mode .nav-option:hover {
+  color: #80ff00;
+}
+
+.dark-mode .nav-active {
+  background-color: #fff;
+  color: #333;
+}
+
+.dark-mode .footer {
+  background-color: #333;
+  color: #fff;
+}
