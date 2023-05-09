@@ -102,6 +102,7 @@ const getAll = async () => {
     let userList = await userCollection.find({}).toArray();
     if (!userList) {throw 'Could not get all users'};
     userList = userList.map(helpers.idToString);
+    // Returns array of user objects with IDs as strings
     return userList;
 }
 
@@ -110,17 +111,20 @@ const get = async (id) => {
 
     const userCollection = await users();
     const user = await userCollection.findOne({ _id: user_id });
+
+    // Returns whole user object with ID in string representation
     return helpers.idToString(user);
 }
 
 
 const getByEmail = async (email) => {
-  if(!helpers.checkEmail(email)) throw "invalid email"
+  if(!helpers.checkEmail(email)) { throw "invalid email" }
     const email_ = email.trim().toLowerCase();
 
     const userCollection = await users();
     const user = await userCollection.findOne({ email: email_ });
 
+    // Returns string representation of user ID
     return helpers.idToString(user)._id;
 }
 
@@ -170,7 +174,6 @@ const acceptFriend = async(id_, idFriend_) => {
   const user2Friends = user2.friends;
   user2Friends.push(id);
 
-
   for (let i = 0; i < user1Pending.length; i++) {
     if (user1Pending[i] === idFriend) {
       user1Pending.splice(i, 1);
@@ -190,6 +193,8 @@ const acceptFriend = async(id_, idFriend_) => {
     likedProfiles: user1.likedProfiles,
     pendingRequests: user1Pending,
     friends: user1Friends,
+    profilePhoto: user1.profilePhoto,
+    lastUpdated: user1.lastUpdated,
   };
 
   let user2Info = {
@@ -204,6 +209,8 @@ const acceptFriend = async(id_, idFriend_) => {
     likedProfiles: user2.likedProfiles,
     pendingRequests: user2.pendingRequests,
     friends: user2Friends,
+    profilePhoto: user2.profilePhoto,
+    lastUpdated: user2.lastUpdated,
   }
 
   const updateInfo1 = await userCollection.findOneAndReplace(
@@ -273,6 +280,8 @@ const sendFriendRequest = async(id_, idFriend_) => {
     likedProfiles: user2.likedProfiles,
     pendingRequests: user2PendingRequest,
     friends: user2.friends,
+    profilePhoto: user2.profilePhoto,
+    lastUpdated: user2.lastUpdated,
   }
 
 
@@ -331,6 +340,8 @@ const rejectFriendRequest = async(id_, idFriend_) => {
     likedProfiles: user2.likedProfiles,
     pendingRequests: temp,
     friends: user2.friends,
+    profilePhoto: user2.profilePhoto,
+    lastUpdated: user2.lastUpdated,
   }
 ;
 
@@ -483,44 +494,44 @@ async function likeProfile(iD1,iD2){
   likeCount += 1;
   likedProfiles.push(user2._id);
 
-  let user1Info = {
-    username: user1.username,
-    email: user1.email,
-    hashed_password: user1.hashed_password,
-    topTracks: user1.topTracks,
-    topArtists: user1.topArtists,
-    dailyPlaylist: user1.dailyPlaylist,
-    likeCount: user1.likeCount,
-    comments: user1.comments,
-    likedProfiles: likedProfiles,
-    pendingRequests: user1.pendingRequests,
-    friends: user1.friends,
-  };
+  // let user1Info = {
+  //   username: user1.username,
+  //   email: user1.email,
+  //   hashed_password: user1.hashed_password,
+  //   topTracks: user1.topTracks,
+  //   topArtists: user1.topArtists,
+  //   dailyPlaylist: user1.dailyPlaylist,
+  //   likeCount: user1.likeCount,
+  //   comments: user1.comments,
+  //   likedProfiles: likedProfiles,
+  //   pendingRequests: user1.pendingRequests,
+  //   friends: user1.friends,
+  // };
 
-  let user2Info = {
-    username: user2.username,
-    email: user2.email,
-    hashed_password: user2.hashed_password,
-    topTracks: user2.topTracks,
-    topArtists: user2.topArtists,
-    dailyPlaylist: user2.dailyPlaylist,
-    likeCount: likeCount,
-    comments: user2.comments,
-    likedProfiles: user2.likedProfiles,
-    pendingRequests: user2.pendingRequests,
-    friends: user2.friends,
-  }
+  // let user2Info = {
+  //   username: user2.username,
+  //   email: user2.email,
+  //   hashed_password: user2.hashed_password,
+  //   topTracks: user2.topTracks,
+  //   topArtists: user2.topArtists,
+  //   dailyPlaylist: user2.dailyPlaylist,
+  //   likeCount: likeCount,
+  //   comments: user2.comments,
+  //   likedProfiles: user2.likedProfiles,
+  //   pendingRequests: user2.pendingRequests,
+  //   friends: user2.friends,
+  // }
 
   const userCollection = await users();
-  const updateInfo1 = await userCollection.findOneAndReplace(
+  const updateInfo1 = await userCollection.findOneAndUpdate(
     { _id: id1},
-    user1Info,
+    { $set: user1Updated },
     { returnDocument: 'after' }
   );
 
-  const updateInfo2 = await userCollection.findOneAndReplace(
+  const updateInfo2 = await userCollection.findOneAndUpdate(
     { _id:  id2 },
-    user2Info,
+    { $set: user2Updated },
     { returnDocument: 'after' }
   );
 
@@ -586,6 +597,8 @@ async function unlikeProfile(iD1,iD2){
     likedProfiles: temp,
     pendingRequests: user1.pendingRequests,
     friends: user1.friends,
+    profilePhoto: user1.profilePhoto,
+    lastUpdated: user1.lastUpdated,
   };
 
   let user2Info = {
@@ -600,6 +613,8 @@ async function unlikeProfile(iD1,iD2){
     likedProfiles: user2.likedProfiles,
     pendingRequests: user2.pendingRequests,
     friends: user2.friends,
+    profilePhoto: user2.profilePhoto,
+    lastUpdated: user2.lastUpdated,
   }
 
   const userCollection = await users();
@@ -775,8 +790,8 @@ async function musicCompatibility(iD1, iD2){
   // else
   perComp = ((commSong + commArtist)/(totArtist+ totTrack) * 100)
 
-  let comp = perComp.toFixed(2) + "%"
-  return comp
+  let comp = (perComp * 2).toFixed(2) + "%"
+  return comp;
 } catch (e) {
   throw [400, error]
 }

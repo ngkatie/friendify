@@ -54,6 +54,11 @@ function includesSpecial(str) {
   return false;
 }
 
+/**
+ * Returns ObjectId version of input string
+ * @param {String} str 
+ * @returns ObjectId
+ */
 export function checkValidId(str) {
   const str_ = checkString(str);
   const id = new ObjectId(str_);
@@ -82,6 +87,11 @@ export function checkStrArray(arr) {
   return arr;
 };
 
+/**
+ * Returns true if username is valid; false otherwise
+ * @param {String} str 
+ * @returns boolean
+ */
 export function checkName(str) {
   let name = checkString(str);
   if (name.length < 3 || name.length > 25) {
@@ -97,6 +107,11 @@ export function checkName(str) {
   return true;
 }
 
+/**
+ * Returns true if password is valid; false otherwise
+ * @param {String} str 
+ * @returns boolean
+ */
 export function checkEmail(str) {
   const email = checkString(str).toLowerCase();
   if (!EmailValidator.validate(email)) {
@@ -105,6 +120,11 @@ export function checkEmail(str) {
   return true;
 }
 
+/**
+ * Returns true if password is valid; false otherwise
+ * @param {String} str 
+ * @returns boolean
+ */
 export function checkPassword(str) {
   const password = checkString(str);
   if (password.length < 8 || password.includes(' ') || !includesNum(password) || !includesUpper(password) || !includesSpecial(password) || !includesLower(password)) {
