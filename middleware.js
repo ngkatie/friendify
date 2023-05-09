@@ -15,14 +15,3 @@ export async function hasCookie(req, res, next){
         next();
     }
 }
-
-export async function notFriend(req, res, next){
-    const user = await userData.get(req.session.user.id);
-    const friend = await userData.get(req.params.id);
-
-    if(!user.friends.includes(friend._id)){
-        return res.redirect('/users/dashboard')
-    } else {
-        next();
-    }
-}
