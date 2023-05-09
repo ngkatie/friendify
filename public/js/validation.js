@@ -1,12 +1,12 @@
-let loginform = document.getElementById('login-form');
-let registrationform = document.getElementById('registration-form');
-let frEmail = document.getElementById("friend-email");
+let loginform = document.getElementsByClassName('login-form');
+let registrationform = document.getElementsByClassName('signup-form');
+let frEmail = document.getElementById("email");
 let commentform = document.getElementById("comments-form");
 let errorDiv = document.getElementById('error');
 let emailAddressInput = document.getElementById("email");
 let username = document.getElementById("username");
-let passwordInput =  document.getElementById("password");
-let confirmPasswordInput = document.getElementById("confirmPassword")
+let passwordInput =  document.getElementById("passwordInput");
+let confirmPasswordInput = document.getElementById("confirmPasswordInput")
 let comment = document.getElementById("commentText");
 
 if (registrationform) {
