@@ -19,8 +19,8 @@
     </div>
     <div>
 
-    <form>
-        <button type="button" id="like-button" data-user-id="{{userId}}" action = "/users/likeProfile/{{userId}}" style="background-color:
+    <form id="like-form" action = "/users/likeProfile/{{userId}}">
+        <button type="button" id="like-button" data-user-id="{{userId}}" value="{{users._id}}" style="background-color:
          {{#if profileLiked}}
            green
         {{else}}
@@ -32,12 +32,12 @@
 
     </div>
     <div class="card postcomments px-2">
-        <input type="hidden" name="users_id" id="users" value="{{users._id}}" />
+        <input type="hidden" name="users_id" id="users" value="{{users._id}}">
         <div class="form-group mt-2">
             <form id="comments-form" method="POST" action="/comments/{{users._id}}">
                 <label class="commentText" for="commentText">Enter a comment</label>
                 <div class="input-group mb-3">
-                    <input type="text" class="form-control" id="commentText" name="commentText" placeholder="Enter comment here" />
+                    <input type="text" class="form-control" id="commentText" name="commentText" placeholder="Enter comment here">
                     <div class="input-group-append">
                         <span class="input-group-button" id="basic-addon2">
                             <button type="button" id="submit-comment" class="btn btn-primary">Add Comment</button>

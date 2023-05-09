@@ -528,13 +528,13 @@ async function likeProfile(iD1,iD2){
 
   const userCollection = await users();
   const updateInfo1 = await userCollection.findOneAndReplace(
-    { _id: id1},
+    { _id: id1 },
     user1Info,
     { returnDocument: 'after' }
   );
 
   const updateInfo2 = await userCollection.findOneAndReplace(
-    { _id:  id2 },
+    { _id: id2 },
     user2Info,
     { returnDocument: 'after' }
   );
