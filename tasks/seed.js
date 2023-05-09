@@ -17,7 +17,7 @@ const seedData = async () => {
 
     // Read the JSON file using the 'JSONStream' library
     const results = [];
-    fs.createReadStream('tasks/seedJSON.json')
+    fs.createReadStream('seedJSON.json')
       .pipe(JSONStream.parse('*'))
       .on('data', (data) => {
         if (typeof data._id === 'string') {
