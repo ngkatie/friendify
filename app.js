@@ -60,6 +60,7 @@ app.get('/users/friends', middleware.noCookie);
 app.get('/users/pendingRequests', middleware.noCookie);
 app.get('/users/sendFriendRequest', middleware.noCookie);
 app.get('/users/friends/:id', middleware.noCookie);
+app.get('/users/friends/:id', middleware.userExists);
 
 
 
