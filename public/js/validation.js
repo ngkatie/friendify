@@ -1,5 +1,3 @@
-import * as helpers from './helpers.js';
-
 let loginform = document.getElementById('login-form');
 let registrationform = document.getElementById('registration-form');
 let frEmail = document.getElementById("friend-email");
@@ -15,8 +13,6 @@ if (registrationform) {
     registrationform.addEventListener('submit', (event) => {
         event.preventDefault();
     let final = "";
-    // let firstName = firstNameInput.value.trim();
-    // let lastName = lastNameInput.value.trim();
     let emailAddress = emailAddressInput.value.trim();
     let password = passwordInput.value.trim();
     let confirmPassword = confirmPasswordInput.value.trim();
@@ -38,13 +34,7 @@ if (registrationform) {
   if (!alphanumericRegex.test(username1)) {
     final = final.concat('Username can only contain alphanumeric characters and _ <br>')
   }
-    // let role = roleInput.value.trim();
-//   if ((typeof(firstName)!='string')|| /[0-9]/g.test(firstName)||firstName.length<2||firstName.length>25) {
-//       final = final.concat('First name is invalid <br>')
-//   }
-//   if ((typeof(lastName)!='string')|| /[0-9]/g.test(lastName)||lastName.length<2||lastName.length>25) {
-//       final = final.concat('last name is invalid <br>')
-//   }
+
    emailAddress = emailAddress.toLowerCase()
   var validRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/;
   if (!emailAddress.match(validRegex)) {
@@ -59,11 +49,6 @@ if ((typeof(password)!= 'string')|| password.length<8||!pass.test(password)) {
 if (confirmPassword!==password) {
   final = final.concat('password and confirm password do not match <br>')
 }
-// role = role.trim() 
-// role= role.toLowerCase() 
-// if (!(role === "admin" || role === "user")) {
-//   final = final.concat('role can only be admin or user')
-// }
  if(final.length === 0 ) {
     registrationform.submit();
  }
