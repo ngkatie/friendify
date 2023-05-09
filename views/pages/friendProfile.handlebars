@@ -8,65 +8,79 @@
         {{else}}
                 <img src="../../public/images/default_photo.jpg" alt="Default Profile Picture" class="profile-photo" width="100" height="100">
         {{/if}}
+        
         <p>Likes: <span id="like-count">{{likeCount}}</span></p>
-        <p>Top Artist Together : {{topArtist}}</p>
-        <p>Top Song Together : {{topSong}}</p>
-       
-    </div>
-    <div class="compatibility-score">
-        <p>Compatibility Score:</p>
-        <span class="score">{{musicCompatibility}}</span>
-    </div>
-    <div>
 
-    <form id="like-form" action = "/users/likeProfile/{{userId}}">
-        <button type="button" id="like-button" data-user-id="{{userId}}" value="{{users._id}}" style="background-color:
-         {{#if profileLiked}}
-           green
-        {{else}}
-           #fff
-        {{/if}}">
-        Like
-        </button>
-    </form>
-
+        {{#if isFriend}}
+            <p>Top Artist Together : {{topArtist}}</p>
+            <p>Top Song Together : {{topSong}}</p>
+        {{/if}}   
     </div>
-    <div class="card postcomments px-2">
-        <input type="hidden" name="users_id" id="users" value="{{users._id}}">
-        <div class="form-group mt-2">
-            <form id="comments-form" method="POST" action="/comments/{{users._id}}">
-                <label class="commentText" for="commentText">Enter a comment</label>
-                <div class="input-group mb-3">
-                    <input type="text" class="form-control" id="commentText" name="commentText" placeholder="Enter comment here">
-                    <div class="input-group-append">
-                        <span class="input-group-button" id="basic-addon2">
-                            <button type="button" id="submit-comment" class="btn btn-primary">Add Comment</button>
-                        </span>
-                    </div>
-                </div>
-            </form>
-        </div>
-        <div id="empty-comment" class="alert alert-info div-text" hidden></div>
-        <div id="comment-area">
-            {{#each users.comments}}
-            <div class="chat">
-                <div class="yours messages">
-                    <div class="message last" >
-                        {{this.comment}}
-                    </div>
-                    <div class="bold"> - {{this.username}}</div>
-                    <hr>
-                </div>
+
+        {{#if isFriend}}
+            <div class="compatibility-score">
+                <p>Compatibility Score:</p>
+                <span class="score">{{musicCompatibility}}</span>
             </div>
-            {{/each}}
+        {{/if}}
+
+    <div>
+        <form id="like-form" action = "/users/likeProfile/{{userId}}">
+            <button type="button" id="like-button" data-user-id="{{userId}}" value="{{users._id}}" style="background-color:
+            {{#if profileLiked}}
+                green
+            {{else}}
+                #fff
+            {{/if}}">
+            Like
+            </button>
+        </form>
+    </div>
+
+    {{!-- {{#if isFriend}} --}}
+        <div class="card postcomments px-2">
+            <input type="hidden" name="users_id" id="users" value="{{users._id}}">
+            <div class="form-group mt-2">
+                <form id="comments-form" method="POST" action="/comments/{{users._id}}">
+                    <label class="commentText" for="commentText">Enter a comment</label>
+                    <div class="input-group mb-3">
+                        <input type="text" class="form-control" id="commentText" name="commentText" placeholder="Enter comment here">
+                        <div class="input-group-append">
+                            <span class="input-group-button" id="basic-addon2">
+                                <button type="button" id="submit-comment" class="btn btn-primary">Add Comment</button>
+                            </span>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <div id="empty-comment" class="alert alert-info div-text" hidden></div>
+            
+            <div id="comment-area">
+                {{#each users.comments}}
+                <div class="chat">
+                    <div class="yours messages">
+                        <div class="message last" >
+                            {{this.comment}}
+                        </div>
+                        <div class="bold"> - {{this.username}}</div>
+                        <hr>
+                    </div>
+                </div>
+                {{/each}}
+            </div>
+
         </div>
-    </div>
+    {{!-- {{/if}} --}}
+
     <div id="error-message"></div>
+
     <div>  
-   {{#if error}}
-    <div class="error">{{errorMessage}}</div>
-   {{/if}}
+        {{#if error}}
+            <div class="error">{{errorMessage}}</div>
+        {{/if}}
     </div>
+
     <a href="/users/friends">Back to Friends Dashboard</a>
 </div>
 

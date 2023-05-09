@@ -1,3 +1,5 @@
+import * as userData from './data//users.js';
+
 export async function noCookie(req, res, next){
     if(!req.session.user){
         return res.redirect('/')
