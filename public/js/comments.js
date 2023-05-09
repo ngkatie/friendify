@@ -1,6 +1,7 @@
 (function ($) {
 
   const likeButton = document.getElementById("like-button");
+  var usersId = $('#users').val();
 
   $('#like-button').click(function(event) {
     event.preventDefault();  // Prevent the default form submission
@@ -13,7 +14,7 @@
     var method = backgroundColor === 'rgb(0, 128, 0)' ? 'DELETE' : 'PUT';
   
     $.ajax({
-      url: action,
+      url:  '/users/likeProfile/'+ usersId,
       method: method,
       success: function(response) {
         // Update the UI based on the response
@@ -56,7 +57,7 @@ $('#commentText').keypress(function (e) {
 function submitComment() {
     //var profileLiked = {{profileLiked}};
     var commentText = $('#commentText').val();
-    var usersId = $('#users').val();
+    
     var newComments = $("#comment-area");
 
     if (commentText === '') {
