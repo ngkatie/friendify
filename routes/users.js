@@ -5,7 +5,7 @@ import { userData } from '../data/index.js';
 import querystring from 'querystring';
 import { users } from "../config/mongoCollections.js";
 import { checkValidId } from '../helpers.js';
-import { acceptFriend, sendFriendRequest,rejectFriendRequest,getAll,get, likeProfile, unlikeProfile } from '../data/users.js';
+// import { acceptFriend, sendFriendRequest,rejectFriendRequest,getAll,get, likeProfile, unlikeProfile } from '../data/users.js';
 import * as helpers from '../helpers.js';
 import axios from 'axios'; // Axios library
 import dotenv from 'dotenv';
@@ -71,6 +71,7 @@ router
           username: username,
         }
       }
+
     } catch(e){
       return res.status(400).render('pages/login', { 
         title: 'Login', 
@@ -288,7 +289,7 @@ router.post("/sendFriendRequest",async(req,res)=>{
     const friends = user.friends;
 
     for (const friendId of friends) {
-      const friendObject = await get(friendId);
+      const friendObject = await userData.get(friendId);
       friendObjects.push(friendObject);
     }
 
@@ -409,7 +410,7 @@ router.get('/dashboard', async (req, res) => {
 
     try {
       const { data: body } = await axios.get(authOptions.url, { headers: authOptions.headers });
-      userInfo = await get(user_id.toString());
+      userInfo = await userData.get(user_id.toString());
 
       if (body.images.length > 0 && body.images[0] !== userInfo.profilePhoto) {
         const profilePhoto = await userData.updatePhoto(user_id.toString(), body.images[0].url);
@@ -551,7 +552,7 @@ router.get('/friends', async (req, res) => {
     const friendObjects = [];
 
     for (const friendId of friends) {
-      const friendObject = await get(friendId);
+      const friendObject = await userData.get(friendId);
       friendObjects.push(friendObject);
     }
 
@@ -564,41 +565,46 @@ router.get('/friends', async (req, res) => {
 });
 
 router.get('/friends/:id', async (req, res) => {
-  const id = req.params.id;
-  if(req.session.user){
-  let userId = req.session.user.id  
-  //let userId = '643cb4bf7f4290f4eb398d26'
-  let profileLiked=false
-  try {
-    const friend = await userData.get(id);
-    const friend2 = await userData.get(userId);
-    const users= getAll()
 
-    if(friend2.likedProfiles.includes(id))
-    profileLiked = true;
+  // Friend ID
+  const friendId = req.params.id;
+
+  if(req.session.user){
+    // User ID
+    let userId = req.session.user.id;
+    let profileLiked = false;
+    try {
+      const friend = await userData.get(friendId);
+      const user = await userData.get(userId);
+      // const users = getAll();
+
+      if(user.likedProfiles.includes(friendId)) {
+        profileLiked = true;
+      }
 
     
-    let result = await userData.topArtistTogether(id,userId);
-    let result2 = await userData.topSongTogether(id,userId);
-    let musicCompatibility = await userData.musicCompatibility(id,userId);
-    if (musicCompatibility.isNan()) {
-      musicCompatibility = 0;
-    }
+    let sharedArtists = await userData.topArtistTogether(friendId,userId);
+    let sharedTracks = await userData.topSongTogether(friendId,userId);
+    let musicCompatibility = await userData.musicCompatibility(friendId,userId);
+    // if (musicCompatibility.isNaN()) {
+    //   musicCompatibility = 0;
+    // }
 
     let topArtist;
     let topSong;
-    if(result[0] === "") {
-      topArtist = " No Top Artist together"
+
+    if(sharedArtists.length === 0) {
+      topArtist = "No common artist shared";
     }
     else {
-      topArtist = result[0]
+      topArtist = sharedArtists[0];
     }
 
-    if(result2[0] === "") {
-      topSong = " No Top Song together"
+    if(sharedTracks.length === 0) {
+      topSong = "No common tracks shared";
     }
     else{
-      topSong = result2[0]
+      topSong = sharedTracks[0];
     }
     // return res.status(200).json({ message: " No Top Artist together" })
 
@@ -618,9 +624,14 @@ router.get('/friends/:id', async (req, res) => {
       username: friend.username});
 
   } catch (e) {
+    console.log(e)
     let status = e[0] ? e[0] : 500;
     let message = e[1] ? e[1] : 'Internal Server Error';
-    return res.status(status).render("pages/friendProfile", { title: "Friend", error:true, errorMessage:message})
+    return res.status(status).render("pages/friendProfile", { 
+      title: "Friend", 
+      error: true, 
+      errorMessage: message
+    })
   }
 }
 else{
@@ -645,7 +656,7 @@ router
     }
    
     try {
-      let result = await likeProfile(validId.toString(),validFriendId.toString());
+      let result = await userData.likeProfile(validId.toString(),validFriendId.toString());
       return res.status(200).json(result);
     } catch (e) {
      let status = e[0] ? e[0] : 500;
@@ -674,7 +685,7 @@ router
     }
    
     try {
-      let result = await unlikeProfile(validId.toString(),validFriendId.toString());
+      let result = await userData.unlikeProfile(validId.toString(),validFriendId.toString());
 
       return res.status(200).json(result);
     } catch (e) {
@@ -816,7 +827,7 @@ router.get('/pendingRequests', async (req, res) => {
       const pendingObjects = [];
 
     for (const pendingId of pendingRequests) {
-      const pendingObject = await get(pendingId);
+      const pendingObject = await userData.get(pendingId);
       pendingObjects.push(pendingObject);
     }
 
