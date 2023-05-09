@@ -6,20 +6,20 @@
     let name = validationMethods.checkString(str);
     if (name.length < 3 || name.length > 25) {
       
-        throw `Error: ${name} must be between 3 to 25 characters`;
+        return `Error: ${name} must be between 3 to 25 characters`;
     }
     for (let i = 0; i < name.length; i++) {
       if (!validationMethods.checkLetter(name[i]) && !validationMethods.isNum(name[i])) {
         
-        throw `Error: ${name} must only contain letters and numbers`;
+        return `Error: ${name} must only contain letters and numbers`;
       }
     }
-    return str;
+    return true;
     },
 
     checkString(str) {
      if (!str || typeof str !== `string` || str.trim().length === 0) {
-      throw `All fields must be filled`;
+      return `${str} should be a non empty string`;
      }
      return str.trim();
     },
@@ -39,9 +39,9 @@
     checkPassword(str) {
       const password = validationMethods.checkString(str);
       if (password.length < 8 || password.includes(' ') || !validationMethods.includesNum(password) || !validationMethods.includesUpper(password) || !validationMethods.includesSpecial(password) || !validationMethods.includesLower(password)) {
-          throw "Password should be non empty string of minimum 8 characters and must include digit,Uppercase,Lowercase and special characters ";
+          return "Password should be non empty string of minimum 8 characters and must include digit,Uppercase,Lowercase and special characters ";
       }
-      return str;
+      return true;
     },
     includesNum(str) {
       if (/\d+/g.test(str)) {
@@ -73,9 +73,9 @@
     const email = validationMethods.checkString(str).toLowerCase();
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!(emailRegex.test(email))) {
-        throw "Email Address not valid";
+        return "Email Address not valid";
     }
-    return email;
+    return true;
   }
 }
   
@@ -84,6 +84,7 @@
 
 let loginform = document.getElementById('login-form');
 let registrationform = document.getElementById('registeration-form');
+let friendRegisterationform = document.getElementById('friend-request-form');
 // let frEmail = document.getElementById("email");
 let commentform = document.getElementById("comments-form");
 // let errorDiv = document.getElementById('error');
@@ -109,21 +110,36 @@ if (registrationform) {
     let username1 = username.value.trim();
     username1 = username1.toLowerCase()
 
-  try {
+    const errors = [];
+
+    if(!username1|| !emailAddress || !password ||!confirmPassword)
+    errors.push("All fields Required!")
     const validUsername = validationMethods.checkName(username1);
+    if (validUsername !== true) {
+      errors.push(validUsername);
+    }
     const validPassword = validationMethods.checkPassword(password);
+    if (validPassword !== true) {
+      errors.push(validPassword);
+    }
     const confirmPassword_ = validationMethods.checkPassword(confirmPassword);
-    if(validPassword !== confirmPassword)
-    throw "Password and confirm Password dont match"
-    const validEmail = validationMethods.checkEmail(emailAddress)
+    if (confirmPassword_ !== true || password !== confirmPassword) {
+      errors.push("Password and confirm Password don't match");
+    }
+    const validEmail = validationMethods.checkEmail(emailAddress);
+    if (validEmail !== true) {
+      errors.push(validEmail);
+    }
+
+    if (errors.length > 0) {
+      errorTextElement.textContent = errors.join('\n');
+      errorContainer.classList.remove('hidden');
+      return;
+    }
+
     registrationform.submit();
 
-  } catch (e) {
-    const message = typeof e === 'string' ? e : e.message;
-    errorTextElement.textContent = message;
-    errorContainer.classList.remove('hidden');
-    return;;
-  }
+
  })
 }
 
@@ -131,6 +147,8 @@ if (registrationform) {
 if (loginform) {
     loginform.addEventListener('submit', (event) => {
       
+      const errors = [];
+
       event.preventDefault();
       let final="";
       const errorContainer = document.getElementById('error-container');
@@ -139,39 +157,60 @@ if (loginform) {
       let username1 = username.value.trim();
       let password = passwordInput.value.trim();
       username1 = username1.toLowerCase()
-    try {
+
+      if(!username1 || !password )
+      errors.push("All fields Required!")
       const validUsername = validationMethods.checkName(username1);
+      if (validUsername !== true) {
+        errors.push(validUsername);
+      }
       const validPassword = validationMethods.checkPassword(password);
-      loginform.submit();
-    } catch (e) {
-      const message = typeof e === 'string' ? e : e.message;
-      errorTextElement.textContent = message;
+      if (validPassword !== true) {
+        errors.push(validPassword);
+      }
+
+      
+     if (errors.length > 0) {
+      errorTextElement.textContent = errors.join('\n');
       errorContainer.classList.remove('hidden');
       return;
-    }
+     }
+
+     loginform.submit();
+
   })
 }
 
 
-// if (frEmail) {
-//     frEmail.addEventListener('submit', (event) => {
-//       event.preventDefault();
-//       let final="";
-//       let email = emailAddressInput.value.trim();
-// email = email.toLowerCase()
-//   var validRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/;
-//   if (!email.match(validRegex)) {
-//     final = final.concat('email is invalid <br>')
-//   }
-//  if(final.length === 0 ) {
-//     frEmail.submit();
-//  }
-//  else {
-//       errorDiv.hidden = false;
-//       errorDiv.innerHTML = final ;
-//     }
-//     })
-// }
+if (friendRegisterationform) {
+  friendRegisterationform.addEventListener('submit', (event) => {
+      event.preventDefault();
+      let final="";
+      const errors=[]
+      let emailAddressInput = document.getElementById("email");
+      email = emailAddressInput.value.trim()
+      email = email.toLowerCase()
+
+      const errorContainer = document.getElementById('error-container');
+      const errorTextElement = errorContainer.getElementsByClassName('text-goes-here')[0];
+      errorContainer.classList.add('hidden');
+
+      const validEmail = validationMethods.checkEmail(email)
+  
+      if(validEmail !== true){
+        errors.push(validEmail)
+      }
+
+      if(errors.length>0){
+        errorTextElement.textContent = errors.join('\n');
+        errorContainer.classList.remove('hidden');
+        return;
+      }
+
+      friendRegisterationform.submit();
+
+    })
+}
 
 if (commentform) {
     let comment = document.getElementById("commentText");
