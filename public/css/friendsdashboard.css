@@ -27,11 +27,17 @@
   }
   
   .friend a {
-    color: #1DB954;
+    color: #007c00;
     text-decoration: none;
     margin-top: 10px;
   }
   
   .friend a:hover {
     text-decoration: underline;
+  }
+
+  .dark-mode .friend a{
+    color: #333;
+    text-decoration: none;
+    margin-top: 10px;
   }

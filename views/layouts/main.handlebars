@@ -13,20 +13,36 @@
         <h1 id="friendify-title">FRIENDIFY</h1>
         <header>{{navbar}}</header>
         {{{body}}}
+        <br>
+        <div class="dark-mode-switch">
+            <label for="toggle-dark-mode">Dark Mode Toggle</label>
+            <input type="checkbox" id="toggle-dark-mode">
+         </div>
         <script src="https://code.jquery.com/jquery-2.2.4.min.js" integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44="
          crossorigin="anonymous"></script>
         <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS"
          crossorigin="anonymous"></script>
         <script src="/public/js/comments.js"></script>
         <script src="/public/js/validation.js"></script>
-        
-        {{!-- <div id="server">{{error}}</div> --}}
+        <script>
+            const toggleButton = document.querySelector('#toggle-dark-mode');
+const body = document.querySelector('body');
+const isDarkMode = localStorage.getItem('darkMode') === 'true';
+
+if (isDarkMode) {
+  body.classList.add('dark-mode');
+  toggleButton.checked = true;
+}
+
+toggleButton.addEventListener('click', () => {
+  body.classList.toggle('dark-mode');
+  localStorage.setItem('darkMode', toggleButton.checked);
+});
+        </script>
          <div id="error" hidden></div>
         <div id="error-container">
             <p class="text-goes-here"></p>
          </div>
          <footer class="footer">Created by Katie Ng, Saumya Verma, Kensay Sato, Esha Jain</footer>
     </body>
-
-    {{!-- <script></script> --}}
 </html>
