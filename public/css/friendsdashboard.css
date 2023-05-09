@@ -35,3 +35,9 @@
   .friend a:hover {
     text-decoration: underline;
   }
+
+  .dark-mode .friend a{
+    color: #333;
+    text-decoration: none;
+    margin-top: 10px;
+  }

@@ -56,3 +56,26 @@
     text-decoration: underline;
   }
   
+  .dark-mode a {
+    color: #333;
+  }
+  
+  .dark-mode button {
+    background-color: #444;
+    color: #fff;
+  }
+  
+  .dark-mode button:hover {
+    background-color: #666;
+  }
+  
+  .dark-mode #pending-list {
+    border-color: #ccc;
+  }
+  
+  .dark-mode .pending button {
+    color: #fff;
+    background-color: #444;
+  }
+  
+  

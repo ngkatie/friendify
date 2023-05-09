@@ -19,7 +19,7 @@
 
     checkString(str) {
      if (!str || typeof str !== `string` || str.trim().length === 0) {
-      throw `Error: ${str} must be a non-empty string`;
+      throw `All fields must be filled`;
      }
      return str.trim();
     },
