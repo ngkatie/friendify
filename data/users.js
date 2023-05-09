@@ -506,6 +506,8 @@ async function likeProfile(iD1,iD2){
     likedProfiles: likedProfiles,
     pendingRequests: user1.pendingRequests,
     friends: user1.friends,
+    profilePhoto: user1.profilePhoto,
+    lastUpdated: user1.lastUpdated
   };
 
   let user2Info = {
@@ -520,6 +522,8 @@ async function likeProfile(iD1,iD2){
     likedProfiles: user2.likedProfiles,
     pendingRequests: user2.pendingRequests,
     friends: user2.friends,
+    profilePhoto: user2.profilePhoto,
+    lastUpdated: user2.lastUpdated
   }
 
   const userCollection = await users();
