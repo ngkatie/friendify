@@ -3,7 +3,7 @@
     <head>
         <meta charset="utf-8">
         <title>{{title}}</title>
-        <link rel="stylesheet" href="../../public/css/main.css">
+        <link rel="stylesheet" href="../../public/css/light.css">
         <link href="https://fonts.cdnfonts.com/css/gotham-rounded" rel="stylesheet">
         <style>
             @import url('https://fonts.cdnfonts.com/css/gotham-rounded');
@@ -21,9 +21,25 @@
          crossorigin="anonymous"></script>
         <script src="/public/js/comments.js"></script>
         <script src="/public/js/validation.js"></script>
+        <link id="theme" rel="stylesheet" type="text/css" href="../../public/css/light.css" />
         
         {{!-- <div id="server">{{error}}</div> --}}
          <div id="error" hidden></div>
+              <button onclick="toggleTheme()">Change theme</button> 
+    <script>
+        
+        function toggleTheme() {
+    
+            var theme = document.getElementsByTagName('link')[0];
+  
+        
+            if (theme.getAttribute('href') == "../../public/css/light.css") {
+                theme.setAttribute('href', "../../public/css/dark.css");
+            } else {
+                theme.setAttribute('href', "../../public/css/light.css");
+            }
+        }
+    </script>
 
     </body>
 

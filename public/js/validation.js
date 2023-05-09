@@ -1,5 +1,5 @@
-let loginform = document.getElementsByClassName('login-form');
-let registrationform = document.getElementsByClassName('signup-form');
+let loginform = document.getElementById('login-form');
+let registrationform = document.getElementById('registration-form');
 let frEmail = document.getElementById("email");
 let commentform = document.getElementById("comments-form");
 let errorDiv = document.getElementById('error');
