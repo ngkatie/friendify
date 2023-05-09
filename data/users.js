@@ -106,6 +106,7 @@ const getAll = async () => {
     return userList;
 }
 
+console.log(await getAll())
 const get = async (id) => {
     const user_id = helpers.checkValidId(id);
 
