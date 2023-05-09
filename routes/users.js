@@ -572,16 +572,20 @@ router.get('/friends/:id', async (req, res) => {
   if(req.session.user){
     // User ID
     let userId = req.session.user.id;
+    let isFriend = false;
     let profileLiked = false;
     try {
       const friend = await userData.get(friendId);
       const user = await userData.get(userId);
       // const users = getAll();
 
+      if(user.friends.includes(friendId)) {
+        isFriend = true;
+      }
+
       if(user.likedProfiles.includes(friendId)) {
         profileLiked = true;
       }
-
     
     let sharedArtists = await userData.topArtistTogether(friendId,userId);
     let sharedTracks = await userData.topSongTogether(friendId,userId);
@@ -613,7 +617,7 @@ router.get('/friends/:id', async (req, res) => {
     
     return res.status(200).render('pages/friendProfile', { 
       title: "Friend", 
-      users: friend , 
+      users: friend, 
       userId: friend._id, 
       profilePhoto: friend.profilePhoto,
       likeCount: friend.likeCount, 
@@ -621,7 +625,9 @@ router.get('/friends/:id', async (req, res) => {
       topArtist: topArtist, 
       topSong: topSong , 
       musicCompatibility: musicCompatibility, 
-      username: friend.username});
+      username: friend.username,
+      isFriend: isFriend
+    });
 
   } catch (e) {
     console.log(e)
